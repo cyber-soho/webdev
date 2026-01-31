@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS 425: Web Applications Development - Interactive Syllabus</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px; 
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container { height: 350px; }
+        }
+
+        /* Navigation Active State */
+        .nav-item.active {
+            background-color: #f0fdfa; /* teal-50 */
+            color: #0d9488; /* teal-600 */
+            border-right: 4px solid #0d9488;
+        }
+
+        /* Animations */
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; opacity: 0; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Card Hover Effects */
+        .interactive-card { transition: all 0.2s ease-in-out; }
+        .interactive-card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 h-screen overflow-hidden flex flex-col md:flex-row">
+
+    <!-- Mobile Header -->
+    <header class="md:hidden bg-white border-b border-stone-200 p-4 flex justify-between items-center z-20 shadow-sm">
+        <h1 class="font-bold text-stone-900 text-lg">CS 425 Syllabus</h1>
+        <button id="mobile-menu-btn" class="text-2xl text-stone-600 focus:outline-none">&#9776;</button>
+    </header>
+
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar" class="bg-white border-r border-stone-200 w-full md:w-64 flex-shrink-0 absolute md:relative transform -translate-x-full md:translate-x-0 transition-transform duration-300 h-full z-10 flex flex-col shadow-lg md:shadow-none">
+        <div class="p-6 border-b border-stone-100 hidden md:block">
+            <h2 class="text-xs font-bold text-teal-600 uppercase tracking-wider mb-1">CS 425</h2>
+            <h1 class="text-xl font-bold text-stone-900 leading-tight">Web Apps<br>Development</h1>
+            <p class="text-xs text-stone-400 mt-2">2025-2026 Academic Year</p>
+        </div>
+        
+        <div class="flex-1 overflow-y-auto py-4">
+            <ul class="space-y-1">
+                <li><button onclick="app.navigate('overview')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-900 transition-all active" data-target="overview">🏠 Course Overview</button></li>
+                <li><button onclick="app.navigate('curriculum')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-900 transition-all" data-target="curriculum">📅 Curriculum & Topics</button></li>
+                <li><button onclick="app.navigate('outcomes')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-900 transition-all" data-target="outcomes">🎯 Learning Outcomes</button></li>
+                <li><button onclick="app.navigate('grading')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-900 transition-all" data-target="grading">📊 Assessment & Grading</button></li>
+                <li><button onclick="app.navigate('library')" class="nav-item w-full text-left px-6 py-3 text-sm font-medium text-stone-500 hover:bg-stone-50 hover:text-stone-900 transition-all" data-target="library">📚 Resources & Policies</button></li>
+            </ul>
+        </div>
+        
+        <div class="p-4 border-t border-stone-100">
+            <div class="bg-stone-100 rounded p-4 border border-stone-200">
+                <p class="text-[10px] text-stone-400 font-semibold uppercase">Prerequisite</p>
+                <p class="text-sm text-stone-700 font-bold">CS 280</p>
+                <div class="mt-2 h-1 w-full bg-stone-200 rounded overflow-hidden">
+                    <div class="h-full bg-teal-500 w-full"></div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="flex-1 overflow-y-auto relative w-full p-4 md:p-8" id="main-content">
+        <!-- Content injected here via JS -->
+    </main>
+
+    <!-- Javascript Logic -->
+    <script>
+        // --- DATA STORE ---
+        const syllabusData = {
+            meta: {
+                code: "CS 425",
+                title: "Web Applications Development",
+                credits: 3,
+                hours: "135-180",
+                term: "2025-2026"
+            },
+            description: "CS 425 will require students to critically analyze the software engineering activities, fundamentals, architectures and main technologies involved in the design, development and testing of web applications. The course covers User Experience Design (UXD), Front-end (HTML5/CSS, JS, Vue), Back-end (Node.JS, Express, SQL/NoSQL), Architecture, Mobile specifics, Security, and Testing.",
+            mission: "The educational mission of Schiller International University is to prepare students, personally and professionally, for future leadership roles in an international setting... putting particular emphasis on developing international and cross-cultural competencies.",
+            topics: [
+                { 
+                    id: 1, 
+                    title: "Foundations of UX & UI", 
+                    content: [
+                        `User Experience Design (UXD)
+                         <hr class="my-2 border-stone-200" />
+                         <ul class="ml-4 mt-2 space-y-1 text-teal-600 font-medium list-none">
+                            <li><a href="01.01. uxd.html" target="_blank" class="hover:underline">📂 Lecture Access</a></li>
+                            <li><a href="01.02. User Experience Design (UXD).pdf" target="_blank" class="hover:underline">📄 Presentation Access</a></li>
+                            <li><a href="01.03. flashcards.html" target="_blank" class="hover:underline">📇 Flashcards</a></li>
+                            <li><a href="01.04. quiz.html" target="_blank" class="hover:underline">📝 Quiz</a></li>
+                            <li><a href="https://drive.proton.me/urls/NXBWYFBE80#V5WLllf2wK1j" target="_blank" class="hover:underline">🔗 Extra Access</a></li>
+                         </ul>`,
+                        "User Interface (UI)", 
+                        "Usability"
+                    ], 
+                    type: "Lecture" 
+                },
+                { id: 2, title: "Front-End Development", content: ["The Browser", "HTML5/CSS: Advanced Concepts", "JavaScript: Advanced Concepts", "Front-End Frameworks: Vue"], type: "Lecture" },
+                { id: "Midterm", title: "Midterm Assessment", content: ["Comprehensive computational & application-based exam", "Covers LO 1, 2, 3", "Time limit: 2 hours"], type: "Exam" },
+                { id: 3, title: "Back-End Development", content: ["The Web Server", "Node.js", "Express", "Databases: SQL and NoSQL (MongoDB)"], type: "Lecture" },
+                { id: 4, title: "Application Types & Architectures", content: ["Mobile Applications", "Web Application Architectures"], type: "Lecture" },
+                { id: 5, title: "Security & Testing", content: ["Web Application Security Basics", "Web and Mobile Applications Testing"], type: "Lecture" },
+                { id: "Final", title: "Final Assessment", content: ["Comprehensive Exam covering all LOs", "Problem set, short answers, quizzes, case studies"], type: "Exam" }
+            ],
+            outcomes: [
+                { id: 1, text: "Design & develop apps per UXD principles & security standards (OWASP, IEEE)." },
+                { id: 2, text: "Analyze problems & select best tech stack (JS, Frameworks, DBMS)." },
+                { id: 3, text: "Integrate VUE front-end framework in development." },
+                { id: 4, text: "Devise use of non-relational database (MongoDB) when appropriate." },
+                { id: 5, text: "Analyze specific issues and constraints of mobile applications." }
+            ],
+            alignment: [
+                { text: "Analyze a problem and identify/define computing requirements.", matches: [1, 2, 5] },
+                { text: "Design, implement, and evaluate a computer-based system.", matches: [2, 3, 4, 5] },
+                { text: "Apply computer science theory and software fundamentals.", matches: [2, 3, 4, 5] },
+                { text: "Function effectively as a member or leader of a team.", matches: [] },
+                { text: "Recognize social, legal, ethical, and cultural issues.", matches: [1] },
+                { text: "Integration of transferrable skills.", matches: [] },
+                { text: "Foster scholarship and research.", matches: [] }
+            ],
+            grading: {
+                breakdown: [30, 30, 40],
+                labels: ["Continuous Assessment", "Midterm Assessment", "Final Assessment"],
+                scale: [
+                    { range: "93-100", grade: "A" }, { range: "90-92", grade: "A-" },
+                    { range: "87-89", grade: "B+" }, { range: "83-86", grade: "B" },
+                    { range: "80-82", grade: "B-" }, { range: "77-79", grade: "C+" },
+                    { range: "73-76", grade: "C" }, { range: "70-72", grade: "C-" },
+                    { range: "60-69", grade: "D" }, { range: "< 60", grade: "F" }
+                ]
+            },
+            resources: {
+                required: "Flanagan, D. (2020). JavaScript - The Definitive Guide (7th ed.). O’Reilly.",
+                supplemental: [
+                    "White (2019). Mastering JavaScript.",
+                    "Purewal (2014). Learning Web App Development.",
+                    "Robbins (2012). Learning Web Design.",
+                    "Schere (2020). Hands-On JavaScript High Performance.",
+                    "Camden et al. (2020). Front-End Development Projects with Vue.js.",
+                    "Ribeiro (2020). Vue.js 3 Cookbook.",
+                    "Herron (2020). Node.js Web Development.",
+                    "Casciaro & Mammino (2020). Node.js Design Patterns.",
+                    "Bradshaw et al. (2020). MongoDB: The Definitive Guide.",
+                    "Lewis & Dunn (2019). Native Mobile Development.",
+                    "OWASP & IEEE Security Docs"
+                ],
+                policies: [
+                    { name: "Code of Conduct", link: "https://schilleriu.sharepoint.com/:w:/s/PoliciesSIU/EU5WD6m4zf1JmoItJ7txJ5cBh1GCO8OyI9cpzWYO8g9G8Q?e=XZFDY8" },
+                    { name: "Attendance Policy", link: "https://schilleriu.sharepoint.com/:w:/s/PoliciesSIU/Ebog3e3dpw5HlNNgEOQ4HRABHOm0vsM0qagxBg9KGEk30A?e=khYSod" },
+                    { name: "Academic Honesty", link: "https://schilleriu.sharepoint.com/:w:/s/PoliciesSIU/ESG1CsD6xkZFkltnpnl5DdkB0d8DjTU20jS3iZGFjMPOew?e=hBX4TG" },
+                    { name: "Resit Policy", link: "https://schilleriu.sharepoint.com/:w:/s/PoliciesSIU/Eedf-jxEyl5HsDHQ3cOXL-0BTpwW3ElDFXZ9oqxUIathnA?e=OVLICQ" }
+                ]
+            }
+        };
+
+        // --- APP LOGIC ---
+        const app = {
+            init: () => {
+                app.navigate('overview');
+                document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+                    const sidebar = document.getElementById('sidebar');
+                    sidebar.classList.toggle('-translate-x-full');
+                });
+            },
+
+            navigate: (page) => {
+                document.querySelectorAll('.nav-item').forEach(el => {
+                    el.classList.remove('active');
+                    if (el.dataset.target === page) el.classList.add('active');
+                });
+                document.getElementById('sidebar').classList.add('-translate-x-full');
+                const main = document.getElementById('main-content');
+                main.innerHTML = '';
+                main.scrollTop = 0;
+                const container = document.createElement('div');
+                container.className = "max-w-5xl mx-auto fade-in pb-20";
+                switch(page) {
+                    case 'overview': app.renderOverview(container); break;
+                    case 'curriculum': app.renderCurriculum(container); break;
+                    case 'outcomes': app.renderOutcomes(container); break;
+                    case 'grading': app.renderGrading(container); break;
+                    case 'library': app.renderLibrary(container); break;
+                }
+                main.appendChild(container);
+            },
+
+            renderOverview: (container) => {
+                container.innerHTML = `
+                    <div class="mb-8">
+                        <span class="bg-teal-100 text-teal-800 text-xs font-bold px-2 py-1 rounded">Course Syllabus</span>
+                        <h2 class="text-3xl font-bold text-stone-900 mt-2">Course Overview</h2>
+                        <p class="text-stone-600 mt-2 max-w-2xl">High-level context of CS 425.</p>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 interactive-card">
+                            <div class="text-3xl mb-2">🎓</div>
+                            <div class="text-sm text-stone-500 font-semibold uppercase">Credits</div>
+                            <div class="text-2xl font-bold text-stone-800">${syllabusData.meta.credits} Credits</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 interactive-card">
+                            <div class="text-3xl mb-2">⏱</div>
+                            <div class="text-sm text-stone-500 font-semibold uppercase">Study Load</div>
+                            <div class="text-2xl font-bold text-stone-800">${syllabusData.meta.hours} Hours</div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 interactive-card">
+                            <div class="text-3xl mb-2">💡</div>
+                            <div class="text-sm text-stone-500 font-semibold uppercase">Focus</div>
+                            <div class="text-2xl font-bold text-stone-800">Full Stack</div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-8 rounded-xl border border-stone-200 shadow-sm">
+                            <h3 class="text-xl font-bold text-stone-800 mb-4">Course Description</h3>
+                            <p class="text-stone-600 leading-relaxed">${syllabusData.description}</p>
+                        </div>
+                        <div class="bg-stone-800 text-white p-8 rounded-xl shadow-lg relative overflow-hidden">
+                            <div class="relative z-10">
+                                <h3 class="text-xl font-bold mb-4 text-teal-400">University Mission</h3>
+                                <p class="text-stone-300 italic leading-relaxed">"${syllabusData.mission}"</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            renderCurriculum: (container) => {
+                container.innerHTML = `
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-stone-900">Curriculum Roadmap</h2>
+                        <p class="text-stone-600 mt-2">Explore the weekly topics and assessment milestones.</p>
+                    </div>
+                    <div class="space-y-4">
+                        ${syllabusData.topics.map((t, idx) => {
+                            const isExam = t.type === 'Exam';
+                            return `
+                            <div class="border ${isExam ? 'border-teal-200 bg-teal-50' : 'border-stone-200 bg-white'} rounded-lg overflow-hidden transition-all duration-300">
+                                <button onclick="app.toggleTopic(${idx})" class="w-full text-left p-5 flex items-center justify-between focus:outline-none hover:bg-black/5">
+                                    <div class="flex items-center gap-4">
+                                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold ${isExam ? 'bg-teal-500 text-white' : 'bg-stone-100 text-stone-500'}">
+                                            ${isExam ? '!' : t.id}
+                                        </div>
+                                        <div>
+                                            <h3 class="font-bold text-lg text-stone-800">${t.title}</h3>
+                                            <span class="text-xs uppercase tracking-wider font-semibold ${isExam ? 'text-teal-600' : 'text-stone-400'}">${t.type}</span>
+                                        </div>
+                                    </div>
+                                    <span id="icon-${idx}" class="text-stone-400 text-2xl transition-transform duration-300 transform rotate-0">+</span>
+                                </button>
+                                <div id="topic-${idx}" class="hidden p-5 pt-0 pl-20">
+                                    <ul class="list-disc text-stone-600 space-y-1">
+                                        ${t.content.map(c => `<li class="mb-2">${c}</li>`).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                            `
+                        }).join('')}
+                    </div>
+                `;
+            },
+
+            toggleTopic: (idx) => {
+                const content = document.getElementById(`topic-${idx}`);
+                const icon = document.getElementById(`icon-${idx}`);
+                content.classList.toggle('hidden');
+                if (content.classList.contains('hidden')) {
+                    icon.classList.remove('rotate-45');
+                } else {
+                    icon.classList.add('rotate-45');
+                }
+            },
+
+            renderOutcomes: (container) => {
+                container.innerHTML = `
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-stone-900">Learning Outcomes</h2>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                        <div class="lg:col-span-5 space-y-4">
+                            <h3 class="font-bold text-stone-800 border-b border-stone-200 pb-2 mb-4">Course Outcomes (CLO)</h3>
+                            <div class="space-y-3">
+                                ${syllabusData.outcomes.map(lo => `
+                                    <div id="clo-${lo.id}" class="p-3 bg-white border border-stone-200 rounded-lg shadow-sm transition-all duration-300">
+                                        <div class="flex gap-3">
+                                            <span class="flex-shrink-0 w-8 h-8 bg-teal-100 text-teal-800 font-bold rounded flex items-center justify-center text-sm">LO${lo.id}</span>
+                                            <p class="text-sm text-stone-600 leading-snug">${lo.text}</p>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="lg:col-span-7">
+                            <h3 class="font-bold text-stone-800 border-b border-stone-200 pb-2 mb-4">Program Alignment Matrix</h3>
+                            <div class="space-y-3">
+                                ${syllabusData.alignment.map((plo, idx) => `
+                                    <div class="group p-4 bg-white border border-stone-200 rounded-lg hover:border-teal-500 transition-all cursor-default"
+                                         onmouseenter="app.highlightCLO([${plo.matches}])"
+                                         onmouseleave="app.resetCLO()">
+                                        <div class="flex justify-between items-start gap-4">
+                                            <div><p class="text-sm text-stone-700 mt-1">${plo.text}</p></div>
+                                            <div class="flex gap-1 flex-wrap justify-end">
+                                                ${plo.matches.map(m => `<span class="px-2 py-1 bg-teal-50 text-teal-700 text-xs font-bold rounded">LO${m}</span>`).join('')}
+                                            </div>
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            },
+
+            highlightCLO: (ids) => {
+                ids.forEach(id => {
+                    const el = document.getElementById(`clo-${id}`);
+                    if(el) el.classList.add('bg-teal-50', 'border-teal-500', 'scale-105');
+                });
+            },
+
+            resetCLO: () => {
+                syllabusData.outcomes.forEach(lo => {
+                    const el = document.getElementById(`clo-${lo.id}`);
+                    if(el) el.classList.remove('bg-teal-50', 'border-teal-500', 'scale-105');
+                });
+            },
+
+            renderGrading: (container) => {
+                container.innerHTML = `
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-stone-900">Assessment & Grading</h2>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                            <h3 class="font-bold text-stone-800 mb-4 text-center">Grade Composition</h3>
+                            <div class="chart-container"><canvas id="weightChart"></canvas></div>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                            <h3 class="font-bold text-stone-800 mb-4 text-center">Grading Scale Thresholds</h3>
+                            <div class="chart-container"><canvas id="scaleChart"></canvas></div>
+                        </div>
+                    </div>
+                `;
+                setTimeout(() => {
+                    new Chart(document.getElementById('weightChart'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: syllabusData.grading.labels,
+                            datasets: [{ data: syllabusData.grading.breakdown, backgroundColor: ['#ccfbf1', '#5eead4', '#0d9488'], borderWidth: 0 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+                    });
+                    new Chart(document.getElementById('scaleChart'), {
+                        type: 'bar',
+                        data: {
+                            labels: syllabusData.grading.scale.map(s => s.grade),
+                            datasets: [{ data: [93, 90, 87, 83, 80, 77, 73, 70, 60, 0], backgroundColor: '#d6d3d1', hoverBackgroundColor: '#0d9488' }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, max: 100 } }, plugins: { legend: { display: false } } }
+                    });
+                }, 100);
+            },
+
+            renderLibrary: (container) => {
+                container.innerHTML = `
+                    <div class="mb-8">
+                        <h2 class="text-3xl font-bold text-stone-900">Resources & Policies</h2>
+                    </div>
+                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-6 mb-8 flex items-start gap-4">
+                        <div class="text-4xl">📘</div>
+                        <div>
+                            <h3 class="text-teal-800 font-bold uppercase text-xs">Required Textbook</h3>
+                            <p class="text-lg font-bold text-stone-800">${syllabusData.resources.required}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="font-bold text-stone-800 mb-4">Supplemental Readings</h3>
+                            <div class="bg-white border border-stone-200 rounded-lg max-h-96 overflow-y-auto">
+                                <ul class="divide-y divide-stone-100" id="book-list">
+                                    ${syllabusData.resources.supplemental.map(book => `<li class="p-4 text-sm text-stone-600">📖 ${book}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="space-y-4">
+                            <h3 class="font-bold text-stone-800">University Policies</h3>
+                            ${syllabusData.resources.policies.map(p => `
+                                <a href="${p.link}" target="_blank" class="block p-4 bg-white border border-stone-200 rounded-lg hover:border-teal-500 transition-all">
+                                    <div class="flex justify-between items-center"><span class="font-medium text-stone-700">${p.name}</span><span>↗</span></div>
+                                </a>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', app.init);
+    </script>
+</body>
+</html>

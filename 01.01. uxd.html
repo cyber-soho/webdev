@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX/UI Foundations Interactive Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                        accent: '#f5576c',
+                        neutral: '#f5f5f5',
+                        dark: '#333333',
+                        light: '#ffffff'
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .wireframe-border {
+            border: 3px dashed #999;
+        }
+        
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-neutral text-dark font-sans leading-normal min-h-screen flex flex-col">
+
+    <!-- Chosen Palette: Soft Violet/Blue Gradient (#667eea to #764ba2) -->
+    <!-- Application Structure Plan: 
+         Designed as a "Learning Dashboard" with a persistent navigation bar and a dynamic content area.
+         This structure allows users to jump between modular concepts (Foundations, UX vs UI, Process, Heuristics) non-linearly.
+         Embedded interactive mini-apps transform theoretical material into experiential learning.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Research Survey: Uses Chart.js Bar charts to visualize interactively collected data.
+         2. A/B Testing: Uses Chart.js Doughnut charts for real-time click distribution. 
+         3. Persona Generator: HTML/CSS visual card generation. 
+         4. Wireframe: Interactive HTML div-based click-dummy.
+         5. Progress Bars: CSS-based animation for Heuristic demo.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <nav class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">⚡</span>
+                    <span class="font-bold text-xl tracking-wide">UX/UI Foundations</span>
+                </div>
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="focus:outline-none">
+                        <span class="text-2xl">☰</span>
+                    </button>
+                </div>
+                <div class="hidden md:flex space-x-6 font-medium" id="desktop-menu">
+                    <button onclick="router('home')" class="hover:text-pink-200 transition nav-btn" data-target="home">Dashboard</button>
+                    <button onclick="router('foundations')" class="hover:text-pink-200 transition nav-btn" data-target="foundations">Foundations</button>
+                    <button onclick="router('uxvsui')" class="hover:text-pink-200 transition nav-btn" data-target="uxvsui">UX vs UI</button>
+                    <button onclick="router('process')" class="hover:text-pink-200 transition nav-btn" data-target="process">The Process</button>
+                    <button onclick="router('advanced')" class="hover:text-pink-200 transition nav-btn" data-target="advanced">Heuristics & IA</button>
+                </div>
+            </div>
+            <div class="md:hidden hidden pb-4" id="mobile-menu">
+                <div class="flex flex-col space-y-2">
+                    <button onclick="router('home')" class="py-2 hover:bg-white/10 rounded text-left px-2">Dashboard</button>
+                    <button onclick="router('foundations')" class="py-2 hover:bg-white/10 rounded text-left px-2">Foundations</button>
+                    <button onclick="router('uxvsui')" class="py-2 hover:bg-white/10 rounded text-left px-2">UX vs UI</button>
+                    <button onclick="router('process')" class="py-2 hover:bg-white/10 rounded text-left px-2">The Process</button>
+                    <button onclick="router('advanced')" class="py-2 hover:bg-white/10 rounded text-left px-2">Heuristics & IA</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
+        
+        <section id="home" class="page-section fade-in">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">Welcome to User Experience Design</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Code is just the tool. Your real job is solving human problems. Explore the modules below to understand how to create meaningful digital experiences.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div onclick="router('foundations')" class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition cursor-pointer border-t-4 border-primary group">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🍕</div>
+                    <h3 class="text-xl font-bold mb-2">What is UXD?</h3>
+                    <p class="text-gray-500 text-sm">Understanding the core components through a real-world Pizza App example.</p>
+                </div>
+                <div onclick="router('uxvsui')" class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition cursor-pointer border-t-4 border-secondary group">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">⚖️</div>
+                    <h3 class="text-xl font-bold mb-2">UX vs UI</h3>
+                    <p class="text-gray-500 text-sm">Learn the difference between visuals and experience with interactive forms.</p>
+                </div>
+                <div onclick="router('process')" class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition cursor-pointer border-t-4 border-accent group">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🔄</div>
+                    <h3 class="text-xl font-bold mb-2">The UCD Process</h3>
+                    <p class="text-gray-500 text-sm">Research, Ideate, Prototype, and Test using interactive tools.</p>
+                </div>
+                <div onclick="router('advanced')" class="bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition cursor-pointer border-t-4 border-green-500 group">
+                    <div class="text-4xl mb-4 group-hover:scale-110 transition-transform">🧠</div>
+                    <h3 class="text-xl font-bold mb-2">Heuristics & IA</h3>
+                    <p class="text-gray-500 text-sm">Usability principles, Information Architecture, and Accessibility.</p>
+                </div>
+            </div>
+            
+            <div class="mt-12 bg-blue-50 p-8 rounded-lg border border-blue-100">
+                <h3 class="text-lg font-bold text-blue-800 mb-2">Why Should You Care?</h3>
+                <p class="text-blue-700">Have you ever deleted an app because it was confusing? That's bad UX. This dashboard converts static material into interactive demos so you can <em>feel</em> the difference between design decisions.</p>
+            </div>
+        </section>
+
+        <section id="foundations" class="page-section hidden fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">Foundations of UXD</h2>
+                <p class="text-gray-600">User Experience Design (UXD) is the process of creating products that provide meaningful and relevant experiences.</p>
+            </div>
+
+            <div class="bg-gradient-to-br from-primary to-secondary p-4 md:p-8 rounded-2xl shadow-2xl text-center">
+                <div class="bg-white rounded-2xl p-6 md:p-8 max-w-md mx-auto shadow-xl text-left">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">🍕 Order Your Pizza</h3>
+                    <p class="text-gray-500 mb-6 text-sm">An example of UXD components: Research (Needs), IA (Menu), Interaction (Cart), Visuals (Layout).</p>
+
+                    <div class="space-y-4 mb-8">
+                        <div class="bg-gray-50 p-4 rounded-xl border-2 border-transparent hover:border-primary hover:shadow-md transition cursor-pointer flex justify-between items-center group" onclick="addToCart('Margherita', 12.99)">
+                            <div>
+                                <h4 class="font-bold text-gray-800">🧀 Margherita</h4>
+                                <p class="text-xs text-gray-500">Classic tomato, mozzarella, basil</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="block font-bold text-primary">$12.99</span>
+                                <span class="text-xs bg-primary text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">Add</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 p-4 rounded-xl border-2 border-transparent hover:border-primary hover:shadow-md transition cursor-pointer flex justify-between items-center group" onclick="addToCart('Pepperoni', 14.99)">
+                            <div>
+                                <h4 class="font-bold text-gray-800">🍕 Pepperoni</h4>
+                                <p class="text-xs text-gray-500">Tomato, mozzarella, pepperoni</p>
+                            </div>
+                            <div class="text-right">
+                                <span class="block font-bold text-primary">$14.99</span>
+                                <span class="text-xs bg-primary text-white px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">Add</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-100 p-4 rounded-xl">
+                        <h4 class="font-bold text-gray-800 mb-4 border-b pb-2">Your Cart</h4>
+                        <div id="cart-items" class="text-gray-500 text-center text-sm italic py-4">
+                            Your cart is empty. Add some delicious pizza!
+                        </div>
+                        <div id="cart-total-section" class="hidden mt-4 pt-4 border-t border-gray-300">
+                            <div class="flex justify-between font-bold text-lg text-gray-800">
+                                <span>Total:</span>
+                                <span>$<span id="total-amount">0.00</span></span>
+                            </div>
+                            <button id="checkout-btn" onclick="checkout()" class="w-full mt-4 bg-primary hover:bg-indigo-600 text-white font-bold py-3 rounded-lg transition shadow-lg transform active:scale-95">
+                                Proceed to Checkout
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="order-success" class="hidden mt-4 bg-green-100 text-green-800 p-4 rounded-lg border border-green-200 text-center animate-bounce">
+                        ✅ Order placed successfully! Arriving in 30m.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="uxvsui" class="page-section hidden fade-in">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">The Difference Between UX and UI</h2>
+                <p class="text-gray-600 mb-4"><strong>UI</strong> is the visuals. <strong>UX</strong> is the experience. The best products have both.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-red-100 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+                    <h3 class="text-2xl font-bold text-red-600 mb-2">❌ Good UI, Poor UX</h3>
+                    <p class="text-gray-500 text-sm mb-6">Looks pretty, but frustrating. No feedback, generic errors.</p>
+                    
+                    <form onsubmit="handleBadSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Email</label>
+                            <input type="text" class="w-full p-3 border-2 border-gray-200 rounded-lg" placeholder="email">
+                        </div>
+                        <div id="bad-error" class="hidden text-red-500 text-sm font-bold bg-red-50 p-2 rounded">
+                            Invalid input!
+                        </div>
+                        <button type="submit" class="w-full bg-gradient-to-r from-primary to-secondary text-white font-bold py-3 rounded-lg">
+                            Sign In
+                        </button>
+                    </form>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-lg border border-green-100 relative overflow-hidden">
+                    <div class="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+                    <h3 class="text-2xl font-bold text-green-600 mb-2">✅ Good UI & Good UX</h3>
+                    <p class="text-gray-500 text-sm mb-6">Effortless. Real-time validation, clear feedback.</p>
+                    
+                    <form onsubmit="handleGoodSubmit(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 font-medium mb-1">Email Address</label>
+                            <input type="email" id="good-email" class="w-full p-3 border-2 border-gray-200 rounded-lg focus:outline-none focus:border-green-500 transition" placeholder="you@example.com" required>
+                        </div>
+                        <div id="good-success" class="hidden bg-green-100 text-green-800 p-3 rounded-lg text-center text-sm">
+                            ✅ Signed in successfully!
+                        </div>
+                        <button type="submit" id="good-submit" class="w-full bg-green-500 text-white font-bold py-3 rounded-lg hover:bg-green-600 transition shadow-md">
+                            Sign In
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <section id="process" class="page-section hidden fade-in">
+            <div class="mb-6">
+                <h2 class="text-3xl font-bold text-gray-800 mb-2">The UCD Process</h2>
+                <div class="flex flex-wrap gap-2 mb-6 border-b border-gray-200 pb-2">
+                    <button onclick="switchProcessTab('research')" class="process-tab-btn active px-4 py-2 rounded-lg font-medium transition bg-primary text-white" data-tab="research">1. Research</button>
+                    <button onclick="switchProcessTab('ideate')" class="process-tab-btn px-4 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100 transition" data-tab="ideate">2. Define</button>
+                    <button onclick="switchProcessTab('test')" class="process-tab-btn px-4 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100 transition" data-tab="test">3. Test</button>
+                </div>
+            </div>
+
+            <div id="tab-research" class="process-content fade-in">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <div class="bg-white p-6 rounded-xl shadow">
+                        <h3 class="text-xl font-bold text-gray-800 mb-4">User Research Survey</h3>
+                        <form id="survey-form" onsubmit="handleSurveySubmit(event)" class="space-y-4">
+                            <select name="age" class="w-full p-2 border rounded" required>
+                                <option value="18-24">18-24</option>
+                                <option value="25-34">25-34</option>
+                            </select>
+                            <select name="device" class="w-full p-2 border rounded" required>
+                                <option value="Mobile">Mobile Phone</option>
+                                <option value="Desktop">Desktop</option>
+                            </select>
+                            <button type="submit" class="w-full bg-primary text-white py-2 rounded font-bold">Submit Response</button>
+                        </form>
+                    </div>
+                    <div class="bg-gray-50 p-6 rounded-xl shadow border border-gray-200">
+                        <div class="chart-container h-48 mb-4">
+                            <canvas id="ageChart"></canvas>
+                        </div>
+                        <div class="chart-container h-48">
+                            <canvas id="deviceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-ideate" class="process-content hidden fade-in">
+                <div class="bg-white rounded-lg p-6 shadow">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-4">👤 Persona Generator</h3>
+                    <form onsubmit="generatePersona(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <input type="text" id="p-name" placeholder="Name" class="p-2 border rounded" required>
+                        <input type="text" id="p-job" placeholder="Job" class="p-2 border rounded" required>
+                        <button type="submit" class="md:col-span-2 bg-rose-500 text-white py-3 rounded font-bold">Generate Card</button>
+                    </form>
+                    <div id="persona-card" class="hidden mt-6 bg-gray-800 text-white p-6 rounded-xl shadow-2xl">
+                        <h2 id="card-name" class="text-2xl font-bold">Name</h2>
+                        <p id="card-job" class="text-rose-300">Job</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-test" class="process-content hidden fade-in">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-2xl font-bold text-gray-800 mb-2">🧪 A/B Testing Simulator</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div class="border rounded-lg p-6 text-center">
+                            <button onclick="trackClick('A')" class="bg-primary text-white px-4 py-2 rounded">Sign Up (A)</button>
+                        </div>
+                        <div class="border rounded-lg p-6 text-center bg-pink-50">
+                            <button onclick="trackClick('B')" class="bg-accent text-white px-8 py-3 rounded-lg font-bold">Sign Up (B)</button>
+                        </div>
+                    </div>
+                    <div class="chart-container h-48">
+                        <canvas id="abChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="advanced" class="page-section hidden fade-in">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Heuristic Status</h2>
+                    <div class="border-2 border-dashed border-primary rounded-xl p-8 text-center bg-blue-50 cursor-pointer" onclick="startUpload()">
+                        <p class="font-bold text-primary">Click to Simulate Upload</p>
+                    </div>
+                    <div id="upload-progress-container" class="hidden mt-6">
+                        <div class="w-full bg-gray-200 rounded-full h-4 overflow-hidden mb-2">
+                            <div id="upload-bar" class="bg-gradient-to-r from-primary to-secondary h-4 transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                        <span id="upload-percent" class="text-xs text-gray-500">0%</span>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">Information Architecture</h2>
+                    <div class="grid grid-cols-2 gap-4 text-xs">
+                        <div class="border p-2 rounded bg-red-50">Bad IA: Random List</div>
+                        <div class="border p-2 rounded bg-green-50">Good IA: Categorized</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer updated with branding asset and educational info -->
+    <footer class="bg-stone-900 text-stone-400 py-6 mt-8">
+        <div class="container mx-auto text-center text-sm">
+            <p style="display:flex; justify-content:center; align-items:center; gap:8px; margin:0;">
+                <img src="cyber_soho.png"
+                     alt="Cyber Soho"
+                     style="height:32px;">
+                <span>Educational Hub &copy; 2026 | Schiller International University</span>
+            </p>
+            <div class="mt-4 opacity-75">
+                <p><strong>Foundations of UX and UI</strong> | Interactive Learning Module</p>
+                <p class="mt-2 text-[10px]">Disclaimer: All interactive elements are for educational simulations. Based on Cyber.SoHo course material (Jan 2026).</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function router(viewId) {
+            document.querySelectorAll('.page-section').forEach(el => el.classList.add('hidden'));
+            document.getElementById(viewId).classList.remove('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.toggle('text-pink-200', btn.dataset.target === viewId);
+                btn.classList.toggle('underline', btn.dataset.target === viewId);
+            });
+        }
+
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+        mobileMenuBtn.addEventListener('click', () => mobileMenu.classList.toggle('hidden'));
+
+        let cart = [];
+        function addToCart(item, price) {
+            cart.push({name: item, price: price});
+            updateCartDisplay();
+        }
+
+        function updateCartDisplay() {
+            const itemsDiv = document.getElementById('cart-items');
+            const totalSec = document.getElementById('cart-total-section');
+            const totalSpan = document.getElementById('total-amount');
+            if (cart.length === 0) {
+                itemsDiv.innerHTML = 'Your cart is empty.';
+                totalSec.classList.add('hidden');
+            } else {
+                itemsDiv.innerHTML = '';
+                let total = 0;
+                cart.forEach(i => {
+                    const div = document.createElement('div');
+                    div.className = 'flex justify-between text-sm py-1';
+                    div.innerHTML = `<span>${i.name}</span><span>$${i.price}</span>`;
+                    itemsDiv.appendChild(div);
+                    total += i.price;
+                });
+                totalSpan.textContent = total.toFixed(2);
+                totalSec.classList.remove('hidden');
+            }
+        }
+
+        function checkout() {
+            document.getElementById('order-success').classList.remove('hidden');
+            cart = [];
+            updateCartDisplay();
+            setTimeout(() => document.getElementById('order-success').classList.add('hidden'), 3000);
+        }
+
+        function handleBadSubmit(e) {
+            e.preventDefault();
+            document.getElementById('bad-error').classList.remove('hidden');
+        }
+
+        function handleGoodSubmit(e) {
+            e.preventDefault();
+            const btn = document.getElementById('good-submit');
+            const success = document.getElementById('good-success');
+            btn.disabled = true;
+            success.classList.remove('hidden');
+            setTimeout(() => {
+                success.classList.add('hidden');
+                btn.disabled = false;
+                e.target.reset();
+            }, 2000);
+        }
+
+        function switchProcessTab(tabId) {
+            document.querySelectorAll('.process-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById('tab-' + tabId).classList.remove('hidden');
+            document.querySelectorAll('.process-tab-btn').forEach(btn => {
+                const isActive = btn.dataset.tab === tabId;
+                btn.classList.toggle('bg-primary', isActive);
+                btn.classList.toggle('text-white', isActive);
+                btn.classList.toggle('text-gray-600', !isActive);
+            });
+        }
+
+        const surveyData = { age: { '18-24': 12, '25-34': 25 }, device: { 'Mobile': 45, 'Desktop': 10 } };
+        let ageChart, deviceChart;
+
+        function initSurveyCharts() {
+            ageChart = new Chart(document.getElementById('ageChart').getContext('2d'), {
+                type: 'bar',
+                data: { labels: Object.keys(surveyData.age), datasets: [{ label: 'Age', data: Object.values(surveyData.age), backgroundColor: '#667eea' }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+            deviceChart = new Chart(document.getElementById('deviceChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: Object.keys(surveyData.device), datasets: [{ data: Object.values(surveyData.device), backgroundColor: ['#f5576c', '#764ba2'] }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function handleSurveySubmit(e) {
+            e.preventDefault();
+            const data = new FormData(e.target);
+            surveyData.age[data.get('age')]++;
+            surveyData.device[data.get('device')]++;
+            ageChart.data.datasets[0].data = Object.values(surveyData.age);
+            deviceChart.data.datasets[0].data = Object.values(surveyData.device);
+            ageChart.update();
+            deviceChart.update();
+            e.target.reset();
+        }
+
+        function generatePersona(e) {
+            e.preventDefault();
+            document.getElementById('card-name').textContent = document.getElementById('p-name').value;
+            document.getElementById('card-job').textContent = document.getElementById('p-job').value;
+            document.getElementById('persona-card').classList.remove('hidden');
+        }
+
+        let abData = { A: 1, B: 1 };
+        let abChart;
+        function initABChart() {
+            abChart = new Chart(document.getElementById('abChart').getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: ['A', 'B'], datasets: [{ data: [50, 50], backgroundColor: ['#667eea', '#f5576c'] }] },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function trackClick(v) {
+            abData[v]++;
+            abChart.data.datasets[0].data = [abData.A, abData.B];
+            abChart.update();
+        }
+
+        function startUpload() {
+            const container = document.getElementById('upload-progress-container');
+            const bar = document.getElementById('upload-bar');
+            const percent = document.getElementById('upload-percent');
+            container.classList.remove('hidden');
+            let p = 0;
+            const interval = setInterval(() => {
+                p += 5;
+                bar.style.width = p + '%';
+                percent.textContent = p + '%';
+                if(p >= 100) clearInterval(interval);
+            }, 100);
+        }
+
+        window.onload = function() {
+            initSurveyCharts();
+            initABChart();
+        };
+    </script>
+</body>
+</html>

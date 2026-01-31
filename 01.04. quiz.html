@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX/UI Foundations Interactive Hub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#667eea',
+                        secondary: '#764ba2',
+                        accent: '#f5576c',
+                        neutral: '#f5f5f5',
+                        dark: '#333333',
+                        light: '#ffffff'
+                    },
+                    fontFamily: {
+                        sans: ['Segoe UI', 'Tahoma', 'Geneva', 'Verdana', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .option-btn:disabled {
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-neutral text-dark font-sans leading-normal min-h-screen flex flex-col">
+
+    <nav class="bg-gradient-to-r from-primary to-secondary text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">⚡</span>
+                    <span class="font-bold text-xl tracking-wide">UX/UI Foundations</span>
+                </div>
+                <div class="hidden md:flex space-x-6 font-medium">
+                    <button onclick="router('home')" class="hover:text-pink-200 transition nav-btn" data-target="home">Dashboard</button>
+                    <button onclick="router('foundations')" class="hover:text-pink-200 transition nav-btn" data-target="foundations">Foundations</button>
+                    <button onclick="router('quiz')" class="hover:text-pink-200 transition nav-btn font-bold text-yellow-300" data-target="quiz">Take the Quiz</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow max-w-7xl mx-auto w-full px-4 py-8">
+        
+        <!-- Dashboard / Home -->
+        <section id="home" class="page-section fade-in">
+            <div class="text-center mb-12">
+                <h1 class="text-4xl md:text-5xl font-bold text-gray-800 mb-4">UX/UI Mastery Hub</h1>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">Explore the principles of design and test your skills with our interactive modules.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div onclick="router('foundations')" class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition cursor-pointer border-t-4 border-primary">
+                    <h3 class="text-2xl font-bold mb-2">📖 Study Material</h3>
+                    <p class="text-gray-500">Review foundations, process, and heuristics.</p>
+                </div>
+                <div onclick="router('quiz')" class="bg-white p-8 rounded-xl shadow-md hover:shadow-xl transition cursor-pointer border-t-4 border-accent">
+                    <h3 class="text-2xl font-bold mb-2">✍️ Foundations Quiz</h3>
+                    <p class="text-gray-500">10 questions to test your UX/UI knowledge.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Study Foundations (Simplified for focus) -->
+        <section id="foundations" class="page-section hidden fade-in">
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <h2 class="text-3xl font-bold mb-4">Core Concepts</h2>
+                <div class="space-y-4 text-gray-700">
+                    <p><strong>UX (User Experience):</strong> The internal experience a person has as they interact with every aspect of a company’s products and services.</p>
+                    <p><strong>UI (User Interface):</strong> The series of screens, pages, and visual elements—like buttons and icons—that enable a person to interact with a product.</p>
+                    <p><strong>UCD Process:</strong> Research -> Define -> Ideate -> Prototype -> Test.</p>
+                </div>
+                <button onclick="router('home')" class="mt-8 text-primary font-bold">← Back to Dashboard</button>
+            </div>
+        </section>
+
+        <!-- Interactive Quiz Section -->
+        <section id="quiz" class="page-section hidden fade-in">
+            <div class="max-w-3xl mx-auto">
+                <div id="quiz-container" class="bg-white p-6 md:p-10 rounded-2xl shadow-2xl border border-gray-100">
+                    <!-- Progress Header -->
+                    <div class="flex justify-between items-center mb-6">
+                        <span class="text-sm font-bold text-primary uppercase tracking-wider" id="question-number-label">Question 1 of 10</span>
+                        <div class="w-32 bg-gray-200 rounded-full h-2">
+                            <div id="progress-bar" class="bg-primary h-2 rounded-full transition-all duration-300" style="width: 10%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Question Content -->
+                    <div id="question-block">
+                        <h2 id="question-text" class="text-2xl font-bold text-gray-800 mb-8 leading-tight"></h2>
+                        
+                        <div id="options-grid" class="space-y-4">
+                            <!-- Options injected by JS -->
+                        </div>
+
+                        <!-- Feedback / Rationale Area -->
+                        <div id="feedback-area" class="hidden mt-8 p-4 rounded-xl border-l-4">
+                            <p id="rationale-text" class="text-gray-700 italic"></p>
+                        </div>
+
+                        <!-- Hint Area -->
+                        <div class="mt-6">
+                            <button id="hint-btn" onclick="toggleHint()" class="text-sm text-secondary hover:underline flex items-center">
+                                💡 Need a hint?
+                            </button>
+                            <p id="hint-text" class="hidden mt-2 text-sm text-gray-500 bg-gray-50 p-3 rounded-lg border italic"></p>
+                        </div>
+
+                        <button id="next-btn" onclick="nextQuestion()" class="hidden w-full mt-8 bg-primary hover:bg-indigo-600 text-white font-bold py-4 rounded-xl transition shadow-lg flex justify-center items-center">
+                            Next Question →
+                        </button>
+                    </div>
+
+                    <!-- Results Screen -->
+                    <div id="results-block" class="hidden text-center py-10">
+                        <div class="text-6xl mb-6">🏆</div>
+                        <h2 class="text-3xl font-bold text-gray-800 mb-2">Quiz Complete!</h2>
+                        <p class="text-gray-600 mb-8">You've mastered the foundations of UX/UI.</p>
+                        <div class="text-5xl font-bold text-primary mb-8"><span id="score-display">0</span>/10</div>
+                        <button onclick="restartQuiz()" class="bg-primary text-white px-8 py-3 rounded-lg font-bold hover:bg-indigo-600 transition">Restart Quiz</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer with Branding -->
+    <footer class="bg-stone-900 text-stone-400 py-6 mt-8">
+        <div class="container mx-auto text-center text-sm">
+            <p style="display:flex; justify-content:center; align-items:center; gap:8px; margin:0;">
+                <img src="cyber_soho.png" alt="Cyber Soho" style="height:32px;">
+                <span>Educational Hub &copy; 2026 | Schiller International University</span>
+            </p>
+            <div class="mt-4 opacity-75">
+                <p><strong>Foundations of UX and UI</strong> | Interactive Learning Module</p>
+                <p class="mt-2 text-[10px]">Disclaimer: All interactive elements are for educational simulations. Based on Cyber.SoHo course material (Jan 2026).</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const quizData = [
+            {
+                question: "In the context of the 'restaurant analogy', which of the following best represents the User Interface (UI)?",
+                hint: "Think about the parts of a restaurant you can see and touch that set the visual mood.",
+                options: [
+                    { text: "The menu design and table settings", rationale: "UI refers to visual elements like decor and menu styling.", isCorrect: true },
+                    { text: "The speed of the service", rationale: "Service speed is part of the overall experience (UX), not visuals.", isCorrect: false },
+                    { text: "The flow of guests", rationale: "Flow is part of the floor plan/experience (UX).", isCorrect: false },
+                    { text: "The taste of the food", rationale: "Food quality is a core product experience (UX).", isCorrect: false }
+                ]
+            },
+            {
+                question: "Why is the 'Visibility of System Status' heuristic critical for reducing user anxiety?",
+                hint: "Consider a file upload with a progress bar versus one that freezes.",
+                options: [
+                    { text: "It ensures users always know what is happening through feedback.", rationale: "Feedback confirms the system is working, preventing uncertainty.", isCorrect: true },
+                    { text: "It guarantees fast loading times.", rationale: "This concerns status communication, not raw performance speed.", isCorrect: false },
+                    { text: "It simplifies navigation menus.", rationale: "Navigation is IA/findability, not system feedback.", isCorrect: false },
+                    { text: "It uses real-world metaphors.", rationale: "This describes the 'Match with Real World' heuristic.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Why is it dangerous to rely solely on assumptions during Research?",
+                hint: "Remember the Snapchat example regarding user motivations.",
+                options: [
+                    { text: "Designers are not their users; assumptions are often wrong.", rationale: "Real motivations often differ from what founders assume.", isCorrect: true },
+                    { text: "Assumptions are expensive to test.", rationale: "The danger is building the wrong product, not the cost of testing.", isCorrect: false },
+                    { text: "It prevents creating mockups.", rationale: "You can create mockups, but they might solve the wrong problem.", isCorrect: false },
+                    { text: "It violates accessibility rules.", rationale: "The primary risk is a lack of product-market fit.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Which component organizes content logically, like books in a library?",
+                hint: "This deals with hierarchy, groups, and labeling.",
+                options: [
+                    { text: "Information Architecture (IA)", rationale: "IA focuses on structure and categorization for findability.", isCorrect: true },
+                    { text: "Interaction Design (IxD)", rationale: "IxD is about behavior and interaction (swipes/taps).", isCorrect: false },
+                    { text: "Visual Design", rationale: "Visual Design is about aesthetics like typography and color.", isCorrect: false },
+                    { text: "Usability Testing", rationale: "Testing validates the organization but isn't the act of organizing.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Dropbox created a video before writing code. Which UCD stage is this?",
+                hint: "This stage tests ideas cheaply to save time and money.",
+                options: [
+                    { text: "Prototype & Design", rationale: "Prototyping involves creating low-cost versions to validate ideas.", isCorrect: true },
+                    { text: "Define & Ideate", rationale: "This involves brainstorming, while the video was a tangible demo.", isCorrect: false },
+                    { text: "Research & Discovery", rationale: "Research gathers data; the video was a solution artifact.", isCorrect: false },
+                    { text: "Visual Design", rationale: "The primary goal was functional validation, not aesthetics.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Adding alt text to images addresses which POUR principle?",
+                hint: "Ensures users who can't see the screen still access the info.",
+                options: [
+                    { text: "Perceivable", rationale: "Info must be presentable in ways all users can perceive.", isCorrect: true },
+                    { text: "Operable", rationale: "Operable refers to using the interface (keyboard, etc).", isCorrect: false },
+                    { text: "Understandable", rationale: "This refers to clarity of language and operation.", isCorrect: false },
+                    { text: "Robust", rationale: "Robustness refers to cross-technology compatibility.", isCorrect: false }
+                ]
+            },
+            {
+                question: "What is the main distinction between a wireframe and a mockup?",
+                hint: "Blueprint versus color rendering.",
+                options: [
+                    { text: "Wireframes focus on flow; mockups focus on details.", rationale: "Wireframes test structure; mockups add the 'paint'.", isCorrect: true },
+                    { text: "Wireframes are interactive; mockups are static.", rationale: "Interactivity doesn't define fidelity.", isCorrect: false },
+                    { text: "Wireframes are for research; mockups for code.", rationale: "Both are design stages informing development.", isCorrect: false },
+                    { text: "Different roles create them.", rationale: "UX Designers usually create both at different stages.", isCorrect: false }
+                ]
+            },
+            {
+                question: "Mailchimp uses 'Campaigns' instead of jargon. Which heuristic is this?",
+                hint: "Avoid computer-speak; use words familiar to the user's task.",
+                options: [
+                    { text: "Match Between System and Real World", rationale: "Systems should speak the user's language.", isCorrect: true },
+                    { text: "Visibility of System Status", rationale: "This is about feedback on operations.", isCorrect: false },
+                    { text: "Error Prevention", rationale: "This is about design patterns that stop mistakes.", isCorrect: false },
+                    { text: "User Control", rationale: "This is about exits and undos.", isCorrect: false }
+                ]
+            },
+            {
+                question: "A search bar move of 20px increased revenue. What is the lesson?",
+                hint: "Data-driven iteration over guessing.",
+                options: [
+                    { text: "Small changes validated by testing have huge impacts.", rationale: "Testing and iteration beat guessing.", isCorrect: true },
+                    { text: "Search bars belong on the left.", rationale: "The lesson is the testing process, not a rigid rule.", isCorrect: false },
+                    { text: "Visuals beat interaction.", rationale: "Both disciplines combined to create functional success.", isCorrect: false },
+                    { text: "Guessing is cheaper.", rationale: "Guessing is risky; testing generates long-term value.", isCorrect: false }
+                ]
+            },
+            {
+                question: "How does the 'curb cut effect' apply to web design?",
+                hint: "Captions help the deaf AND people in loud bars.",
+                options: [
+                    { text: "Accessibility benefits all users.", rationale: "Features for disabilities often have universal utility.", isCorrect: true },
+                    { text: "Accessibility only benefits a minority.", rationale: "The effect proves accessibility has broad benefits.", isCorrect: false },
+                    { text: "Design only for screen readers.", rationale: "Accessibility means designing for *everyone*.", isCorrect: false },
+                    { text: "It refers to cutting content.", rationale: "This isn't related to performance optimization.", isCorrect: false }
+                ]
+            }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+
+        function router(id) {
+            document.querySelectorAll('.page-section').forEach(p => p.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            if(id === 'quiz') restartQuiz();
+        }
+
+        function loadQuestion() {
+            const q = quizData[currentQ];
+            document.getElementById('question-number-label').innerText = `Question ${currentQ + 1} of 10`;
+            document.getElementById('progress-bar').style.width = `${((currentQ + 1) / 10) * 100}%`;
+            document.getElementById('question-text').innerText = q.question;
+            document.getElementById('hint-text').innerText = q.hint;
+            document.getElementById('hint-text').classList.add('hidden');
+            document.getElementById('feedback-area').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            const grid = document.getElementById('options-grid');
+            grid.innerHTML = '';
+            
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full text-left p-4 rounded-xl border-2 border-gray-200 hover:border-primary hover:bg-blue-50 transition font-medium text-gray-700";
+                btn.innerText = opt.text;
+                btn.onclick = () => selectOption(idx, btn);
+                grid.appendChild(btn);
+            });
+        }
+
+        function selectOption(idx, btn) {
+            const q = quizData[currentQ];
+            const opt = q.options[idx];
+            const allBtns = document.querySelectorAll('.option-btn');
+            
+            allBtns.forEach(b => b.disabled = true);
+            
+            if(opt.isCorrect) {
+                btn.classList.replace('border-gray-200', 'border-green-500');
+                btn.classList.add('bg-green-50');
+                score++;
+            } else {
+                btn.classList.replace('border-gray-200', 'border-red-500');
+                btn.classList.add('bg-red-50');
+                // Highlight correct one
+                allBtns.forEach((b, i) => {
+                    if(q.options[i].isCorrect) b.classList.add('border-green-500', 'bg-green-50');
+                });
+            }
+
+            const feedback = document.getElementById('feedback-area');
+            const rationale = document.getElementById('rationale-text');
+            feedback.classList.remove('hidden');
+            feedback.classList.toggle('bg-green-50', opt.isCorrect);
+            feedback.classList.toggle('border-green-500', opt.isCorrect);
+            feedback.classList.toggle('bg-red-50', !opt.isCorrect);
+            feedback.classList.toggle('border-red-500', !opt.isCorrect);
+            rationale.innerText = opt.rationale;
+
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function toggleHint() {
+            document.getElementById('hint-text').classList.toggle('hidden');
+        }
+
+        function nextQuestion() {
+            currentQ++;
+            if(currentQ < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            document.getElementById('question-block').classList.add('hidden');
+            document.getElementById('results-block').classList.remove('hidden');
+            document.getElementById('score-display').innerText = score;
+        }
+
+        function restartQuiz() {
+            currentQ = 0;
+            score = 0;
+            document.getElementById('question-block').classList.remove('hidden');
+            document.getElementById('results-block').classList.add('hidden');
+            loadQuestion();
+        }
+
+        window.onload = loadQuestion;
+    </script>
+</body>
+</html>
+
+
+
+

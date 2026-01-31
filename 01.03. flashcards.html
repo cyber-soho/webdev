@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UX/UI Foundations Flashcards</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .preserve-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        .card-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .flipped {
+            transform: rotateY(180deg);
+        }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-900 min-h-screen flex flex-col font-sans">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-stone-200 py-6 px-4 shadow-sm">
+        <div class="container mx-auto max-w-4xl text-center">
+            <h1 class="text-3xl font-bold text-stone-800">UX/UI Foundations</h1>
+            <p class="text-stone-500 mt-2">Module 1 Mastery Flashcards</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto max-w-4xl px-4 py-12">
+        
+        <div class="flex flex-col items-center">
+            
+            <!-- Progress Bar -->
+            <div class="w-full max-w-md bg-stone-200 rounded-full h-2 mb-8 overflow-hidden">
+                <div id="progress-bar" class="bg-indigo-600 h-full transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- Flashcard Container -->
+            <div id="card-trigger" class="perspective-1000 w-full max-w-lg aspect-[3/2] cursor-pointer">
+                <div id="card-inner" class="card-inner preserve-3d relative w-full h-full shadow-xl rounded-2xl">
+                    
+                    <!-- Front -->
+                    <div class="backface-hidden absolute inset-0 bg-white border-2 border-stone-100 rounded-2xl flex items-center justify-center p-8 text-center">
+                        <h2 id="card-front" class="text-2xl font-semibold text-indigo-900 leading-tight"></h2>
+                        <span class="absolute bottom-4 right-6 text-xs text-stone-400 font-medium tracking-widest uppercase">Front</span>
+                    </div>
+                    
+                    <!-- Back -->
+                    <div class="backface-hidden rotate-y-180 absolute inset-0 bg-indigo-50 border-2 border-indigo-100 rounded-2xl flex items-center justify-center p-8 text-center">
+                        <p id="card-back" class="text-lg text-indigo-800 font-medium leading-relaxed"></p>
+                        <span class="absolute bottom-4 left-6 text-xs text-indigo-400 font-medium tracking-widest uppercase">Back</span>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="mt-12 flex items-center gap-6">
+                <button id="prev-btn" class="p-3 rounded-full bg-white border border-stone-200 hover:bg-stone-100 transition-colors disabled:opacity-30">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                
+                <div class="text-stone-500 font-medium tabular-nums">
+                    <span id="current-index">1</span> / <span id="total-count">0</span>
+                </div>
+
+                <button id="next-btn" class="p-3 rounded-full bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-30">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+            </div>
+
+            <p class="mt-6 text-sm text-stone-400 italic">Tip: Click the card to flip, or use arrow keys</p>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-stone-900 text-stone-400 py-6 mt-8">
+        <div class="container mx-auto text-center text-sm">
+            <p style="display:flex; justify-content:center; align-items:center; gap:8px; margin:0;">
+                <img src="cyber_soho.png"
+                     alt="Cyber Soho"
+                     onerror="this.style.display='none'"
+                     style="height:32px;">
+                <span>Educational Hub &copy; 2026 | Schiller International University</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        const cardsData = [
+            { front: "User Experience Design (UXD)", back: "The process of creating products that provide meaningful and relevant experiences to users, encompassing branding, design, usability, and function." },
+            { front: "The primary role of code in UXD", back: "Code is a tool used to solve human problems and make people's lives easier." },
+            { front: "Five Key Components of UXD", back: "User Research, Information Architecture (IA), Interaction Design (IxD), Visual Design, and Usability Testing." },
+            { front: "User Research", back: "The process of understanding who users are and what they need through methods like interviews and surveys." },
+            { front: "Information Architecture (IA)", back: "The practice of organizing and structuring content in a logical, findable way, similar to organizing a library." },
+            { front: "Interaction Design (IxD)", back: "Defining how users interact with a product, such as tapping, swiping, or clicking." },
+            { front: "Visual Design in UX", back: "Making a product look good purposefully to support usability and branding." },
+            { front: "Usability Testing", back: "Validating that a design actually works for real people by observing them use it." },
+            { front: "User Interface (UI) in the Restaurant Analogy", back: "The menu design, plate presentation, décor, and lighting (what you see)." },
+            { front: "User Experience (UX) in the Restaurant Analogy", back: "The entire dining experience, including service speed, waiter attentiveness, and ease of seating." },
+            { front: "User-Centered Design (UCD) Process Stages", back: "1. Research & Discovery, 2. Define & Ideate, 3. Prototype & Design, 4. Test & Iterate." },
+            { front: "Purpose of User Personas", back: "To help teams empathize with and design for real users by creating concrete profiles based on research data." },
+            { front: "Benefit of Prototyping", back: "Allows testing of ideas cheaply and quickly before committing to expensive code development." },
+            { front: "Dropbox's 'Video Prototype' Strategy", back: "Creating a demo video instead of the full product to validate market demand and secure funding." },
+            { front: "A/B Testing", back: "Comparing two versions of a design (Control vs. Test) to see which performs better with real users." },
+            { front: "Usability Heuristic: Visibility of System Status", back: "The system should always keep users informed about what is happening through appropriate feedback within reasonable time." },
+            { front: "Usability Heuristic: Match Between System and Real World", back: "The system should speak the user's language using familiar words, phrases, and concepts rather than system-oriented terms." },
+            { front: "Accessibility Principle: Perceivable", back: "Information must be presentable to users in ways they can perceive (e.g., alt text for images, captions for video)." },
+            { front: "Accessibility Principle: Operable", back: "Interface components must be usable by everyone (e.g., keyboard navigation, sufficient time to read)." },
+            { front: "Accessibility Principle: Understandable", back: "Information and operation must be clear (e.g., readable text, predictable navigation, helpful error messages)." },
+            { front: "Accessibility Principle: Robust", back: "Content must be compatible with current and future user agents, including assistive technologies like screen readers." },
+            { front: "The 'Curb Cut Effect'", back: "The phenomenon where features designed for people with disabilities (like sidewalk ramps) end up benefiting everyone." },
+            { front: "Affordance in UX", back: "Visual cues that make it obvious how a user can interact with an object (e.g., a button looking clickable)." },
+            { front: "Empty State Design", back: "Designing friendly, helpful screens for when no data is present (e.g., an empty shopping cart) to guide the user." },
+            { front: "Wireframes vs. Mockups", back: "Wireframes are low-fidelity blueprints focusing on structure/flow; mockups are high-fidelity visual designs showing colors/fonts." }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        const cardInner = document.getElementById('card-inner');
+        const cardFront = document.getElementById('card-front');
+        const cardBack = document.getElementById('card-back');
+        const currentIdxEl = document.getElementById('current-index');
+        const totalCountEl = document.getElementById('total-count');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const trigger = document.getElementById('card-trigger');
+
+        function updateUI() {
+            isFlipped = false;
+            cardInner.classList.remove('flipped');
+            
+            cardFront.textContent = cardsData[currentIndex].front;
+            cardBack.textContent = cardsData[currentIndex].back;
+            
+            currentIdxEl.textContent = currentIndex + 1;
+            totalCountEl.textContent = cardsData.length;
+            
+            prevBtn.disabled = currentIndex === 0;
+            nextBtn.disabled = currentIndex === cardsData.length - 1;
+            
+            const progress = ((currentIndex + 1) / cardsData.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        trigger.addEventListener('click', () => {
+            isFlipped = !isFlipped;
+            cardInner.classList.toggle('flipped');
+        });
+
+        prevBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentIndex > 0) {
+                currentIndex--;
+                updateUI();
+            }
+        });
+
+        nextBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (currentIndex < cardsData.length - 1) {
+                currentIndex++;
+                updateUI();
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') nextBtn.click();
+            if (e.key === 'ArrowLeft') prevBtn.click();
+            if (e.key === ' ' || e.key === 'Enter') trigger.click();
+        });
+
+        window.onload = updateUI;
+    </script>
+</body>
+</html>
+
+
+
