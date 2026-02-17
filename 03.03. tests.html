@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 03: Usability Study Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <style>
+        /* Flip Card Styles */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        .flip-card-inner {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        
+        /* Tab Transitions */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Quiz Styles */
+        .option-btn.correct {
+            background-color: #d1fae5;
+            border-color: #10b981;
+            color: #065f46;
+        }
+        .option-btn.incorrect {
+            background-color: #fee2e2;
+            border-color: #ef4444;
+            color: #991b1b;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-slate-800 font-sans min-h-screen">
+
+    <!-- Header -->
+    <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="fas fa-graduation-cap text-amber-500"></i>
+                Module 03: Usability Essentials
+            </h1>
+            <div class="flex space-x-1 bg-slate-800 p-1 rounded-lg">
+                <button onclick="switchTab('flashcards')" id="tab-flashcards" class="px-4 py-2 rounded-md text-sm font-medium transition-colors bg-amber-500 text-white shadow">
+                    <i class="fas fa-clone mr-2"></i>Flashcards
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-quiz" class="px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-white hover:bg-slate-700">
+                    <i class="fas fa-question-circle mr-2"></i>Quiz
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-8">
+
+        <!-- FLASHCARDS TAB -->
+        <div id="content-flashcards" class="tab-content active">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Study Flashcards (25)</h2>
+                <div class="text-sm text-slate-500">
+                    <span class="bg-amber-100 text-amber-800 px-2 py-1 rounded text-xs font-bold mr-2">TIP</span>
+                    Click card to flip
+                </div>
+            </div>
+
+            <!-- Grid of Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="flashcard-grid">
+                <!-- Cards injected by JS -->
+            </div>
+        </div>
+
+        <!-- QUIZ TAB -->
+        <div id="content-quiz" class="tab-content">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-slate-800">Practice Quiz (10 Questions)</h2>
+                <button onclick="resetQuiz()" class="text-sm text-amber-600 hover:text-amber-700 font-medium underline">
+                    Reset Quiz
+                </button>
+            </div>
+
+            <div class="space-y-8" id="quiz-container">
+                <!-- Questions injected by JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-12 py-8 text-center text-sm text-gray-500">
+        <p>Interactive Study Tool • Module 03 Usability</p>
+    </footer>
+
+    <script>
+        // --- DATA ---
+        
+        const flashcards = [
+            { front: "ISO 9241-11 definition of Usability", back: "The extent to which a product can be used by specified users to achieve specified goals with effectiveness, efficiency, and satisfaction in a specified context of use." },
+            { front: "Return on Investment (ROI) for UX", back: "According to Nielsen Norman Group research, $1 invested in UX returns between $10 and $100." },
+            { front: "The 5 Pillars of Usability", back: "Learnability, Efficiency, Memorability, Errors, and Satisfaction." },
+            { front: "Learnability (Usability Pillar)", back: "How easy it is for users to accomplish basic tasks on their first visit." },
+            { front: "Efficiency (Usability Pillar)", back: "How quickly a returning user can perform tasks once they have learned the design." },
+            { front: "Formula for Efficiency Gain", back: "$$Efficiency Gain (\\%) = (1 - \\frac{keystrokes_{with feature}}{keystrokes_{without}}) \\times 100$$" },
+            { front: "Memorability (Usability Pillar)", back: "How easily users can re-establish proficiency when returning to the product after a period of not using it." },
+            { front: "Three layers of good error handling", back: "1. Prevent (disable invalid actions), 2. Reduce severity (allow undo), 3. Guide recovery (explain the fix)." },
+            { front: "Satisfaction (Usability Pillar)", back: "The subjective, emotional response to using the product, influenced by visual polish and microinteractions." },
+            { front: "Heuristic #1: Visibility of system status", back: "Always show users what is happening right now (e.g., progress bars, loading spinners)." },
+            { front: "Heuristic #3: User control and freedom", back: "Always provide an 'emergency exit' like Undo, Redo, or Back buttons to leave unwanted states." },
+            { front: "Heuristic #5: Error prevention", back: "Eliminate error-prone conditions or check for them and present users with a confirmation option before they commit to the action." },
+            { front: "Heuristic #6: Recognition over recall", back: "Minimize the user's memory load by making elements, actions, and options visible." },
+            { front: "User-Centered Design (UCD) Cycle Steps", back: "1. Understand the users, 2. Specify requirements, 3. Design solutions, 4. Evaluate with real users." },
+            { front: "Persona in UCD", back: "A fictional, data-informed character representing a real user segment, used to drive design decisions." },
+            { front: "Accessibility (a11y) definition", back: "Making products usable by people with disabilities; a subset of usability and often a legal requirement." },
+            { front: "WCAG POUR Framework", back: "Perceivable, Operable, Understandable, Robust." },
+            { front: "WCAG AA Minimum Contrast Ratio", back: "4.5:1 for normal text." },
+            { front: "The Five-User Rule (Nielsen)", back: "Testing with just 5 users reveals approximately 85% of usability problems." },
+            { front: "Usability Problem Severity Formula", back: "$$Severity = Frequency \\times Impact$$" },
+            { front: "Dark Pattern: Roach Motel", back: "A design where it is easy to get into a situation (like a subscription) but hard to get out of it." },
+            { front: "Dark Pattern: Confirmshaming", back: "Guilt-tripping users into opting into something via manipulative copy (e.g., 'No thanks, I hate saving money')." },
+            { front: "Dark Pattern: Misdirection", back: "Focusing attention on one thing (like a giant 'Accept' button) to distract from another option (like a tiny 'Reject' link)." },
+            { front: "Heuristic #8: Aesthetic and minimalist design", back: "Interfaces should not contain information which is irrelevant or rarely needed; every extra unit of information competes with the relevant units." },
+            { front: "Primary goal of Usability Testing", back: "To watch real people try to use the product, observe where they struggle, and fix those specific issues." }
+        ];
+
+        const quizData = [
+            {
+                question: "A developer argues that a new application is 'usable' simply because the code is bug-free and the interface looks modern and beautiful. According to the ISO 9241-11 definition, why might this be flawed?",
+                options: [
+                    { text: "Usability is primarily defined by subjective emotional response.", rationale: "Satisfaction is only one part; effectiveness and efficiency are equally critical.", correct: false },
+                    { text: "Usability requires users to achieve goals with effectiveness, efficiency, and satisfaction.", rationale: "A beautiful, bug-free app fails if users can't actually achieve their goals efficiently.", correct: true },
+                    { text: "Usability is inversely proportional to code complexity.", rationale: "Code complexity is not part of the ISO definition.", correct: false },
+                    { text: "Usability is strictly about system load speed.", rationale: "Speed is part of efficiency, but not the whole picture.", correct: false }
+                ]
+            },
+            {
+                question: "A user visits a site after six months and immediately knows where to find order history because the icon is in a standard location. Which pillar is this?",
+                options: [
+                    { text: "Efficiency", rationale: "Efficiency is about speed for current users, not returning users.", correct: false },
+                    { text: "Memorability", rationale: "Memorability measures how easily proficiency is re-established after a break.", correct: true },
+                    { text: "Errors", rationale: "This isn't about error recovery.", correct: false },
+                    { text: "Satisfaction", rationale: "This is a cognitive recall task, not an emotional one.", correct: false }
+                ]
+            },
+            {
+                question: "According to Nielsen's 'Five-User Rule', what result should you expect testing with exactly 5 participants?",
+                options: [
+                    { text: "Find approx 50% of problems.", rationale: "Discovery rate is much higher (approx 85%).", correct: false },
+                    { text: "Uncover about 85% of usability problems.", rationale: "Diminishing returns set in heavily after 5 users.", correct: true },
+                    { text: "Only find critical errors.", rationale: "You find both major and minor errors early on.", correct: false },
+                    { text: "Data will be statistically insignificant.", rationale: "Qualitative testing doesn't aim for statistical significance.", correct: false }
+                ]
+            },
+            {
+                question: "Accidentally deleting a file with no confirmation or undo violates which heuristics?",
+                options: [
+                    { text: "User Control & Freedom; Error Prevention", rationale: "Failed to prevent the error and failed to provide an exit (undo).", correct: true },
+                    { text: "Visibility of System Status", rationale: "Status was likely shown (file gone), but control was missing.", correct: false },
+                    { text: "Consistency & Standards", rationale: "The primary failure is the destructive loss, not just inconsistency.", correct: false },
+                    { text: "Recognition over Recall", rationale: "Not a memory issue.", correct: false }
+                ]
+            },
+            {
+                question: "Which scenario describes a violation of 'Match between system & real world'?",
+                options: [
+                    { text: "Hamburger menu on desktop.", rationale: "This is a standard/consistency issue.", correct: false },
+                    { text: "Generic 'Error 404: Object Null' message.", rationale: "Uses system jargon instead of human language.", correct: true },
+                    { text: "Video player lacks volume slider.", rationale: "User control issue.", correct: false },
+                    { text: "Form clears data on error.", rationale: "Error recovery issue.", correct: false }
+                ]
+            },
+            {
+                question: "In the UCD cycle, what critical step occurs after 'Understand users' and before 'Design'?",
+                options: [
+                    { text: "Evaluate with real users", rationale: "Evaluation comes after design.", correct: false },
+                    { text: "Specify requirements", rationale: "Needs must be translated to requirements before designing.", correct: true },
+                    { text: "Create Personas", rationale: "Personas are part of Understanding.", correct: false },
+                    { text: "Launch MVP", rationale: "Launch is the very end.", correct: false }
+                ]
+            },
+            {
+                question: "Light gray text on white background violates which POUR principle? (WCAG AA)",
+                options: [
+                    { text: "Understandable; 3:1", rationale: "Issue is visibility, not comprehension.", correct: false },
+                    { text: "Perceivable; 4.5:1", rationale: "If users can't see it, they can't perceive it. 4.5:1 is the AA standard.", correct: true },
+                    { text: "Robust; 7:1", rationale: "Robustness is about code.", correct: false },
+                    { text: "Operable; 4.5:1", rationale: "Operability is about navigation.", correct: false }
+                ]
+            },
+            {
+                question: "Easy to signup, impossible to cancel. Which Dark Pattern?",
+                options: [
+                    { text: "Confirmshaming", rationale: "Confirmshaming uses guilt.", correct: false },
+                    { text: "Misdirection", rationale: "Misdirection highlights the wrong thing.", correct: false },
+                    { text: "The Roach Motel", rationale: "Easy to check in, hard to check out.", correct: true },
+                    { text: "Forced Continuity", rationale: "Refers to billing without warning.", correct: false }
+                ]
+            },
+            {
+                question: "Which efficiency design lever helps expert users the most?",
+                options: [
+                    { text: "Progressive disclosure", rationale: "Helps beginners.", correct: false },
+                    { text: "Predictable navigation", rationale: "Helps memorability.", correct: false },
+                    { text: "Accelerators (shortcuts/batch actions)", rationale: "Reduces steps for those who know the system.", correct: true },
+                    { text: "Visible system status", rationale: "General heuristic.", correct: false }
+                ]
+            },
+            {
+                question: "Why is 'Confirmshaming' a dark pattern?",
+                options: [
+                    { text: "Hides unsubscribe link.", rationale: "That's obstruction.", correct: false },
+                    { text: "Uses manipulative emotional language.", rationale: "Guilts the user (e.g., 'I hate saving money').", correct: true },
+                    { text: "Adds items to cart automatically.", rationale: "That's sneaking.", correct: false },
+                    { text: "Forces account creation.", rationale: "That's forced action.", correct: false }
+                ]
+            }
+        ];
+
+        // --- APP LOGIC ---
+
+        function switchTab(tabId) {
+            // Hide all content
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            // Reset buttons
+            document.getElementById('tab-flashcards').className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-white hover:bg-slate-700";
+            document.getElementById('tab-quiz').className = "px-4 py-2 rounded-md text-sm font-medium transition-colors text-slate-300 hover:text-white hover:bg-slate-700";
+            
+            // Activate selected
+            document.getElementById('content-' + tabId).classList.add('active');
+            document.getElementById('tab-' + tabId).className = "px-4 py-2 rounded-md text-sm font-medium transition-colors bg-amber-500 text-white shadow";
+        }
+
+        function renderFlashcards() {
+            const grid = document.getElementById('flashcard-grid');
+            flashcards.forEach((card, index) => {
+                const cardHtml = `
+                    <div class="flip-card h-64 w-full perspective-1000 cursor-pointer group" onclick="this.classList.toggle('flipped')">
+                        <div class="flip-card-inner relative w-full h-full transition-transform duration-500 transform-style-3d shadow-md rounded-xl">
+                            <!-- Front -->
+                            <div class="absolute w-full h-full bg-white border border-slate-200 rounded-xl p-6 flex flex-col justify-center items-center text-center backface-hidden z-20">
+                                <span class="text-xs font-bold text-amber-500 uppercase tracking-widest mb-3">Card ${index + 1}</span>
+                                <h3 class="text-lg font-bold text-slate-800">${card.front}</h3>
+                                <p class="text-xs text-slate-400 mt-4 font-medium">(Click to Flip)</p>
+                            </div>
+                            <!-- Back -->
+                            <div class="absolute w-full h-full bg-slate-800 rounded-xl p-6 flex flex-col justify-center items-center text-center backface-hidden rotate-y-180 z-10">
+                                <p class="text-white text-md leading-relaxed">${card.back}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += cardHtml;
+            });
+            // Re-render mathjax if needed
+            if(window.MathJax) MathJax.typeset();
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            
+            quizData.forEach((q, qIndex) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = "bg-white p-6 rounded-xl border border-gray-200 shadow-sm";
+                
+                let optionsHtml = '';
+                q.options.forEach((opt, oIndex) => {
+                    optionsHtml += `
+                        <button onclick="checkAnswer(${qIndex}, ${oIndex}, this)" 
+                            class="option-btn w-full text-left p-3 rounded-lg border border-gray-200 hover:bg-gray-50 transition-all mb-2 text-sm text-slate-700 font-medium relative group">
+                            <span class="inline-block w-6 h-6 rounded-full bg-gray-100 text-gray-500 text-center leading-6 mr-3 text-xs border border-gray-300 group-hover:border-amber-400 group-hover:text-amber-500">${String.fromCharCode(65+oIndex)}</span>
+                            ${opt.text}
+                            <div class="rationale hidden mt-2 text-xs p-2 rounded bg-opacity-20">
+                                ${opt.rationale}
+                            </div>
+                        </button>
+                    `;
+                });
+
+                qDiv.innerHTML = `
+                    <h3 class="font-bold text-lg text-slate-900 mb-4"><span class="text-amber-500 mr-2">${qIndex + 1}.</span> ${q.question}</h3>
+                    <div class="space-y-2">
+                        ${optionsHtml}
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+        }
+
+        function checkAnswer(qIndex, oIndex, btnElement) {
+            // Disable all buttons in this question group
+            const parentDiv = btnElement.parentElement;
+            const buttons = parentDiv.querySelectorAll('.option-btn');
+            const isCorrect = quizData[qIndex].options[oIndex].correct;
+
+            buttons.forEach((btn, idx) => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-gray-50');
+                
+                // Show Rationale for clicked
+                if (btn === btnElement) {
+                   const rationaleDiv = btn.querySelector('.rationale');
+                   rationaleDiv.classList.remove('hidden');
+                   
+                   if (isCorrect) {
+                       btn.classList.add('correct');
+                       rationaleDiv.classList.add('bg-green-100', 'text-green-800');
+                       // Add checkmark icon
+                       const badge = btn.querySelector('span');
+                       badge.innerHTML = '<i class="fas fa-check"></i>';
+                       badge.className = "inline-block w-6 h-6 rounded-full bg-green-500 text-white text-center leading-6 mr-3 text-xs border border-green-600";
+                   } else {
+                       btn.classList.add('incorrect');
+                       rationaleDiv.classList.add('bg-red-100', 'text-red-800');
+                       // Add x icon
+                       const badge = btn.querySelector('span');
+                       badge.innerHTML = '<i class="fas fa-times"></i>';
+                       badge.className = "inline-block w-6 h-6 rounded-full bg-red-500 text-white text-center leading-6 mr-3 text-xs border border-red-600";
+                   }
+                }
+                
+                // If the user clicked wrong, highlight the correct one too
+                if (!isCorrect && quizData[qIndex].options[idx].correct) {
+                    btn.classList.add('border-green-500', 'bg-green-50');
+                    const badge = btn.querySelector('span');
+                    badge.innerHTML = '<i class="fas fa-check"></i>';
+                    badge.className = "inline-block w-6 h-6 rounded-full bg-green-500 text-white text-center leading-6 mr-3 text-xs border border-green-600";
+                }
+            });
+        }
+
+        function resetQuiz() {
+            renderQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize
+        window.onload = function() {
+            renderFlashcards();
+            renderQuiz();
+        };
+
+    </script>
+</body>
+</html>
+
+

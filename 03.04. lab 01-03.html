@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Project: Library Web App UX/UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Merriweather:ital,wght@0,400;0,700;1,400&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+            color: #44403c; /* stone-700 */
+        }
+
+        h1, h2, h3, .serif {
+            font-family: 'Merriweather', serif;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 300px;
+            max-height: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+
+        .tab-active {
+            border-bottom: 2px solid #57534e; /* stone-600 */
+            color: #292524; /* stone-800 */
+            font-weight: 600;
+        }
+
+        .tab-inactive {
+            color: #a8a29e; /* stone-400 */
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Hide scrollbar for clean horizontal scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Warm Grey) with Muted Accents (Sage, Clay, Slate) to reflect a professional, academic, yet approachable library atmosphere. -->
+    <!-- Application Structure Plan: The app uses a Dashboard Layout. 
+         1. Header: Context and high-level project goals.
+         2. Scenario & Timeline: Sets the stage (The "Why" and "When").
+         3. Task Navigator: A tabbed interface for the three main tasks (UX, UI, Usability) to prevent information overload and allow focused study of each module.
+         4. Workload & Grading: Interactive visualizations to help students plan their time and understand success criteria.
+         5. Submission Checklist: A functional tool to finalize the work. 
+         This structure transforms a linear document into a functional project management tool. -->
+    <!-- Visualization & Content Choices: 
+         1. Timeline (HTML/CSS Grid): Visualizes the semester workflow clearly.
+         2. Workload Chart (Doughnut Chart): Breaks down the 6-hour estimate visually to show where effort should be focused.
+         3. Interactive Heuristics (Card Grid): Replaces a dry list with clickable cards to encourage active learning of Nielsen's principles.
+         4. Rubric Calculator (JS Logic): Allows students to simulate grades, making the evaluation criteria concrete. 
+         CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="antialiased min-h-screen flex flex-col">
+
+    <!-- Navigation / Header -->
+    <header class="bg-white border-b border-stone-200 sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold text-stone-800 serif">WAD Project</span>
+                <span class="hidden sm:inline-block px-2 py-1 bg-stone-100 text-xs font-semibold rounded text-stone-600">Modules 01-03</span>
+            </div>
+            <nav class="flex gap-4 text-sm font-medium">
+                <button onclick="scrollToSection('scenario')" class="hover:text-stone-900 transition-colors">Scenario</button>
+                <button onclick="scrollToSection('tasks')" class="hover:text-stone-900 transition-colors">Tasks</button>
+                <button onclick="scrollToSection('evaluation')" class="hover:text-stone-900 transition-colors">Evaluation</button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow">
+        
+        <!-- Hero / Intro -->
+        <section class="bg-stone-50 py-12 border-b border-stone-200">
+            <div class="max-w-4xl mx-auto px-4 text-center">
+                <h1 class="text-3xl md:text-5xl font-bold text-stone-900 mb-4">Foundations of UX & UI</h1>
+                <p class="text-lg text-stone-600 mb-8 max-w-2xl mx-auto">
+                    Welcome to the first phase of your semester-long continuous project. 
+                    Your mission is to design the human side of a modern web application for a regional public library network.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <div class="bg-white px-6 py-3 rounded-lg shadow-sm border border-stone-200">
+                        <span class="block text-xs text-stone-500 uppercase tracking-wide">Workload</span>
+                        <span class="text-xl font-bold text-stone-800">≈ 6 Hours</span>
+                    </div>
+                    <div class="bg-white px-6 py-3 rounded-lg shadow-sm border border-stone-200">
+                        <span class="block text-xs text-stone-500 uppercase tracking-wide">Deliverable</span>
+                        <span class="text-xl font-bold text-stone-800">5 Page Report</span>
+                    </div>
+                    <div class="bg-white px-6 py-3 rounded-lg shadow-sm border border-stone-200">
+                        <span class="block text-xs text-stone-500 uppercase tracking-wide">Focus</span>
+                        <span class="text-xl font-bold text-stone-800">Research & Design</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scenario Context -->
+        <section id="scenario" class="py-12 max-w-5xl mx-auto px-4 sm:px-6">
+            <div class="grid md:grid-cols-2 gap-8 items-start">
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800 mb-4 serif">The Scenario</h2>
+                    <p class="text-stone-600 mb-4 leading-relaxed">
+                        You are a junior developer at a consultancy hired by a <strong>Regional Public Library Network</strong>. 
+                        They need to modernise their outdated systems.
+                    </p>
+                    <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                        <h3 class="font-bold text-stone-800 mb-2">Your Core Objectives</h3>
+                        <ul class="space-y-2 text-stone-600 text-sm">
+                            <li class="flex items-start">
+                                <span class="mr-2 text-green-600">●</span>
+                                Create a single web app for browsing, reserving, and events.
+                            </li>
+                            <li class="flex items-start">
+                                <span class="mr-2 text-green-600">●</span>
+                                Focus purely on the <strong>human user</strong> (Modules 01-03).
+                            </li>
+                            <li class="flex items-start">
+                                <span class="mr-2 text-green-600">●</span>
+                                Ignore code for now; prioritize <strong>Why</strong> (UX) and <strong>Look</strong> (UI).
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Project Timeline Viz -->
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-800 mb-4 serif">Project Roadmap</h2>
+                    <p class="text-stone-500 text-sm mb-4">This document covers the highlighted phase.</p>
+                    <div class="relative pl-4 border-l-2 border-stone-200 space-y-6">
+                        <div class="relative">
+                            <span class="absolute -left-[21px] top-1 h-4 w-4 rounded-full bg-stone-800 border-2 border-white"></span>
+                            <h4 class="font-bold text-stone-900">Module 01-03: Foundations</h4>
+                            <p class="text-sm text-stone-600">UX Analysis, UI Prototyping, Usability Planning. (Current Step)</p>
+                        </div>
+                        <div class="relative opacity-50">
+                            <span class="absolute -left-[21px] top-1 h-4 w-4 rounded-full bg-stone-300 border-2 border-white"></span>
+                            <h4 class="font-bold text-stone-900">Midterm Assessment</h4>
+                            <p class="text-sm text-stone-600">Comprehensive Exam</p>
+                        </div>
+                        <div class="relative opacity-50">
+                            <span class="absolute -left-[21px] top-1 h-4 w-4 rounded-full bg-stone-300 border-2 border-white"></span>
+                            <h4 class="font-bold text-stone-900">Module 04: Front-End</h4>
+                            <p class="text-sm text-stone-600">HTML5, CSS, JS Implementation.</p>
+                        </div>
+                        <div class="relative opacity-50">
+                            <span class="absolute -left-[21px] top-1 h-4 w-4 rounded-full bg-stone-300 border-2 border-white"></span>
+                            <h4 class="font-bold text-stone-900">Module 05: Back-End & Security</h4>
+                            <p class="text-sm text-stone-600">Server-side logic, testing, final delivery.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Task Explorer -->
+        <section id="tasks" class="bg-white py-12 border-y border-stone-200">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6">
+                
+                <div class="text-center max-w-2xl mx-auto mb-10">
+                    <h2 class="text-3xl font-bold text-stone-800 mb-3 serif">Task Explorer</h2>
+                    <p class="text-stone-600">
+                        Explore the three core tasks required for this submission. Click the tabs below to view detailed requirements, tools, and interactive guides for each section.
+                    </p>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex justify-center mb-8 border-b border-stone-200 overflow-x-auto no-scrollbar">
+                    <button id="tab-ux" onclick="switchTab('ux')" class="tab-active px-6 py-3 text-sm md:text-base whitespace-nowrap transition-colors">Task 1: UX Design</button>
+                    <button id="tab-ui" onclick="switchTab('ui')" class="tab-inactive px-6 py-3 text-sm md:text-base whitespace-nowrap hover:text-stone-600 transition-colors">Task 2: UI Design</button>
+                    <button id="tab-usability" onclick="switchTab('usability')" class="tab-inactive px-6 py-3 text-sm md:text-base whitespace-nowrap hover:text-stone-600 transition-colors">Task 3: Usability</button>
+                </div>
+
+                <!-- Task 1 Content: UX -->
+                <div id="content-ux" class="animate-fade-in block">
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="md:col-span-2 space-y-6">
+                            <div class="bg-stone-50 p-6 rounded-lg border border-stone-100">
+                                <h3 class="text-xl font-bold text-stone-800 mb-2">1.1 Define Your Users (Personas)</h3>
+                                <p class="text-stone-600 mb-4 text-sm">Create <strong>at least three</strong> distinct user profiles based on realistic assumptions. Cite at least two secondary sources.</p>
+                                <div class="grid sm:grid-cols-2 gap-4">
+                                    <div class="bg-white p-4 rounded shadow-sm">
+                                        <h4 class="font-semibold text-stone-800 text-sm mb-2">Persona Checklist</h4>
+                                        <ul class="text-xs text-stone-600 space-y-1">
+                                            <li>☐ Name & Age (Plausible)</li>
+                                            <li>☐ Background & Digital Literacy</li>
+                                            <li>☐ Primary Goal</li>
+                                            <li>☐ Frustrations with current solutions</li>
+                                            <li>☐ Key Quote</li>
+                                        </ul>
+                                    </div>
+                                    <div class="bg-white p-4 rounded shadow-sm flex flex-col justify-center items-center text-center">
+                                        <div class="text-2xl mb-1">🔍</div>
+                                        <p class="text-xs text-stone-500">"Why does this person need this?"</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-stone-50 p-6 rounded-lg border border-stone-100">
+                                <h3 class="text-xl font-bold text-stone-800 mb-2">1.2 User Journey Map</h3>
+                                <p class="text-stone-600 mb-4 text-sm">Choose <strong>one persona</strong> and map their flow: Awareness -> Search -> Action.</p>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-xs text-left">
+                                        <thead class="bg-stone-200 text-stone-700">
+                                            <tr>
+                                                <th class="p-2 rounded-tl">Stage</th>
+                                                <th class="p-2">User Action</th>
+                                                <th class="p-2">Thought/Emotion</th>
+                                                <th class="p-2">Pain Point</th>
+                                                <th class="p-2 rounded-tr">Opportunity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-stone-100">
+                                            <tr>
+                                                <td class="p-2 font-medium">Awareness</td>
+                                                <td class="p-2 text-stone-500">Searches for book</td>
+                                                <td class="p-2 italic text-stone-500">"Is it in stock?"</td>
+                                                <td class="p-2 text-red-500">Hard to find site</td>
+                                                <td class="p-2 text-green-600">Improve SEO</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="p-2 text-center text-stone-400" colspan="5">... Continue the map in your report ...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar for Task 1 -->
+                        <div class="bg-stone-800 text-stone-100 p-6 rounded-lg h-fit">
+                            <h4 class="font-bold text-lg mb-4 text-stone-50">Tools & Resources</h4>
+                            <ul class="space-y-3 text-sm text-stone-300">
+                                <li class="hover:text-white transition-colors cursor-pointer">➜ Nielsen Norman Group (Research)</li>
+                                <li class="hover:text-white transition-colors cursor-pointer">➜ draw.io (Diagrams)</li>
+                                <li class="hover:text-white transition-colors cursor-pointer">➜ Penpot (Design)</li>
+                            </ul>
+                            <div class="mt-8 p-4 bg-stone-700 rounded text-xs leading-relaxed">
+                                <strong>Tip:</strong> Don't just invent users. Base them on logic. Why would an elderly user struggle? Why would a student be impatient?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 2 Content: UI -->
+                <div id="content-ui" class="hidden">
+                    <div class="grid md:grid-cols-3 gap-8">
+                        <div class="md:col-span-2 space-y-6">
+                            
+                            <!-- Step 2.1 -->
+                            <div class="bg-stone-50 p-6 rounded-lg border border-stone-100">
+                                <h3 class="text-xl font-bold text-stone-800 mb-4">2.1 Design System Foundation</h3>
+                                <div class="grid sm:grid-cols-3 gap-4">
+                                    <div class="bg-white p-4 rounded border border-stone-200 text-center">
+                                        <span class="block font-bold text-stone-800 mb-1">Typography</span>
+                                        <p class="text-xs text-stone-500">Primary (Headings) + Secondary (Body). Focus on readability.</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded border border-stone-200 text-center">
+                                        <span class="block font-bold text-stone-800 mb-1">Colour</span>
+                                        <p class="text-xs text-stone-500">Brand, Accent, Neutral, Surface, Semantic. Check Contrast (4.5:1).</p>
+                                    </div>
+                                    <div class="bg-white p-4 rounded border border-stone-200 text-center">
+                                        <span class="block font-bold text-stone-800 mb-1">Grid</span>
+                                        <p class="text-xs text-stone-500">Base spacing unit (e.g., 8px) & Column structure.</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2.2 -->
+                            <div class="bg-stone-50 p-6 rounded-lg border border-stone-100">
+                                <h3 class="text-xl font-bold text-stone-800 mb-4">2.2 Wireframes (Lo-Fi)</h3>
+                                <p class="text-sm text-stone-600 mb-4">Sketch 3 key screens. Include 3-5 annotation notes per screen.</p>
+                                <div class="grid sm:grid-cols-3 gap-4">
+                                    <div class="aspect-[3/4] bg-white border-2 border-dashed border-stone-300 rounded flex items-center justify-center flex-col p-4 text-center">
+                                        <span class="font-bold text-stone-400">1. Home</span>
+                                        <span class="text-xs text-stone-400 mt-2">Landing Page</span>
+                                    </div>
+                                    <div class="aspect-[3/4] bg-white border-2 border-dashed border-stone-300 rounded flex items-center justify-center flex-col p-4 text-center">
+                                        <span class="font-bold text-stone-400">2. Search</span>
+                                        <span class="text-xs text-stone-400 mt-2">Results List</span>
+                                    </div>
+                                    <div class="aspect-[3/4] bg-white border-2 border-dashed border-stone-300 rounded flex items-center justify-center flex-col p-4 text-center">
+                                        <span class="font-bold text-stone-400">3. Detail</span>
+                                        <span class="text-xs text-stone-400 mt-2">Book Info & Reserve</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                         <!-- Sidebar for Task 2 -->
+                         <div class="bg-stone-800 text-stone-100 p-6 rounded-lg h-fit">
+                            <h4 class="font-bold text-lg mb-4 text-stone-50">Justification (Step 2.3)</h4>
+                            <p class="text-sm text-stone-300 mb-4">
+                                This is critical. You must write 8-12 sentences connecting UI choices to UX findings.
+                            </p>
+                            <div class="bg-stone-700 p-3 rounded text-xs italic">
+                                "Because Persona A has low vision, we chose a high-contrast sans-serif font..."
+                            </div>
+                            <div class="mt-6 border-t border-stone-600 pt-4">
+                                <h5 class="font-bold text-stone-50 text-sm mb-2">Tools</h5>
+                                <ul class="text-xs text-stone-400 space-y-1">
+                                    <li>• Google Fonts</li>
+                                    <li>• WebAIM Contrast Checker</li>
+                                    <li>• Figma / Penpot</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 3 Content: Usability -->
+                <div id="content-usability" class="hidden">
+                    <div class="mb-8 bg-stone-50 p-6 rounded-lg border border-stone-100">
+                        <h3 class="text-xl font-bold text-stone-800 mb-4">3.1 Nielsen's 10 Heuristics Evaluation</h3>
+                        <p class="text-sm text-stone-600 mb-6">Evaluate your wireframes against these 10 principles. Hover over a card to see the principle definition.</p>
+                        
+                        <!-- Interactive Heuristics Grid -->
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <!-- JS Generated Cards will go here, but purely static for now as per "single file" requirement simplicity without complex React -->
+                            <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">01</div>
+                                <div class="text-xs font-medium">System Status</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Keep users informed (e.g., loaders).</div>
+                            </div>
+                            <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">02</div>
+                                <div class="text-xs font-medium">Real World</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Speak the user's language.</div>
+                            </div>
+                            <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">03</div>
+                                <div class="text-xs font-medium">User Control</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Undo, redo, and exit options.</div>
+                            </div>
+                            <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">04</div>
+                                <div class="text-xs font-medium">Consistency</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Follow platform conventions.</div>
+                            </div>
+                            <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">05</div>
+                                <div class="text-xs font-medium">Error Prevention</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Design to stop errors before they happen.</div>
+                            </div>
+                             <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">06</div>
+                                <div class="text-xs font-medium">Recognition</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Minimize memory load.</div>
+                            </div>
+                             <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">07</div>
+                                <div class="text-xs font-medium">Flexibility</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Accelerators for experts.</div>
+                            </div>
+                             <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">08</div>
+                                <div class="text-xs font-medium">Aesthetic</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Minimalist design. No clutter.</div>
+                            </div>
+                             <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">09</div>
+                                <div class="text-xs font-medium">Recovery</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Help users diagnose and fix errors.</div>
+                            </div>
+                             <div class="heuristic-card bg-white p-3 rounded shadow-sm border border-stone-200 text-center cursor-help transition-all duration-200 hover:bg-stone-800 hover:text-white group relative">
+                                <div class="text-lg font-bold mb-1">10</div>
+                                <div class="text-xs font-medium">Help/Docs</div>
+                                <div class="hidden group-hover:block absolute top-full left-0 right-0 z-10 bg-stone-800 text-white text-xs p-2 rounded-b shadow-lg">Easy to search and concise documentation.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-stone-50 p-6 rounded-lg border border-stone-100">
+                        <h3 class="text-xl font-bold text-stone-800 mb-2">3.2 Usability Testing Plan</h3>
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <ul class="text-sm text-stone-600 space-y-2 list-disc pl-4">
+                                <li><strong>Objective:</strong> Specific question (e.g., "Time to reserve").</li>
+                                <li><strong>Participants:</strong> Demographics & recruitment.</li>
+                                <li><strong>Tasks:</strong> 2-3 natural language scenarios.</li>
+                            </ul>
+                            <ul class="text-sm text-stone-600 space-y-2 list-disc pl-4">
+                                <li><strong>Metrics:</strong> Success rate, Time-on-task, SUS score.</li>
+                                <li><strong>Method:</strong> In-person vs Remote (discuss trade-offs).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Evaluation & Workload Visualization Section -->
+        <section id="evaluation" class="py-12 bg-stone-100">
+            <div class="max-w-6xl mx-auto px-4 sm:px-6">
+                <div class="grid md:grid-cols-2 gap-8">
+                    
+                    <!-- Chart 1: Estimated Workload -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-xl font-bold text-stone-800 mb-2 serif">Estimated Workload Breakdown</h3>
+                        <p class="text-sm text-stone-500 mb-4">Total Time: ~6 Hours. Allocation based on task complexity.</p>
+                        
+                        <!-- Chart Container -->
+                        <div class="chart-container">
+                            <canvas id="workloadChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Rubric -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 flex flex-col">
+                        <h3 class="text-xl font-bold text-stone-800 mb-2 serif">Grading Weight Simulator</h3>
+                        <p class="text-sm text-stone-500 mb-6">Ponderation: 1 (UX) - 2 (UI) - 1 (Usability). Adjust sliders to estimate outcome.</p>
+                        
+                        <div class="space-y-6 flex-grow">
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-1">
+                                    <span>Task 1: UX Design (25%)</span>
+                                    <span id="val-ux">90%</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="90" id="range-ux" class="w-full accent-stone-700 h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-1">
+                                    <span>Task 2: UI Design (50%)</span>
+                                    <span id="val-ui">85%</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="85" id="range-ui" class="w-full accent-stone-700 h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <div>
+                                <div class="flex justify-between text-sm font-medium mb-1">
+                                    <span>Task 3: Usability (25%)</span>
+                                    <span id="val-usability">95%</span>
+                                </div>
+                                <input type="range" min="0" max="100" value="95" id="range-usability" class="w-full accent-stone-700 h-2 bg-stone-200 rounded-lg appearance-none cursor-pointer">
+                            </div>
+
+                            <div class="mt-8 pt-6 border-t border-stone-100 text-center">
+                                <span class="text-sm text-stone-500 uppercase tracking-widest">Weighted Score</span>
+                                <div class="text-4xl font-bold text-stone-800 mt-2" id="total-score">89%</div>
+                                <div id="grade-label" class="text-sm font-medium text-green-600 mt-1">Excellent</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+        <!-- Final Submission Checklist -->
+        <section class="py-12 bg-white border-t border-stone-200">
+            <div class="max-w-3xl mx-auto px-4">
+                <h2 class="text-2xl font-bold text-stone-800 mb-6 text-center serif">Submission Checklist</h2>
+                
+                <div class="bg-stone-50 p-6 rounded-lg border border-stone-200">
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-sm font-semibold text-stone-600">Progress</span>
+                        <span id="progress-text" class="text-sm font-bold text-stone-800">0/6 Completed</span>
+                    </div>
+                    <div class="w-full bg-stone-200 rounded-full h-2.5 mb-6">
+                        <div id="progress-bar" class="bg-stone-800 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="flex items-center space-x-3 p-3 bg-white rounded shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50">
+                            <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-stone-800 rounded focus:ring-stone-500" onchange="updateProgress()">
+                            <span class="text-sm text-stone-700">Cover line included (Name, ID, Date)</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 bg-white rounded shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50">
+                            <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-stone-800 rounded focus:ring-stone-500" onchange="updateProgress()">
+                            <span class="text-sm text-stone-700">Task 1: Personas (3+) & Journey Map included</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 bg-white rounded shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50">
+                            <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-stone-800 rounded focus:ring-stone-500" onchange="updateProgress()">
+                            <span class="text-sm text-stone-700">Task 2: Design System, 3 Wireframes, Justification</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 bg-white rounded shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50">
+                            <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-stone-800 rounded focus:ring-stone-500" onchange="updateProgress()">
+                            <span class="text-sm text-stone-700">Task 3: Heuristic Eval & Test Plan</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 bg-white rounded shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50">
+                            <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-stone-800 rounded focus:ring-stone-500" onchange="updateProgress()">
+                            <span class="text-sm text-stone-700">Format: PDF, ≤ 5 Pages, Font size ≥ 11pt</span>
+                        </label>
+                        <label class="flex items-center space-x-3 p-3 bg-white rounded shadow-sm border border-stone-100 cursor-pointer hover:bg-stone-50">
+                            <input type="checkbox" class="checklist-item form-checkbox h-5 w-5 text-stone-800 rounded focus:ring-stone-500" onchange="updateProgress()">
+                            <span class="text-sm text-stone-700">Two secondary sources cited</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-8 text-center text-sm">
+        <p>Continuous Project | Modules 01-03</p>
+        <p class="mt-2 text-stone-600">Educational Material</p>
+    </footer>
+
+    <script>
+        // --- Navigation Logic ---
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // --- Tabs Logic ---
+        function switchTab(tabName) {
+            // Hide all contents
+            document.getElementById('content-ux').classList.add('hidden');
+            document.getElementById('content-ui').classList.add('hidden');
+            document.getElementById('content-usability').classList.add('hidden');
+            
+            // Show selected content
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+
+            // Reset tab styles
+            const tabs = ['ux', 'ui', 'usability'];
+            tabs.forEach(t => {
+                const btn = document.getElementById('tab-' + t);
+                if (t === tabName) {
+                    btn.classList.remove('tab-inactive');
+                    btn.classList.add('tab-active');
+                } else {
+                    btn.classList.remove('tab-active');
+                    btn.classList.add('tab-inactive');
+                }
+            });
+        }
+
+        // --- Chart.js Visualization: Workload ---
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('workloadChart').getContext('2d');
+            
+            // Colors matching the palette (Stone scale with subtle accents)
+            const chartColors = [
+                '#a8a29e', // Reading (Stone 400)
+                '#57534e', // UX (Stone 600)
+                '#292524', // UI (Stone 800 - Heavy weight)
+                '#78716c', // Usability (Stone 500)
+                '#d6d3d1'  // Report (Stone 300)
+            ];
+
+            const workloadChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: [
+                        'Research (1.5h)', 
+                        'Task 1: UX (1h)', 
+                        'Task 2: UI (2h)', 
+                        'Task 3: Usability (1h)', 
+                        'Writing (0.5h)'
+                    ],
+                    datasets: [{
+                        label: 'Hours',
+                        data: [1.5, 1, 2, 1, 0.5],
+                        backgroundColor: chartColors,
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 11
+                                },
+                                usePointStyle: true,
+                                color: '#57534e'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return ` ${context.label}: ${context.raw} Hours`;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '60%'
+                }
+            });
+
+            // Calculate Initial Grade
+            calculateGrade();
+        });
+
+        // --- Grade Calculator Logic ---
+        const rangeUx = document.getElementById('range-ux');
+        const rangeUi = document.getElementById('range-ui');
+        const rangeUsability = document.getElementById('range-usability');
+
+        const valUx = document.getElementById('val-ux');
+        const valUi = document.getElementById('val-ui');
+        const valUsability = document.getElementById('val-usability');
+        
+        const totalScoreDisplay = document.getElementById('total-score');
+        const gradeLabel = document.getElementById('grade-label');
+
+        function calculateGrade() {
+            // Get values
+            const scoreUx = parseInt(rangeUx.value);
+            const scoreUi = parseInt(rangeUi.value);
+            const scoreUsability = parseInt(rangeUsability.value);
+
+            // Update UI text next to sliders
+            valUx.textContent = scoreUx + '%';
+            valUi.textContent = scoreUi + '%';
+            valUsability.textContent = scoreUsability + '%';
+
+            // Weights: UX=1, UI=2, Usability=1. Total Weight = 4.
+            // Calculation: ( (UX * 1) + (UI * 2) + (Usability * 1) ) / 4
+            const weightedScore = ((scoreUx * 1) + (scoreUi * 2) + (scoreUsability * 1)) / 4;
+            const finalScore = Math.round(weightedScore);
+
+            totalScoreDisplay.textContent = finalScore + '%';
+
+            // Determine Label
+            let label = "";
+            let colorClass = "";
+            
+            if (finalScore >= 90) {
+                label = "Excellent (90–100%)";
+                colorClass = "text-green-600";
+            } else if (finalScore >= 65) {
+                label = "Adequate (65–89%)";
+                colorClass = "text-yellow-600";
+            } else {
+                label = "Needs Work (<65%)";
+                colorClass = "text-red-600";
+            }
+
+            gradeLabel.textContent = label;
+            gradeLabel.className = "text-sm font-medium mt-1 " + colorClass;
+        }
+
+        // Attach listeners
+        rangeUx.addEventListener('input', calculateGrade);
+        rangeUi.addEventListener('input', calculateGrade);
+        rangeUsability.addEventListener('input', calculateGrade);
+
+
+        // --- Checklist Logic ---
+        function updateProgress() {
+            const checkboxes = document.querySelectorAll('.checklist-item');
+            const total = checkboxes.length;
+            let checkedCount = 0;
+
+            checkboxes.forEach(box => {
+                if (box.checked) checkedCount++;
+            });
+
+            const percent = (checkedCount / total) * 100;
+            const progressBar = document.getElementById('progress-bar');
+            const progressText = document.getElementById('progress-text');
+
+            progressBar.style.width = percent + '%';
+            progressText.textContent = `${checkedCount}/${total} Completed`;
+            
+            if(checkedCount === total) {
+                progressBar.classList.remove('bg-stone-800');
+                progressBar.classList.add('bg-green-600');
+            } else {
+                progressBar.classList.add('bg-stone-800');
+                progressBar.classList.remove('bg-green-600');
+            }
+        }
+    </script>
+</body>
+</html>
+
+

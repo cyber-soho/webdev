@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flashcards: Module 02 - UI Principles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+
+        .transform-style-3d {
+            transform-style: preserve-3d;
+        }
+
+        .backface-hidden {
+            backface-visibility: hidden;
+        }
+
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+
+        /* Card Flip Animation Class */
+        .flipped {
+            transform: rotateY(180deg);
+        }
+
+        /* Smooth transition for the card */
+        .flashcard-inner {
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+        
+        .no-select {
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10 and IE 11 */
+            user-select: none; /* Standard syntax */
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col text-gray-800">
+
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl font-bold text-blue-600">Module 02</h1>
+                <p class="text-xs text-gray-500">User Interface Principles</p>
+            </div>
+            <div class="text-sm font-medium text-gray-600">
+                <span id="current-index">1</span> / <span id="total-count">25</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow flex flex-col items-center justify-center p-4">
+        
+        <!-- Progress Bar -->
+        <div class="w-full max-w-2xl bg-gray-200 rounded-full h-1.5 mb-8">
+            <div id="progress-bar" class="bg-blue-600 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Flashcard Container -->
+        <div class="perspective-1000 w-full max-w-2xl h-80 sm:h-96 cursor-pointer group no-select" onclick="flipCard()">
+            <div id="card-inner" class="flashcard-inner relative w-full h-full text-center transform-style-3d shadow-xl rounded-2xl">
+                
+                <!-- Front Side -->
+                <div class="absolute w-full h-full backface-hidden bg-white rounded-2xl flex flex-col items-center justify-center p-8 border border-gray-200">
+                    <span class="absolute top-6 left-6 text-xs font-bold text-gray-400 uppercase tracking-wider">Question</span>
+                    <div id="card-front" class="text-2xl sm:text-3xl font-semibold text-gray-800 leading-snug">
+                        <!-- Content Injected via JS -->
+                    </div>
+                    <div class="absolute bottom-6 text-sm text-gray-400 animate-pulse">
+                        Click to flip <i class="fas fa-sync-alt ml-1"></i>
+                    </div>
+                </div>
+
+                <!-- Back Side -->
+                <div class="absolute w-full h-full backface-hidden rotate-y-180 bg-blue-600 text-white rounded-2xl flex flex-col items-center justify-center p-8 border border-blue-700">
+                    <span class="absolute top-6 left-6 text-xs font-bold text-blue-200 uppercase tracking-wider">Answer</span>
+                    <div id="card-back" class="text-xl sm:text-2xl font-medium leading-relaxed">
+                        <!-- Content Injected via JS -->
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center gap-4 mt-8 w-full max-w-2xl justify-center">
+            <button onclick="prevCard()" class="p-4 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Previous Card">
+                <i class="fas fa-arrow-left text-xl"></i>
+            </button>
+            
+            <button onclick="shuffleDeck()" class="px-6 py-3 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm font-medium text-sm flex items-center gap-2" aria-label="Shuffle Deck">
+                <i class="fas fa-random"></i> Shuffle
+            </button>
+
+            <button onclick="nextCard()" class="p-4 rounded-full bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500" aria-label="Next Card">
+                <i class="fas fa-arrow-right text-xl"></i>
+            </button>
+        </div>
+
+        <p class="mt-6 text-xs text-gray-400">
+            Keyboard controls: Left/Right Arrows to navigate, Spacebar to flip.
+        </p>
+
+    </main>
+
+    <script>
+        // Data derived from the generated flashcards
+        const flashcardsData = [
+            { front: "Time required for a user to judge a website", back: "~50 milliseconds (faster than a blink)" },
+            { front: "Analogy for Back-end vs. UI", back: "The Back-end is the chef; the UI is the restaurant (tables, menu, atmosphere)" },
+            { front: "Definition of User Interface (UI)", back: "The collection of screens, buttons, and forms through which a human interacts with software; the translator between human intent and machine logic" },
+            { front: "Core distinction between UI and UX", back: "UI is how things look and are laid out (visuals); UX is how things feel and flow (journey)" },
+            { front: "Analogy for UI vs. UX relationship", back: "UI is the saddle and stirrups; UX is the entire horseback ride" },
+            { front: "The 5 Core Principles of Good UI (Mnemonic)", back: "C·C·F·S·A: Clarity, Consistency, Feedback, Simplicity, Accessibility" },
+            { front: "Principle of Clarity", back: "The user should never have to guess what something does; every element has an instant purpose" },
+            { front: "Principle of Consistency", back: "Similar elements look and behave the same throughout the app to build trust and reduce the learning curve" },
+            { front: "Principle of Feedback", back: "Every action produces a visible response (e.g., color change, spinner) so the user knows the action was registered" },
+            { front: "Principle of Simplicity", back: "Removing everything that does not serve the user's goal, such as extra form fields or decorative clutter" },
+            { front: "Principle of Accessibility", back: "Ensuring the UI is usable by everyone, including those with visual, motor, auditory, or cognitive disabilities" },
+            { front: "One-Word Test for Consistency", back: "\"Is it predictable?\"" },
+            { front: "Visual Hierarchy", back: "The arrangement of elements in order of importance, guiding the user's eye to critical information first" },
+            { front: "The Newspaper Rule in Visual Hierarchy", back: "Levels of priority: Headline (seen first) -> Hero Image -> Sub-headline -> Body text -> Metadata (seen last)" },
+            { front: "Meaning of the color Red in UI", back: "Danger, error, urgency, or delete actions" },
+            { front: "Meaning of the color Blue in UI", back: "Trust, professionalism, links, and primary actions" },
+            { front: "Minimum Contrast Ratio (WCAG AA)", back: "4.5 : 1 for normal text" },
+            { front: "Recommended Body Font Size", back: "16–18px (to prevent eye strain)" },
+            { front: "The Three Fundamental Navigation Questions", back: "1. Where am I? 2. Where can I go? 3. How do I get back?" },
+            { front: "Navigation pattern: Breadcrumbs", back: "A path trail showing hierarchy, e.g., Home > Section > Page" },
+            { front: "Definition of Responsive Design", back: "One UI that adapts fluidly to any screen size (mobile, tablet, desktop) using the same HTML but different CSS" },
+            { front: "Global Mobile Web Traffic Share (2025)", back: "Over 60%" },
+            { front: "POUR Principles of Accessibility", back: "Perceivable, Operable, Understandable, Robust" },
+            { front: "The Curb Cut Effect", back: "Accessibility features designed for disabilities (like wheelchair ramps) often improve the experience for everyone (like parents with strollers)" },
+            { front: "Tailwind CSS", back: "A utility-first CSS framework allowing for custom designs without writing separate CSS files" }
+        ];
+
+        let currentIndex = 0;
+        let isFlipped = false;
+
+        // Elements
+        const cardInner = document.getElementById('card-inner');
+        const cardFront = document.getElementById('card-front');
+        const cardBack = document.getElementById('card-back');
+        const indexDisplay = document.getElementById('current-index');
+        const totalDisplay = document.getElementById('total-count');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Initialize
+        function init() {
+            totalDisplay.textContent = flashcardsData.length;
+            loadCard(currentIndex);
+        }
+
+        // Load content for a specific index
+        function loadCard(index) {
+            // Reset flip if needed
+            if (isFlipped) {
+                cardInner.classList.remove('flipped');
+                isFlipped = false;
+                // Wait for flip back before changing text (optional polish)
+                setTimeout(() => {
+                    updateText(index);
+                }, 200);
+            } else {
+                updateText(index);
+            }
+            updateProgress();
+        }
+
+        function updateText(index) {
+            const data = flashcardsData[index];
+            cardFront.textContent = data.front;
+            cardBack.textContent = data.back;
+            indexDisplay.textContent = index + 1;
+        }
+
+        function updateProgress() {
+            const percentage = ((currentIndex + 1) / flashcardsData.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        // Interaction Functions
+        function flipCard() {
+            isFlipped = !isFlipped;
+            if (isFlipped) {
+                cardInner.classList.add('flipped');
+            } else {
+                cardInner.classList.remove('flipped');
+            }
+        }
+
+        function nextCard() {
+            if (currentIndex < flashcardsData.length - 1) {
+                currentIndex++;
+                loadCard(currentIndex);
+            } else {
+                // Loop to start
+                currentIndex = 0;
+                loadCard(currentIndex);
+            }
+        }
+
+        function prevCard() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                loadCard(currentIndex);
+            } else {
+                // Loop to end
+                currentIndex = flashcardsData.length - 1;
+                loadCard(currentIndex);
+            }
+        }
+
+        function shuffleDeck() {
+            // Fisher-Yates Shuffle
+            for (let i = flashcardsData.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [flashcardsData[i], flashcardsData[j]] = [flashcardsData[j], flashcardsData[i]];
+            }
+            currentIndex = 0;
+            loadCard(currentIndex);
+        }
+
+        // Keyboard Navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault(); // Prevent scroll
+                flipCard();
+            } else if (e.code === 'ArrowRight') {
+                nextCard();
+            } else if (e.code === 'ArrowLeft') {
+                prevCard();
+            }
+        });
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>
+
+
+

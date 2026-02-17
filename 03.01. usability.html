@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 03: Usability Interactive Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Chart Container Styles */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* UCD Cycle Animation Helper */
+        .ucd-step {
+            transition: all 0.3s ease;
+        }
+        .ucd-step:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 3D Flip Card Styles */
+        .perspective {
+            perspective: 1000px;
+        }
+        .preserve-3d {
+            transform-style: preserve-3d;
+        }
+        .backface-hidden {
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        /* Flip interaction */
+        .group:hover .flip-content, .group:active .flip-content {
+            transform: rotateY(180deg);
+        }
+    </style>
+    <!-- Chosen Palette: Warm Professional -> Stone-50 background, Slate-900 text, Amber/Teal/Rose accents for semantic meaning -->
+    <!-- Application Structure Plan: 
+         The app is designed as a 'UX Designer's Toolkit'. 
+         1. Hero: Definition & Business Value Calculator (Hook).
+         2. Foundations: Interactive 'Pillars' explorer (Learnability, Efficiency, etc.).
+         3. Guidelines: Heuristic Checklist (Card flip for Good/Bad examples).
+         4. Process: UCD Cycle visualizer.
+         5. Tools: A11y Contrast context & Testing 'ROI' Simulator (Chart.js).
+         6. Ethics: Dark Pattern Detector (Toggle comparison).
+         This flows from "What & Why" -> "Core Concepts" -> "How To" -> "Verification" -> "Ethics".
+    -->
+    <!-- Visualization & Content Choices:
+         1. Business Case: Calculator input -> Text update. Goal: Show ROI immediately.
+         2. Testing Rule: Chart.js Line Chart. Goal: Visualize the 'diminishing returns' curve of user testing (5 users = 85%).
+         3. Heuristics: Grid cards. Goal: Compare theory with practice (Good/Bad examples).
+         4. NO SVG/Mermaid: Icons are Unicode/CSS. Charts are Canvas.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-slate-800 font-sans leading-relaxed selection:bg-amber-100">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <span class="text-2xl">🧠</span>
+                    <span class="font-bold text-lg tracking-tight text-slate-900">Usability Hub</span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('hero')" class="hover:text-amber-600 transition-colors">Start</button>
+                    <button onclick="scrollToSection('pillars')" class="hover:text-amber-600 transition-colors">5 Pillars</button>
+                    <button onclick="scrollToSection('heuristics')" class="hover:text-amber-600 transition-colors">Heuristics</button>
+                    <button onclick="scrollToSection('testing')" class="hover:text-amber-600 transition-colors">Testing ROI</button>
+                    <button onclick="scrollToSection('ethics')" class="hover:text-amber-600 transition-colors">Ethics</button>
+                </div>
+                <!-- Mobile menu button placeholder -->
+                <div class="md:hidden">
+                    <button onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="text-slate-600 focus:outline-none">☰</button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t border-stone-200 p-4">
+            <div class="flex flex-col space-y-4">
+                <button onclick="scrollToSection('hero')" class="text-left">Start</button>
+                <button onclick="scrollToSection('pillars')" class="text-left">5 Pillars</button>
+                <button onclick="scrollToSection('heuristics')" class="text-left">Heuristics</button>
+                <button onclick="scrollToSection('testing')" class="text-left">Testing ROI</button>
+                <button onclick="scrollToSection('ethics')" class="text-left">Ethics</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section: Definition & ROI -->
+    <section id="hero" class="pt-16 pb-12 px-4 bg-gradient-to-b from-amber-50 to-stone-50">
+        <div class="max-w-4xl mx-auto text-center">
+            <div class="inline-block px-3 py-1 mb-4 text-xs font-semibold tracking-wider text-amber-800 uppercase bg-amber-100 rounded-full">
+                Module 03
+            </div>
+            <h1 class="text-4xl md:text-5xl font-extrabold text-slate-900 mb-6">
+                Usability is not an opinion. <br><span class="text-amber-600">It's a measurable quality.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+                "The extent to which a product can be used by specified users to achieve specified goals with <strong>effectiveness</strong>, <strong>efficiency</strong>, and <strong>satisfaction</strong>." — ISO 9241-11
+            </p>
+            
+            <!-- Business Case Calculator -->
+            <div class="bg-white p-6 rounded-xl shadow-lg border border-stone-200 max-w-lg mx-auto transform transition-all hover:scale-105">
+                <h3 class="text-lg font-bold mb-2">💰 The Business Case Calculator</h3>
+                <p class="text-sm text-slate-500 mb-4">Research by Nielsen Norman Group suggests $1 invested in UX returns $10–$100.</p>
+                <div class="flex flex-col sm:flex-row gap-4 items-center justify-center">
+                    <div class="w-full">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-1">UX Investment ($)</label>
+                        <input type="number" id="investmentInput" value="1000" min="1" class="w-full px-3 py-2 border border-stone-300 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-500">
+                    </div>
+                    <div class="text-2xl text-slate-300 hidden sm:block">→</div>
+                    <div class="w-full bg-green-50 p-3 rounded-md border border-green-100">
+                        <div class="text-xs text-green-800 font-bold uppercase">Estimated Return</div>
+                        <div class="text-xl font-bold text-green-700" id="roiOutput">$10,000 – $100,000</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- The 5 Pillars of Usability -->
+    <section id="pillars" class="py-16 px-4 max-w-6xl mx-auto">
+        <div class="mb-10">
+            <h2 class="text-3xl font-bold text-slate-900 mb-4">The Five Pillars of Usability</h2>
+            <p class="text-slate-600 max-w-3xl">
+                Every interface serves as a health checkup for your website. According to Jakob Nielsen, usability consists of five core components. Click each pillar below to explore its design levers and examples.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-12 gap-6">
+            <!-- Pillar Navigation -->
+            <div class="md:col-span-4 flex flex-col space-y-2">
+                <button onclick="showPillar(0)" id="btn-pillar-0" class="pillar-btn text-left px-5 py-4 rounded-lg bg-slate-800 text-white shadow-md font-semibold transition-all">
+                    1. Learnability
+                </button>
+                <button onclick="showPillar(1)" id="btn-pillar-1" class="pillar-btn text-left px-5 py-4 rounded-lg bg-white hover:bg-stone-100 text-slate-700 border border-stone-200 transition-all">
+                    2. Efficiency
+                </button>
+                <button onclick="showPillar(2)" id="btn-pillar-2" class="pillar-btn text-left px-5 py-4 rounded-lg bg-white hover:bg-stone-100 text-slate-700 border border-stone-200 transition-all">
+                    3. Memorability
+                </button>
+                <button onclick="showPillar(3)" id="btn-pillar-3" class="pillar-btn text-left px-5 py-4 rounded-lg bg-white hover:bg-stone-100 text-slate-700 border border-stone-200 transition-all">
+                    4. Errors
+                </button>
+                <button onclick="showPillar(4)" id="btn-pillar-4" class="pillar-btn text-left px-5 py-4 rounded-lg bg-white hover:bg-stone-100 text-slate-700 border border-stone-200 transition-all">
+                    5. Satisfaction
+                </button>
+            </div>
+
+            <!-- Pillar Content Panel -->
+            <div class="md:col-span-8 bg-white p-8 rounded-2xl shadow-sm border border-stone-200 relative min-h-[300px]">
+                <div id="pillar-content">
+                    <!-- Content injected via JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Heuristics Checklist -->
+    <section id="heuristics" class="py-16 px-4 bg-stone-100">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-slate-900 mb-4">Nielsen's 10 Usability Heuristics</h2>
+                <p class="text-slate-600 max-w-2xl mx-auto">
+                    The industry-standard pre-launch checklist (1994). Don't ship until you've checked these. Hover over or tap the cards to see "Bad vs. Good" examples.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="heuristics-grid">
+                <!-- Cards generated via JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- UCD & Accessibility -->
+    <section id="process" class="py-16 px-4 max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-2 gap-16">
+            <!-- User Centered Design -->
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">User-Centered Design (UCD) Cycle</h2>
+                <p class="text-slate-600 mb-6 text-sm">ISO 9241-210 Standard. Iterative process where you are <strong>not</strong> your user.</p>
+                
+                <!-- CSS interactive diagram -->
+                <div class="relative w-full max-w-md mx-auto aspect-square bg-white rounded-full shadow-lg border-4 border-stone-100 p-8 flex flex-col justify-center items-center text-center">
+                    <div class="absolute inset-0 rounded-full border-4 border-dashed border-amber-200 animate-spin-slow" style="animation-duration: 20s;"></div>
+                    
+                    <div class="grid grid-cols-2 gap-4 w-full h-full p-4 z-10">
+                        <div class="ucd-step bg-blue-50 rounded-tl-3xl rounded-br-lg p-4 flex items-center justify-center cursor-help hover:bg-blue-100" onmouseenter="updateUCDInfo('understand')">
+                            <div class="font-bold text-blue-800">1. UNDERSTAND<br><span class="text-xs font-normal">the users</span></div>
+                        </div>
+                        <div class="ucd-step bg-indigo-50 rounded-tr-3xl rounded-bl-lg p-4 flex items-center justify-center cursor-help hover:bg-indigo-100" onmouseenter="updateUCDInfo('specify')">
+                            <div class="font-bold text-indigo-800">2. SPECIFY<br><span class="text-xs font-normal">requirements</span></div>
+                        </div>
+                        <div class="ucd-step bg-purple-50 rounded-bl-3xl rounded-tr-lg p-4 flex items-center justify-center cursor-help hover:bg-purple-100" onmouseenter="updateUCDInfo('evaluate')">
+                            <div class="font-bold text-purple-800">4. EVALUATE<br><span class="text-xs font-normal">with real users</span></div>
+                        </div>
+                        <div class="ucd-step bg-fuchsia-50 rounded-br-3xl rounded-tl-lg p-4 flex items-center justify-center cursor-help hover:bg-fuchsia-100" onmouseenter="updateUCDInfo('design')">
+                            <div class="font-bold text-fuchsia-800">3. DESIGN<br><span class="text-xs font-normal">solutions</span></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="ucd-details" class="mt-6 p-4 bg-slate-800 text-white rounded-lg text-center min-h-[5rem] flex items-center justify-center">
+                    <p class="italic">Hover over a quadrant to see details.</p>
+                </div>
+            </div>
+
+            <!-- Accessibility (A11y) -->
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-4">Accessibility (a11y)</h2>
+                <p class="text-slate-600 mb-6 text-sm">"Usability for everyone." A legal requirement (ADA, EAA). Based on the <strong>POUR</strong> framework.</p>
+
+                <div class="grid grid-cols-2 gap-4 mb-8">
+                    <div class="p-4 bg-white border border-stone-200 rounded-lg shadow-sm">
+                        <div class="text-2xl mb-1">👀</div>
+                        <h4 class="font-bold text-slate-800">Perceivable</h4>
+                        <p class="text-xs text-slate-500">Alt-text, Captions</p>
+                    </div>
+                    <div class="p-4 bg-white border border-stone-200 rounded-lg shadow-sm">
+                        <div class="text-2xl mb-1">⌨️</div>
+                        <h4 class="font-bold text-slate-800">Operable</h4>
+                        <p class="text-xs text-slate-500">Keyboard nav, No flashes</p>
+                    </div>
+                    <div class="p-4 bg-white border border-stone-200 rounded-lg shadow-sm">
+                        <div class="text-2xl mb-1">🧠</div>
+                        <h4 class="font-bold text-slate-800">Understandable</h4>
+                        <p class="text-xs text-slate-500">Plain language, Labels</p>
+                    </div>
+                    <div class="p-4 bg-white border border-stone-200 rounded-lg shadow-sm">
+                        <div class="text-2xl mb-1">⚙️</div>
+                        <h4 class="font-bold text-slate-800">Robust</h4>
+                        <p class="text-xs text-slate-500">Valid HTML, ARIA</p>
+                    </div>
+                </div>
+
+                <!-- Interactive Contrast Demo (Simplified) -->
+                <div class="bg-stone-800 p-6 rounded-xl text-white">
+                    <h3 class="font-bold mb-2">Contrast Simulation</h3>
+                    <p class="text-xs text-stone-400 mb-4">WCAG AA requires 4.5:1 ratio for normal text.</p>
+                    
+                    <div class="flex gap-4 mb-4">
+                        <button onclick="setContrast(3)" class="flex-1 py-2 bg-stone-700 hover:bg-stone-600 rounded text-xs">Fail (< 3:1)</button>
+                        <button onclick="setContrast(4.5)" class="flex-1 py-2 bg-stone-600 hover:bg-stone-500 rounded text-xs border border-green-500">Pass AA (4.5:1)</button>
+                        <button onclick="setContrast(7)" class="flex-1 py-2 bg-stone-700 hover:bg-stone-600 rounded text-xs">Pass AAA (7:1)</button>
+                    </div>
+
+                    <div id="contrast-preview" class="p-4 rounded text-center font-bold text-lg transition-colors" style="background-color: #ffffff; color: #595959;">
+                        Can you read this?
+                    </div>
+                    <div id="contrast-result" class="mt-2 text-center text-xs font-mono text-stone-400">Ratio: 4.54:1 (PASS)</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testing ROI Chart -->
+    <section id="testing" class="py-16 px-4 bg-white border-y border-stone-200">
+        <div class="max-w-4xl mx-auto">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-slate-900 mb-2">The "Magic Number" 5 in Usability Testing</h2>
+                <p class="text-slate-600">
+                    Why you don't need a huge budget. Testing with just 5 users reveals ~85% of usability problems. After that, returns diminish rapidly.
+                </p>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="bg-white p-4 rounded-xl shadow-sm border border-stone-100">
+                <div class="chart-container">
+                    <canvas id="testingChart"></canvas>
+                </div>
+            </div>
+            
+            <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div class="p-4">
+                    <div class="text-3xl font-bold text-amber-600 mb-1">0 Users</div>
+                    <p class="text-sm text-slate-500">0% Insights. The developer is guessing.</p>
+                </div>
+                <div class="p-4 bg-amber-50 rounded-lg border border-amber-100">
+                    <div class="text-3xl font-bold text-amber-600 mb-1">5 Users</div>
+                    <p class="text-sm text-slate-800 font-medium">85% of Problems Found. The sweet spot.</p>
+                </div>
+                <div class="p-4">
+                    <div class="text-3xl font-bold text-slate-400 mb-1">15 Users</div>
+                    <p class="text-sm text-slate-500">100% Problems found. Diminishing returns.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dark Patterns vs Ethics -->
+    <section id="ethics" class="py-16 px-4 bg-stone-900 text-stone-300">
+        <div class="max-w-5xl mx-auto">
+            <div class="mb-12 border-b border-stone-800 pb-8">
+                <h2 class="text-3xl font-bold text-white mb-4">Dark Patterns vs. Ethical Design</h2>
+                <p class="max-w-3xl">
+                    Dark patterns are UI designs that deliberately trick users. They are unethical and increasingly illegal (FTC, GDPR). Use your usability skills for good.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <!-- Interactive Toggle -->
+                <div class="space-y-6">
+                    <h3 class="text-xl font-bold text-white">Select a Pattern to Compare:</h3>
+                    <div class="flex flex-col gap-2">
+                        <button id="btn-roach" onclick="showDarkPattern('roach')" class="dp-btn w-full text-left p-4 rounded bg-stone-800 hover:bg-stone-700 focus:bg-stone-700 border border-transparent focus:border-amber-500 transition-all active-pattern">
+                            🪳 The Roach Motel (Subscription)
+                        </button>
+                        <button id="btn-misdirection" onclick="showDarkPattern('misdirection')" class="dp-btn w-full text-left p-4 rounded bg-stone-800 hover:bg-stone-700 focus:bg-stone-700 border border-transparent focus:border-amber-500 transition-all">
+                            🎭 Misdirection (Cookie Banners)
+                        </button>
+                        <button id="btn-shaming" onclick="showDarkPattern('shaming')" class="dp-btn w-full text-left p-4 rounded bg-stone-800 hover:bg-stone-700 focus:bg-stone-700 border border-transparent focus:border-amber-500 transition-all">
+                            😢 Confirmshaming (Opt-outs)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Comparison View -->
+                <div class="bg-stone-800 rounded-xl p-1 border border-stone-700">
+                    <div id="dp-display" class="grid grid-cols-1 gap-1">
+                        <!-- Content Injected via JS -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer / Resources -->
+    <footer class="bg-white border-t border-stone-200 py-12 mt-12">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="font-bold text-slate-900 mb-4">Module 03: Usability — Web Applications Development</p>
+            <div class="flex flex-wrap justify-center gap-6 text-sm text-slate-600 mb-8">
+                <a href="#" class="hover:text-amber-600">ISO 9241-11</a>
+                <span>•</span>
+                <a href="#" class="hover:text-amber-600">Nielsen Norman Group</a>
+                <span>•</span>
+                <a href="#" class="hover:text-amber-600">WCAG 2.2</a>
+                <span>•</span>
+                <a href="#" class="hover:text-amber-600">Deceptive.design</a>
+            </div>
+            <p class="text-xs text-slate-400">
+                Designed as an interactive review companion
+            </p>
+        </div>
+    </footer>
+
+    <!-- JavaScript Logic -->
+    <script>
+        // --- 1. State & Data ---
+
+        const pillarsData = [
+            {
+                title: "Learnability",
+                question: "Can a first-time user figure it out?",
+                example: "Coffee app: tap a picture to order.",
+                levers: ["Familiar icons", "Visual hierarchy", "Progressive disclosure", "Minimal jargon"]
+            },
+            {
+                title: "Efficiency",
+                question: "Can a returning user do it fast?",
+                example: "Search autocomplete saves 87% of keystrokes.",
+                levers: ["Autocomplete", "Keyboard shortcuts", "Saved preferences", "Batch actions"]
+            },
+            {
+                title: "Memorability",
+                question: "Can a lapsed user pick it up again?",
+                example: "Shopping cart icon always in top-right.",
+                levers: ["Consistent layout", "Predictable nav", "Standard icons"]
+            },
+            {
+                title: "Errors",
+                question: "How bad are mistakes, and can users recover?",
+                example: "Password checker shows specific failed rules.",
+                levers: ["Prevent (disable submit)", "Reduce severity (Undo)", "Guide recovery"]
+            },
+            {
+                title: "Satisfaction",
+                question: "Does it feel good to use?",
+                example: "Animated 'like' button.",
+                levers: ["Visual polish", "Fast load times", "Microinteractions", "Friendly tone"]
+            }
+        ];
+
+        const heuristicsData = [
+            { id: 1, title: "Visibility of system status", desc: "Always show what is happening.", bad: "Click 'Upload' -> Nothing happens for 30s.", good: "Progress bar: '36 of 50MB, 8s left'." },
+            { id: 2, title: "Match between system & real world", desc: "Use user's language.", bad: "Error 404: Object not found.", good: "We couldn't find that page." },
+            { id: 3, title: "User control & freedom", desc: "Provide 'Undo' & 'Exit'.", bad: "Deleted file -> Gone forever.", good: "'Undo' button available for 10s." },
+            { id: 4, title: "Consistency & standards", desc: "Follow conventions.", bad: "Submit button on top left.", good: "Submit button bottom right." },
+            { id: 5, title: "Error prevention", desc: "Stop mistakes before they happen.", bad: "Type invalid date -> Error after submit.", good: "Date picker restricts invalid dates." },
+            { id: 6, title: "Recognition over recall", desc: "Show options visually.", bad: "Command line interface for non-techs.", good: "Menu with icons and text." },
+            { id: 7, title: "Flexibility & efficiency", desc: "Shortcuts for experts.", bad: "Wizard only, no quick jump.", good: "Ctrl+S to save." },
+            { id: 8, title: "Aesthetic & minimalist", desc: "Remove clutter.", bad: "47 links and auto-playing video.", good: "One clear headline and CTA." },
+            { id: 9, title: "Recover from errors", desc: "Explain problem and fix.", bad: "Error: Invalid Input.", good: "Please enter a valid email (name@domain.com)." },
+            { id: 10, title: "Help & documentation", desc: "Searchable and focused.", bad: "100-page PDF manual.", good: "Contextual tooltips." }
+        ];
+
+        const darkPatternsData = {
+            roach: {
+                title: "The Roach Motel",
+                desc: "Easy to get in, hard to get out.",
+                bad: { title: "Dark Pattern", content: "One-click signup. To cancel: Call support between 9-5 EST." },
+                good: { title: "Ethical Alternative", content: "One-click signup. 'Cancel Subscription' button in Profile." }
+            },
+            misdirection: {
+                title: "Misdirection",
+                desc: "Focusing attention on one thing to distract from another.",
+                bad: { title: "Dark Pattern", content: "Giant green 'ACCEPT ALL' button. Tiny gray 'Settings' link." },
+                good: { title: "Ethical Alternative", content: "'Accept' and 'Reject' buttons of equal size and color." }
+            },
+            shaming: {
+                title: "Confirmshaming",
+                desc: "Guilting the user into compliance.",
+                bad: { title: "Dark Pattern", content: "Link text: 'No thanks, I hate saving money.'"},
+                good: { title: "Ethical Alternative", content: "Simple 'No thanks' link." }
+            }
+        };
+
+        const ucdInfo = {
+            understand: "<strong>1. UNDERSTAND:</strong> Identify user personas, goals, and frustrations. <br><em>'You are not your user.'</em>",
+            specify: "<strong>2. SPECIFY:</strong> Define the requirements and success metrics based on research.",
+            design: "<strong>3. DESIGN:</strong> Create solutions, wireframes, and prototypes.",
+            evaluate: "<strong>4. EVALUATE:</strong> Test with real users. If they struggle, go back to Design. <br><em>'Repeat until satisfied.'</em>"
+        };
+
+        // --- 2. Initialization ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initCalculator();
+            initPillars();
+            initHeuristics();
+            initChart();
+            showDarkPattern('roach'); // Default view
+        });
+
+        // --- 3. Logic Functions ---
+
+        // Navigation Scroll
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Calculator Logic
+        function initCalculator() {
+            const input = document.getElementById('investmentInput');
+            const output = document.getElementById('roiOutput');
+            
+            input.addEventListener('input', (e) => {
+                const val = parseFloat(e.target.value) || 0;
+                const low = (val * 10).toLocaleString();
+                const high = (val * 100).toLocaleString();
+                output.textContent = `$${low} – $${high}`;
+            });
+        }
+
+        // Pillars Logic
+        function initPillars() {
+            showPillar(0); // Show first by default
+        }
+
+        function showPillar(index) {
+            // Update Buttons
+            document.querySelectorAll('.pillar-btn').forEach((btn, i) => {
+                if (i === index) {
+                    btn.className = 'pillar-btn text-left px-5 py-4 rounded-lg bg-slate-800 text-white shadow-md font-semibold transition-all transform scale-105';
+                } else {
+                    btn.className = 'pillar-btn text-left px-5 py-4 rounded-lg bg-white hover:bg-stone-100 text-slate-700 border border-stone-200 transition-all opacity-80';
+                }
+            });
+
+            // Update Content
+            const p = pillarsData[index];
+            const content = document.getElementById('pillar-content');
+            content.innerHTML = `
+                <h3 class="text-2xl font-bold text-amber-600 mb-2">${p.title}</h3>
+                <div class="mb-6 p-4 bg-stone-50 rounded-lg border-l-4 border-amber-500 italic text-slate-700">
+                    "${p.question}"
+                </div>
+                
+                <div class="grid md:grid-cols-2 gap-8">
+                    <div>
+                        <h4 class="font-bold text-slate-900 mb-2 uppercase text-xs tracking-wider">Example</h4>
+                        <p class="text-slate-600">${p.example}</p>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-900 mb-2 uppercase text-xs tracking-wider">Design Levers</h4>
+                        <ul class="list-disc list-inside text-slate-600 space-y-1">
+                            ${p.levers.map(l => `<li>${l}</li>`).join('')}
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="mt-8 pt-6 border-t border-stone-100 text-right">
+                    <span class="text-xs font-bold text-stone-400">PILLAR ${index + 1} OF 5</span>
+                </div>
+            `;
+        }
+
+        // Heuristics Logic
+        function initHeuristics() {
+            const grid = document.getElementById('heuristics-grid');
+            heuristicsData.forEach(h => {
+                const card = document.createElement('div');
+                card.className = "group relative h-64 perspective cursor-pointer";
+                card.setAttribute('onclick', 'void(0)'); // Enable hover on iOS
+                card.innerHTML = `
+                    <div class="flip-content relative w-full h-full duration-500 preserve-3d transition-transform">
+                        <!-- Front -->
+                        <div class="absolute w-full h-full bg-white p-6 rounded-xl shadow-sm border border-stone-200 flex flex-col justify-between backface-hidden">
+                            <div>
+                                <div class="text-amber-500 font-bold text-sm mb-2">#${h.id}</div>
+                                <h3 class="font-bold text-lg leading-tight text-slate-900">${h.title}</h3>
+                            </div>
+                            <p class="text-slate-500 text-sm mt-4">${h.desc}</p>
+                            <div class="mt-auto text-center text-xs text-stone-400 font-medium">Hover/Tap for Examples</div>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute w-full h-full bg-slate-800 p-6 rounded-xl shadow-lg flex flex-col justify-center backface-hidden rotate-y-180">
+                            <div class="mb-4">
+                                <span class="text-rose-400 font-bold text-xs uppercase">Bad (Don't)</span>
+                                <p class="text-stone-300 text-sm leading-snug">${h.bad}</p>
+                            </div>
+                            <div>
+                                <span class="text-teal-400 font-bold text-xs uppercase">Good (Do)</span>
+                                <p class="text-white text-sm leading-snug font-medium">${h.good}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        // UCD Logic
+        function updateUCDInfo(stage) {
+            const display = document.getElementById('ucd-details');
+            display.innerHTML = `<p class="text-lg">${ucdInfo[stage]}</p>`;
+        }
+
+        // Contrast Tool Logic
+        function setContrast(ratio) {
+            const display = document.getElementById('contrast-preview');
+            const result = document.getElementById('contrast-result');
+            
+            if (ratio === 3) {
+                // Fail
+                display.style.backgroundColor = "#e5e5e5"; // Light gray
+                display.style.color = "#9ca3af"; // Gray text (Low contrast)
+                display.innerText = "Hard to read...";
+                result.innerText = "Ratio: ~1.9:1 (FAIL)";
+                result.className = "mt-2 text-center text-xs font-mono text-rose-500 font-bold";
+            } else if (ratio === 4.5) {
+                // Pass AA
+                display.style.backgroundColor = "#ffffff";
+                display.style.color = "#595959"; // Metric for 4.54:1
+                display.innerText = "Passes AA Standard";
+                result.innerText = "Ratio: 4.54:1 (PASS AA)";
+                result.className = "mt-2 text-center text-xs font-mono text-amber-500 font-bold";
+            } else {
+                // Pass AAA
+                display.style.backgroundColor = "#ffffff";
+                display.style.color = "#000000";
+                display.innerText = "Passes AAA Standard";
+                result.innerText = "Ratio: 21:1 (PASS AAA)";
+                result.className = "mt-2 text-center text-xs font-mono text-green-500 font-bold";
+            }
+        }
+
+        // Chart.js Implementation
+        function initChart() {
+            const ctx = document.getElementById('testingChart').getContext('2d');
+            
+            // Gradient for the area
+            const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(245, 158, 11, 0.5)'); // Amber
+            gradient.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10'],
+                    datasets: [{
+                        label: '% Usability Problems Found',
+                        data: [0, 30, 50, 70, 77, 85, 88, 90, 92, 95, 98],
+                        borderColor: '#d97706', // Amber 600
+                        backgroundColor: gradient,
+                        borderWidth: 3,
+                        pointBackgroundColor: '#fff',
+                        pointBorderColor: '#d97706',
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: '#1e293b',
+                            padding: 12,
+                            titleFont: { size: 14 },
+                            bodyFont: { size: 14 },
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '% Problems Found';
+                                }
+                            }
+                        },
+                        annotation: {
+                            // Note: Annotation plugin not loaded to keep simple, but we handle via text below
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: '% Problems Found'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Number of Test Users'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Dark Patterns Logic
+        function showDarkPattern(key) {
+            // Update buttons
+            document.querySelectorAll('.dp-btn').forEach(btn => {
+               btn.classList.remove('border-amber-500', 'bg-stone-700');
+               btn.classList.add('border-transparent');
+            });
+            
+            // Select active button by ID based on key
+            const activeBtn = document.getElementById(`btn-${key}`);
+            if (activeBtn) {
+                activeBtn.classList.add('border-amber-500', 'bg-stone-700');
+                activeBtn.classList.remove('border-transparent');
+            }
+
+            // Update Content
+            const data = darkPatternsData[key];
+            const container = document.getElementById('dp-display');
+            
+            container.innerHTML = `
+                <div class="bg-rose-900/20 p-6 rounded-t-lg border-b border-stone-700">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">⛔</span>
+                        <h4 class="font-bold text-rose-400 uppercase tracking-wider text-sm">${data.bad.title}</h4>
+                    </div>
+                    <p class="text-lg text-white font-medium">"${data.bad.content}"</p>
+                </div>
+                <div class="bg-teal-900/20 p-6 rounded-b-lg">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl">✅</span>
+                        <h4 class="font-bold text-teal-400 uppercase tracking-wider text-sm">${data.good.title}</h4>
+                    </div>
+                    <p class="text-lg text-white font-medium">"${data.good.content}"</p>
+                </div>
+                <div class="mt-4 text-center text-sm text-stone-500 italic">
+                    ${data.desc}
+                </div>
+            `;
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 02 Quiz: UI Principles</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            transform: translateX(4px);
+        }
+
+        .correct-answer {
+            background-color: #d1fae5 !important; /* green-100 */
+            border-color: #10b981 !important; /* green-500 */
+            color: #065f46 !important; /* green-800 */
+        }
+
+        .incorrect-answer {
+            background-color: #fee2e2 !important; /* red-100 */
+            border-color: #ef4444 !important; /* red-500 */
+            color: #991b1b !important; /* red-800 */
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-xl overflow-hidden min-h-[500px] flex flex-col relative">
+        
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-100 p-6 flex justify-between items-center sticky top-0 z-10">
+            <div>
+                <h1 class="text-xl font-bold text-gray-900">UI Design Principles</h1>
+                <p class="text-xs text-gray-500">Module 02 Assessment</p>
+            </div>
+            <div id="score-display" class="hidden text-sm font-semibold text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                Score: <span id="current-score">0</span>
+            </div>
+        </header>
+
+        <!-- Progress Bar (Hidden on start) -->
+        <div id="progress-container" class="w-full bg-gray-100 h-1 hidden">
+            <div id="progress-bar" class="bg-blue-600 h-1 transition-all duration-300" style="width: 0%"></div>
+        </div>
+
+        <!-- Content Area -->
+        <main id="game-container" class="flex-grow p-6 sm:p-8 flex flex-col justify-center">
+            
+            <!-- Start Screen -->
+            <div id="start-screen" class="text-center fade-in">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6 text-blue-600">
+                    <i class="fas fa-clipboard-check text-3xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">Ready to test your knowledge?</h2>
+                <p class="text-gray-600 mb-8 max-w-md mx-auto">
+                    This quiz contains 10 questions covering UI vs UX, accessibility (POUR), visual hierarchy, and responsive design.
+                </p>
+                <button onclick="startQuiz()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-lg shadow-lg transition-transform transform hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    Start Quiz
+                </button>
+            </div>
+
+            <!-- Question Screen (Hidden by default) -->
+            <div id="question-screen" class="hidden fade-in w-full">
+                <div class="mb-6">
+                    <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Question <span id="q-number">1</span>/10</span>
+                    <h3 id="question-text" class="text-lg sm:text-xl font-semibold text-gray-900 mt-2 leading-relaxed">
+                        <!-- Question goes here -->
+                    </h3>
+                </div>
+
+                <div id="options-container" class="space-y-3">
+                    <!-- Options injected via JS -->
+                </div>
+
+                <!-- Feedback Area -->
+                <div id="feedback-area" class="hidden mt-6 p-4 rounded-lg bg-gray-50 border border-gray-200 fade-in">
+                    <div class="flex items-start gap-3">
+                        <div id="feedback-icon" class="mt-1 text-lg"></div>
+                        <div>
+                            <p id="feedback-title" class="font-bold text-sm mb-1"></p>
+                            <p id="feedback-rationale" class="text-sm text-gray-600 leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-8 flex justify-between items-center">
+                    <button id="hint-btn" onclick="toggleHint()" class="text-xs text-gray-500 hover:text-blue-600 underline focus:outline-none">
+                        Need a hint?
+                    </button>
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden bg-gray-900 hover:bg-gray-800 text-white font-medium py-2 px-6 rounded-lg transition-colors flex items-center gap-2">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                
+                <!-- Hint Box -->
+                <div id="hint-box" class="hidden mt-2 p-3 bg-yellow-50 text-yellow-800 text-sm rounded border border-yellow-200 italic fade-in">
+                    <i class="fas fa-lightbulb mr-2"></i> <span id="hint-text"></span>
+                </div>
+            </div>
+
+            <!-- Result Screen (Hidden by default) -->
+            <div id="result-screen" class="hidden text-center fade-in">
+                <div id="result-icon-container" class="w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-md">
+                    <!-- Icon injected via JS -->
+                </div>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Quiz Completed!</h2>
+                <p class="text-gray-600 mb-6">You scored <span id="final-score" class="font-bold text-gray-900">0</span> out of <span id="total-questions">10</span></p>
+                
+                <p id="result-message" class="text-lg font-medium text-gray-800 mb-8 max-w-md mx-auto">
+                    <!-- Message injected via JS -->
+                </p>
+
+                <button onclick="restartQuiz()" class="bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold py-3 px-8 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                    <i class="fas fa-redo mr-2"></i> Retry Quiz
+                </button>
+            </div>
+
+        </main>
+    </div>
+
+    <script>
+        // Quiz Data extracted from JSON
+        const quizData = [
+            {
+                question: "A user downloads a beautifully designed fitness app with stunning animations and a modern color palette. However, they struggle to find the 'Start Workout' button because it is buried three menus deep. How would you classify this interface based on the UI/UX Matrix?",
+                options: [
+                    { text: "Good UI, Bad UX", rationale: "The application is visually appealing (Good UI) but fails to provide a smooth, functional experience for the user's primary goal (Bad UX).", isCorrect: true },
+                    { text: "Bad UI, Good UX", rationale: "This implies the app looks poor but works well, contradicting the description of 'stunning animations'.", isCorrect: false },
+                    { text: "Good UI, Good UX", rationale: "The difficulty in performing the core task indicates a specific failure in UX, despite the good visuals.", isCorrect: false },
+                    { text: "Bad UI, Bad UX", rationale: "The visual design is explicitly described as beautiful and modern, so it is not 'Bad UI'.", isCorrect: false }
+                ],
+                hint: "Think about the distinction between how the app 'looks' (the saddle) versus how the user's journey 'feels' (the ride)."
+            },
+            {
+                question: "You are designing a 'Delete Account' button. According to the 'Traffic Light Principle' and standard color meanings in UI, which color is most appropriate to communicate the permanence and urgency of this action?",
+                options: [
+                    { text: "Red", rationale: "Red is universally associated with danger, errors, and destructive actions like deletion.", isCorrect: true },
+                    { text: "Green", rationale: "Green indicates success or safety, which would misleadingly suggest deletion is a positive action.", isCorrect: false },
+                    { text: "Blue", rationale: "Blue signifies trust or information, lacking the urgent warning signal required for destructive actions.", isCorrect: false },
+                    { text: "Yellow", rationale: "Yellow signifies caution, but red is the standard for final, destructive actions.", isCorrect: false }
+                ],
+                hint: "Consider the color used on road signs to command a driver to immediately halt or recognize extreme danger."
+            },
+            {
+                question: "A user clicks a 'Submit' button on a form, but nothing appears to happen on the screen for several seconds, leading them to click it repeatedly. Which of the five core UI principles has been violated?",
+                options: [
+                    { text: "Feedback", rationale: "The system failed to provide a visible response (like a spinner) to acknowledge the interaction.", isCorrect: true },
+                    { text: "Consistency", rationale: "Consistency ensures elements behave similarly, but the issue here is the lack of reaction.", isCorrect: false },
+                    { text: "Simplicity", rationale: "The issue is not clutter or complexity, but a lack of communication from the system.", isCorrect: false },
+                    { text: "Clarity", rationale: "The user knew what to click (clarity), but the system didn't confirm the action (feedback).", isCorrect: false }
+                ],
+                hint: "Identify the principle that answers the user's subconscious question: 'Did the system register my click?'"
+            },
+            {
+                question: "When applying the 'Newspaper Rule' of Visual Hierarchy to a blog post, which element should technically be treated as 'Level 1' priority to catch the user's eye first?",
+                options: [
+                    { text: "The Main Headline", rationale: "Just like a newspaper front page, the headline should be the largest element to signal the topic.", isCorrect: true },
+                    { text: "The Hero Image", rationale: "While visible, the image usually serves as a visual anchor (Level 2) supporting the headline.", isCorrect: false },
+                    { text: "The Author's Name", rationale: "Metadata is typically low priority (Level 5) and shouldn't compete with main content.", isCorrect: false },
+                    { text: "The Body Text", rationale: "Body text is for detailed reading (Level 4), not for grabbing initial attention.", isCorrect: false }
+                ],
+                hint: "Think about what element is printed largest at the very top of a physical newspaper."
+            },
+            {
+                question: "You are selecting a typeface for the body text of a content-heavy mobile news app. Based on standard UI readability guidelines, which choice is optimal?",
+                options: [
+                    { text: "A Sans-Serif font at 16px size", rationale: "Sans-serifs are cleaner on screens, and 16px is the minimum to prevent eye strain.", isCorrect: true },
+                    { text: "A Serif font at 12px size", rationale: "12px is significantly below the 16-18px recommended range for body text.", isCorrect: false },
+                    { text: "A Decorative Script font at 18px size", rationale: "Script fonts are hard to scan quickly and unsuitable for long blocks of text.", isCorrect: false },
+                    { text: "A Monospace font at 14px size", rationale: "Monospace is for code; 14px is generally too small for comfortable prolonged reading.", isCorrect: false }
+                ],
+                hint: "Recall the comparison between reading a highway sign at speed versus reading a birthday card sitting down."
+            },
+            {
+                question: "Which of the following scenarios best demonstrates the 'Curb Cut Effect' in web accessibility?",
+                options: [
+                    { text: "Captions for deaf users helping a commuter in a noisy station.", rationale: "A feature designed for disability (deafness) benefits a wider audience in a specific situation.", isCorrect: true },
+                    { text: "Using high-contrast colors for branding aesthetics.", rationale: "This focuses on aesthetics rather than an accessibility feature with universal benefits.", isCorrect: false },
+                    { text: "Designing mobile-first for faster 4G loading.", rationale: "This is performance design, not an accessibility feature benefiting the general public.", isCorrect: false },
+                    { text: "Adding 'Dark Mode' as a developer trend.", rationale: "The Curb Cut Effect refers to essential disability features helping others, not just preferences.", isCorrect: false }
+                ],
+                hint: "Think about a physical ramp on a sidewalk: it was built for wheelchairs, but who else uses it daily?"
+            },
+            {
+                question: "If a user lands on a page and immediately asks 'Where can I go?', which UI element is primarily responsible for answering this question?",
+                options: [
+                    { text: "The Navigation Bar or Sidebar", rationale: "Menus and sidebars provide the directory of destinations.", isCorrect: true },
+                    { text: "The Page Title", rationale: "The Page Title answers 'Where am I?', not where the user can go next.", isCorrect: false },
+                    { text: "The 'Back' Button", rationale: "The 'Back' button answers 'How do I get back?', a different question.", isCorrect: false },
+                    { text: "The Breadcrumbs", rationale: "Breadcrumbs answer 'Where am I?' and 'How do I get back?'.", isCorrect: false }
+                ],
+                hint: "Look for the element that acts as the directory or map list for the application."
+            },
+            {
+                question: "A developer writes CSS using Media Queries to ensure a 3-column desktop layout automatically reorganizes into a 1-column layout on a smartphone. What design approach is being applied?",
+                options: [
+                    { text: "Responsive Design", rationale: "Responsive design uses the same HTML but adapts layout based on screen width.", isCorrect: true },
+                    { text: "Adaptive Frameworks", rationale: "'Adaptive' usually implies distinct templates, whereas fluid reorganization is Responsive Design.", isCorrect: false },
+                    { text: "Visual Hierarchy", rationale: "Visual Hierarchy deals with importance order, not structural layout adaptation.", isCorrect: false },
+                    { text: "User Experience Flow", rationale: "This is a broad term for the journey, not the specific technical implementation.", isCorrect: false }
+                ],
+                hint: "Think of the 'folding map' analogy: the content stays the same, but the arrangement changes to fit the pocket."
+            },
+            {
+                question: "Which of the following acronyms represents the four principles required for a website to be considered accessible according to WCAG standards?",
+                options: [
+                    { text: "POUR (Perceivable, Operable, Understandable, Robust)", rationale: "These are the four pillars of accessibility compliance.", isCorrect: true },
+                    { text: "CCFSA (Clarity, Consistency, Feedback, Simplicity, Accessibility)", rationale: "These are general UI principles, not the specific WCAG pillars.", isCorrect: false },
+                    { text: "FCP (First Contentful Paint)", rationale: "This is a performance metric, not an accessibility principle.", isCorrect: false },
+                    { text: "DRY (Don't Repeat Yourself)", rationale: "This is a coding principle, unrelated to accessibility.", isCorrect: false }
+                ],
+                hint: "The acronym sounds like something you do with a liquid."
+            },
+            {
+                question: "Which scenario best justifies using a UI Framework (like Bootstrap) instead of custom CSS?",
+                options: [
+                    { text: "Building a standard admin dashboard quickly.", rationale: "Frameworks are like 'IKEA furniture'—perfect for speed and standard consistency.", isCorrect: true },
+                    { text: "Client requires a highly unique brand identity.", rationale: "Custom CSS is better for unique designs; frameworks are hard to override.", isCorrect: false },
+                    { text: "Minimizing file size as much as possible.", rationale: "Frameworks are often heavier due to unused code libraries.", isCorrect: false },
+                    { text: "A beginner learning how CSS properties work.", rationale: "Beginners should build from scratch to understand fundamentals first.", isCorrect: false }
+                ],
+                hint: "Consider the trade-off between 'Speed/Standardization' versus 'Uniqueness/Control'."
+            }
+        ];
+
+        // App State
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+
+        // DOM Elements
+        const startScreen = document.getElementById('start-screen');
+        const questionScreen = document.getElementById('question-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const scoreDisplay = document.getElementById('score-display');
+        const currentScoreEl = document.getElementById('current-score');
+        const progressBar = document.getElementById('progress-bar');
+        const progressContainer = document.getElementById('progress-container');
+        
+        const qNumberEl = document.getElementById('q-number');
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackArea = document.getElementById('feedback-area');
+        const nextBtn = document.getElementById('next-btn');
+        const hintBtn = document.getElementById('hint-btn');
+        const hintBox = document.getElementById('hint-box');
+        const hintText = document.getElementById('hint-text');
+
+        function startQuiz() {
+            startScreen.classList.add('hidden');
+            questionScreen.classList.remove('hidden');
+            scoreDisplay.classList.remove('hidden');
+            progressContainer.classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            answered = false;
+            const currentQuestion = quizData[currentQuestionIndex];
+            
+            // Update UI
+            qNumberEl.textContent = currentQuestionIndex + 1;
+            questionTextEl.textContent = currentQuestion.question;
+            hintText.textContent = currentQuestion.hint;
+            
+            // Reset state
+            feedbackArea.classList.add('hidden');
+            nextBtn.classList.add('hidden');
+            hintBox.classList.add('hidden');
+            hintBtn.classList.remove('hidden');
+            optionsContainer.innerHTML = '';
+            updateProgress();
+
+            // Shuffle options for display
+            const shuffledOptions = [...currentQuestion.options].sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = `option-btn w-full text-left p-4 rounded-lg border border-gray-200 hover:bg-blue-50 hover:border-blue-200 bg-white font-medium text-gray-700 flex items-center justify-between group`;
+                btn.onclick = () => checkAnswer(option, btn);
+                
+                const spanText = document.createElement('span');
+                spanText.textContent = option.text;
+                
+                const spanIcon = document.createElement('span');
+                spanIcon.className = 'w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center text-xs text-white opacity-50 group-hover:opacity-100 transition-opacity';
+                
+                btn.appendChild(spanText);
+                btn.appendChild(spanIcon);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(selectedOption, btnElement) {
+            if (answered) return;
+            answered = true;
+
+            const isCorrect = selectedOption.isCorrect;
+            
+            // Update Score
+            if (isCorrect) {
+                score++;
+                currentScoreEl.textContent = score;
+                btnElement.classList.add('correct-answer');
+                btnElement.querySelector('span:last-child').innerHTML = '<i class="fas fa-check"></i>';
+                btnElement.querySelector('span:last-child').classList.remove('border-gray-300');
+                btnElement.querySelector('span:last-child').classList.add('bg-green-500', 'border-green-500', 'opacity-100');
+            } else {
+                btnElement.classList.add('incorrect-answer');
+                btnElement.querySelector('span:last-child').innerHTML = '<i class="fas fa-times"></i>';
+                btnElement.querySelector('span:last-child').classList.remove('border-gray-300');
+                btnElement.querySelector('span:last-child').classList.add('bg-red-500', 'border-red-500', 'opacity-100');
+            }
+
+            // Disable all buttons and highlight correct one if user was wrong
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.disabled = true;
+                button.classList.add('cursor-not-allowed');
+                // Find correct button text in DOM to highlight it if user missed it
+                if (!isCorrect && button.textContent.includes(quizData[currentQuestionIndex].options.find(o => o.isCorrect).text)) {
+                    button.classList.add('correct-answer');
+                    const icon = button.querySelector('span:last-child');
+                    icon.innerHTML = '<i class="fas fa-check"></i>';
+                    icon.classList.remove('border-gray-300');
+                    icon.classList.add('bg-green-500', 'border-green-500', 'opacity-100');
+                }
+            });
+
+            // Show Feedback
+            feedbackArea.classList.remove('hidden');
+            const feedbackIcon = document.getElementById('feedback-icon');
+            const feedbackTitle = document.getElementById('feedback-title');
+            const feedbackRationale = document.getElementById('feedback-rationale');
+
+            if (isCorrect) {
+                feedbackArea.className = "mt-6 p-4 rounded-lg bg-green-50 border border-green-200 fade-in";
+                feedbackIcon.innerHTML = '<i class="fas fa-check-circle text-green-600"></i>';
+                feedbackTitle.textContent = "Correct!";
+                feedbackTitle.className = "font-bold text-sm mb-1 text-green-800";
+            } else {
+                feedbackArea.className = "mt-6 p-4 rounded-lg bg-red-50 border border-red-200 fade-in";
+                feedbackIcon.innerHTML = '<i class="fas fa-times-circle text-red-600"></i>';
+                feedbackTitle.textContent = "Incorrect";
+                feedbackTitle.className = "font-bold text-sm mb-1 text-red-800";
+            }
+            feedbackRationale.textContent = selectedOption.rationale;
+
+            // Show Next Button
+            nextBtn.classList.remove('hidden');
+            hintBtn.classList.add('hidden');
+            hintBox.classList.add('hidden');
+        }
+
+        function toggleHint() {
+            hintBox.classList.remove('hidden');
+            hintBtn.classList.add('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < quizData.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function updateProgress() {
+            const percentage = ((currentQuestionIndex) / quizData.length) * 100;
+            progressBar.style.width = `${percentage}%`;
+        }
+
+        function showResults() {
+            questionScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+            scoreDisplay.classList.add('hidden');
+            progressContainer.classList.add('hidden');
+
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('total-questions').textContent = quizData.length;
+
+            const iconContainer = document.getElementById('result-icon-container');
+            const msg = document.getElementById('result-message');
+            const percentage = (score / quizData.length) * 100;
+
+            if (percentage >= 80) {
+                iconContainer.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-md bg-green-100 text-green-600";
+                iconContainer.innerHTML = '<i class="fas fa-trophy"></i>';
+                msg.textContent = "Excellent work! You have a solid grasp of UI principles.";
+            } else if (percentage >= 50) {
+                iconContainer.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-md bg-yellow-100 text-yellow-600";
+                iconContainer.innerHTML = '<i class="fas fa-star-half-alt"></i>';
+                msg.textContent = "Good effort! Review the rationales for the questions you missed to master the concepts.";
+            } else {
+                iconContainer.className = "w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl shadow-md bg-red-100 text-red-600";
+                iconContainer.innerHTML = '<i class="fas fa-book-open"></i>';
+                msg.textContent = "Keep studying! Review the '5 Core Principles' and 'Visual Hierarchy' sections again.";
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            currentScoreEl.textContent = 0;
+            resultScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
+
+
+
+
