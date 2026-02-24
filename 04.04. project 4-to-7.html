@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Week 02: Front-End Development - Project Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f5f5f4; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e; 
+        }
+
+        /* Chart Container Styling - Mandatory */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px; /* Constrain width for readability */
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 300px;
+        }
+        
+        .tab-active {
+            border-bottom: 2px solid #ea580c; /* Orange-600 */
+            color: #ea580c;
+            font-weight: 600;
+        }
+        .tab-inactive {
+            color: #78716c; /* Stone-500 */
+        }
+        .tab-inactive:hover {
+            color: #44403c; /* Stone-700 */
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals (Stone/Sand) with Professional Accents (Orange, Blue, Emerald) -->
+    <!-- Application Structure Plan: 
+         1. Hero Section: Sets the academic context, roadmap position, and high-level objectives.
+         2. Planning Dashboard: Visualizes workload and report space allocation using Chart.js to help students manage their 6 hours effectively.
+         3. Task Operations Center: The core interactive component. A tabbed interface separates the distinct distinct tracks (Browser, Core Dev, Framework). This reduces cognitive load by hiding non-relevant details.
+         4. Task Detail Views: Inside tabs, accordions reorganize the linear source text into "Actionable Steps" and "Deliverable Requirements".
+         5. Submission Tracker: An interactive checklist to gamify the final review process. 
+         Rationale: The source report is dense. Breaking it into a dashboard allows the student to switch between "Planning Mode" and "Execution Mode".
+    -->
+    <!-- Visualization & Content Choices:
+         1. Roadmap Visualization (HTML/CSS): Shows the 5-module journey to place the current work in context. Goal: Context.
+         2. Workload Donut Charts (Chart.js): Visualizes the 1-2-1 weighting and page limits. Goal: Inform/Planning. Interaction: Hover for exact hours/pages.
+         3. Interactive Task Tabs (JS): Separates the 3 main workstreams. Goal: Organize.
+         4. Step-by-Step Accordions (JS): Manages the detailed instructions for each task. Goal: Inform/Organize.
+         5. Completion Checklist (JS): Dynamic progress bar based on checked items. Goal: Engage/Verify.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans leading-relaxed">
+
+    <!-- Header / Context -->
+    <header class="bg-white border-b border-stone-200 shadow-sm sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-stone-900">Web App Development</h1>
+                <p class="text-sm text-stone-500">Week 02: Front-End Development</p>
+            </div>
+            <div class="hidden md:flex items-center space-x-4">
+                <span class="bg-orange-100 text-orange-800 text-xs px-2 py-1 rounded-full font-semibold">Min 6 Hours</span>
+                <span class="bg-stone-100 text-stone-600 text-xs px-2 py-1 rounded-full font-semibold">Max 5 Pages</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8 space-y-8">
+
+        <!-- Intro Section -->
+        <section class="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
+            <h2 class="text-lg font-bold mb-4 border-l-4 border-orange-500 pl-3">Project Context: The "What"</h2>
+            <p class="mb-4 text-stone-600">
+                You are moving from the "Why" and "Who" (Week 1) to the "What". This dashboard guides you through building the functional front-end of your application. The work you do here is the engineering foundation for the rest of the semester.
+            </p>
+            
+            <!-- Module Roadmap Visualization -->
+            <div class="mt-8">
+                <h3 class="text-sm font-semibold text-stone-500 uppercase tracking-wider mb-3">Continuous Project Roadmap</h3>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-4 md:space-y-0 relative">
+                    <!-- Connecting Line (Desktop) -->
+                    <div class="hidden md:block absolute top-1/2 left-0 w-full h-1 bg-stone-100 -z-10"></div>
+                    
+                    <!-- Module 1 -->
+                    <div class="flex flex-col items-center bg-white z-10 px-2">
+                        <div class="w-8 h-8 rounded-full bg-stone-200 text-stone-500 flex items-center justify-center font-bold text-sm mb-2"><i class="fas fa-check"></i></div>
+                        <span class="text-xs text-stone-400 font-medium">Mod 1: UX/UI</span>
+                    </div>
+
+                    <!-- Module 2 (Current) -->
+                    <div class="flex flex-col items-center bg-white z-10 px-2">
+                        <div class="w-10 h-10 rounded-full bg-orange-500 text-white flex items-center justify-center font-bold text-sm mb-2 shadow-lg ring-4 ring-orange-50 animate-pulse">2</div>
+                        <span class="text-xs text-orange-600 font-bold">Mod 2: Front-End</span>
+                    </div>
+
+                    <!-- Module 3 -->
+                    <div class="flex flex-col items-center bg-white z-10 px-2 opacity-50">
+                        <div class="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center font-bold text-sm mb-2">3</div>
+                        <span class="text-xs text-stone-400 font-medium">Mod 3: Back-End</span>
+                    </div>
+
+                    <!-- Module 4 -->
+                    <div class="flex flex-col items-center bg-white z-10 px-2 opacity-50">
+                        <div class="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center font-bold text-sm mb-2">4</div>
+                        <span class="text-xs text-stone-400 font-medium">Mod 4: Arch</span>
+                    </div>
+
+                    <!-- Module 5 -->
+                    <div class="flex flex-col items-center bg-white z-10 px-2 opacity-50">
+                        <div class="w-8 h-8 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center font-bold text-sm mb-2">5</div>
+                        <span class="text-xs text-stone-400 font-medium">Mod 5: Security</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Planning Dashboard -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Intro for Dashboard -->
+            <div class="md:col-span-2">
+                <h2 class="text-lg font-bold mb-2">Planning Your Delivery</h2>
+                <p class="text-sm text-stone-600">The project is weighted 1-2-1 across three distinct technical areas. Use these visuals to balance your effort (Time) and your documentation (Report Space). Don't overspend time on the browser analysis at the expense of the core code.</p>
+            </div>
+
+            <!-- Chart 1: Time Allocation -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <h3 class="text-center font-semibold text-stone-700 mb-4">Estimated Workload (Hours)</h3>
+                <div class="chart-container">
+                    <canvas id="timeChart"></canvas>
+                </div>
+                <div class="mt-4 text-center">
+                    <p class="text-xs text-stone-500">Total: ~6 Hours</p>
+                </div>
+            </div>
+
+            <!-- Chart 2: Report Space -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <h3 class="text-center font-semibold text-stone-700 mb-4">Report Space (Pages)</h3>
+                <div class="chart-container">
+                    <canvas id="pageChart"></canvas>
+                </div>
+                <div class="mt-4 text-center">
+                    <p class="text-xs text-stone-500">Max: 5 Pages (A4)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Task Operations Center -->
+        <section id="task-center" class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+            <!-- Tab Navigation -->
+            <div class="flex overflow-x-auto border-b border-stone-200 bg-stone-50">
+                <button onclick="switchTab('task4')" id="tab-task4" class="tab-active flex-1 py-4 px-6 text-center whitespace-nowrap focus:outline-none transition-colors">
+                    <i class="fas fa-globe mr-2"></i>Task 4: Browser
+                </button>
+                <button onclick="switchTab('task56')" id="tab-task56" class="tab-inactive flex-1 py-4 px-6 text-center whitespace-nowrap focus:outline-none transition-colors">
+                    <i class="fas fa-code mr-2"></i>Task 5 & 6: Core Dev
+                </button>
+                <button onclick="switchTab('task7')" id="tab-task7" class="tab-inactive flex-1 py-4 px-6 text-center whitespace-nowrap focus:outline-none transition-colors">
+                    <i class="fab fa-vuejs mr-2"></i>Task 7: Vue.js
+                </button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div class="p-6 min-h-[500px]">
+                
+                <!-- Task 4 Content -->
+                <div id="content-task4" class="block animate-fade-in">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-stone-800">The Browser & DevTools</h3>
+                            <p class="text-stone-600 mt-1">Understanding the rendering engine, pipeline, and debugging environment.</p>
+                        </div>
+                        <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded text-sm font-bold">Weight: 1</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Left Col: Steps -->
+                        <div class="lg:col-span-2 space-y-4">
+                            <h4 class="font-bold text-stone-700 uppercase text-xs tracking-wider">Execution Steps</h4>
+                            
+                            <!-- Step 1 Accordion -->
+                            <div class="border border-stone-200 rounded-lg overflow-hidden">
+                                <button onclick="toggleAccordion('t4s1')" class="w-full text-left px-4 py-3 bg-stone-50 hover:bg-stone-100 flex justify-between items-center font-medium">
+                                    <span>Step 1: Browser Analysis (30 min)</span>
+                                    <i class="fas fa-chevron-down text-stone-400"></i>
+                                </button>
+                                <div id="t4s1" class="hidden px-4 py-4 bg-white text-sm text-stone-700 space-y-2">
+                                    <p>Pick two distinct engines (e.g., Chrome/Blink vs Firefox/Gecko). Open the same page in both.</p>
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li><strong>Network Tab:</strong> Count HTTP requests, largest resources, load time.</li>
+                                        <li><strong>Elements Panel:</strong> Find <code>&lt;body&gt;</code>, identify parent-child nodes. Edit text/style live.</li>
+                                        <li><strong>Cross-Browser Check:</strong> Find 1 difference (font, form styling, etc.).</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 Accordion -->
+                            <div class="border border-stone-200 rounded-lg overflow-hidden">
+                                <button onclick="toggleAccordion('t4s2')" class="w-full text-left px-4 py-3 bg-stone-50 hover:bg-stone-100 flex justify-between items-center font-medium">
+                                    <span>Step 2: DevTools Proficiency (30 min)</span>
+                                    <i class="fas fa-chevron-down text-stone-400"></i>
+                                </button>
+                                <div id="t4s2" class="hidden px-4 py-4 bg-white text-sm text-stone-700 space-y-2">
+                                    <p>Use your project files for this:</p>
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li><strong>Console:</strong> Cause a JS error, observe it, fix it.</li>
+                                        <li><strong>Network (Disable Cache):</strong> Record requests, size, and DOMContentLoaded time.</li>
+                                        <li><strong>Application:</strong> Store a value in localStorage and verify it.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Col: Report Guide -->
+                        <div class="bg-amber-50 p-5 rounded-lg border border-amber-100 h-fit">
+                            <h4 class="font-bold text-amber-900 mb-3"><i class="fas fa-pen-nib mr-2"></i>Write-Up Guide</h4>
+                            <p class="text-sm text-amber-800 mb-4">Target: ~1 Page</p>
+                            <ul class="text-sm text-amber-800 space-y-2 list-none">
+                                <li class="flex items-start"><i class="fas fa-check-circle mt-1 mr-2 opacity-50"></i> Summarize browsers/engines tested.</li>
+                                <li class="flex items-start"><i class="fas fa-check-circle mt-1 mr-2 opacity-50"></i> Describe the cross-browser difference found & fix.</li>
+                                <li class="flex items-start"><i class="fas fa-check-circle mt-1 mr-2 opacity-50"></i> Share one DevTools insight that changed your view.</li>
+                                <li class="flex items-start"><i class="fas fa-camera mt-1 mr-2 opacity-50"></i> Include screenshot of DOM modification.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Task 5&6 Content -->
+                <div id="content-task56" class="hidden animate-fade-in">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-stone-800">HTML5, CSS & JavaScript</h3>
+                            <p class="text-stone-600 mt-1">Advanced structure, styling, and logic. This is the core of your application.</p>
+                        </div>
+                        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded text-sm font-bold">Weight: 2 (Combined)</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        
+                        <!-- HTML/CSS Column -->
+                        <div class="space-y-4">
+                            <h4 class="font-bold text-blue-600 border-b border-blue-100 pb-2">Task 5: Structure & Style</h4>
+                            
+                            <div class="p-4 bg-stone-50 rounded border border-stone-200">
+                                <h5 class="font-bold text-sm mb-2">Semantic HTML5</h5>
+                                <p class="text-xs text-stone-500 mb-2">Use at least 5 of: <code>nav</code>, <code>header</code>, <code>main</code>, <code>section</code>, <code>article</code>, <code>aside</code>, <code>footer</code>, <code>figure</code>, <code>details</code>, <code>time</code>.</p>
+                                <a href="https://validator.w3.org/" target="_blank" class="text-xs text-blue-500 hover:underline">Validate at W3C</a>
+                            </div>
+
+                            <div class="p-4 bg-stone-50 rounded border border-stone-200">
+                                <h5 class="font-bold text-sm mb-2">Advanced Layout</h5>
+                                <ul class="text-xs text-stone-600 list-disc pl-4 space-y-1">
+                                    <li><strong>CSS Grid:</strong> Define page structure (header, sidebar, content).</li>
+                                    <li><strong>Flexbox:</strong> Component level (nav bar, card row).</li>
+                                    <li><strong>Responsiveness:</strong> 2 breakpoints (Mobile ≤768px, Desktop ≥1024px). Layout must change visually.</li>
+                                </ul>
+                            </div>
+
+                            <div class="p-4 bg-stone-50 rounded border border-stone-200">
+                                <h5 class="font-bold text-sm mb-2">CSS Features (Pick 3)</h5>
+                                <div class="flex flex-wrap gap-2">
+                                    <span class="px-2 py-1 bg-white border rounded text-xs">Variables</span>
+                                    <span class="px-2 py-1 bg-white border rounded text-xs">Transitions/Anim</span>
+                                    <span class="px-2 py-1 bg-white border rounded text-xs">Reset/Normalize</span>
+                                    <span class="px-2 py-1 bg-white border rounded text-xs">Pseudo-elements</span>
+                                    <span class="px-2 py-1 bg-white border rounded text-xs">:has() / :is()</span>
+                                    <span class="px-2 py-1 bg-white border rounded text-xs">Dark Mode</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- JavaScript Column -->
+                        <div class="space-y-4">
+                            <h4 class="font-bold text-purple-600 border-b border-purple-100 pb-2">Task 6: Logic & Data</h4>
+                            
+                            <div class="p-4 bg-stone-50 rounded border border-stone-200">
+                                <h5 class="font-bold text-sm mb-2">DOM & Events</h5>
+                                <ul class="text-xs text-stone-600 list-disc pl-4 space-y-1">
+                                    <li>Create elements programmatically (e.g., <code>document.createElement</code>).</li>
+                                    <li>Attach 3+ event listeners (click, input, submit, etc.).</li>
+                                    <li>Process form data & validate via JS.</li>
+                                </ul>
+                            </div>
+
+                            <div class="p-4 bg-stone-50 rounded border border-stone-200">
+                                <h5 class="font-bold text-sm mb-2">ES6+ Features (Pick 5)</h5>
+                                <div class="grid grid-cols-2 gap-2 text-xs text-stone-600">
+                                    <div><i class="fas fa-check text-green-500 mr-1"></i>const/let</div>
+                                    <div><i class="fas fa-check text-green-500 mr-1"></i>Arrow Fn</div>
+                                    <div><i class="fas fa-check text-green-500 mr-1"></i>Template Lit</div>
+                                    <div><i class="fas fa-check text-green-500 mr-1"></i>Destructuring</div>
+                                    <div><i class="fas fa-check text-green-500 mr-1"></i>Spread/Rest</div>
+                                    <div><i class="fas fa-check text-green-500 mr-1"></i>Map/Filter</div>
+                                    <div><i class="fas fa-check text-green-500 mr-1"></i>Async/Await</div>
+                                </div>
+                            </div>
+
+                            <div class="p-4 bg-stone-50 rounded border border-stone-200">
+                                <h5 class="font-bold text-sm mb-2">Data Handling</h5>
+                                <p class="text-xs text-stone-500">Implement <strong>one</strong>:</p>
+                                <div class="mt-2 flex space-x-2">
+                                    <div class="flex-1 bg-white p-2 text-center border rounded text-xs">
+                                        <strong>Fetch API</strong><br>Public Data
+                                    </div>
+                                    <div class="flex-1 bg-white p-2 text-center border rounded text-xs">
+                                        <strong>localStorage</strong><br>Persist User Prefs
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Write Up Section -->
+                    <div class="mt-6 bg-blue-50 p-4 rounded border border-blue-100">
+                        <h4 class="font-bold text-blue-900 text-sm mb-2"><i class="fas fa-pen-nib mr-2"></i>Combined Write-Up Guide (Tasks 5 & 6)</h4>
+                        <p class="text-xs text-blue-800 mb-2">Target: ~2.5 Pages</p>
+                        <p class="text-xs text-blue-800">Explain decisions. Show Mobile vs Desktop screenshots. Note CSS cross-browser fixes. Explain JS functionality, ES6 usage, and one debugging scenario.</p>
+                    </div>
+                </div>
+
+                <!-- Task 7 Content -->
+                <div id="content-task7" class="hidden animate-fade-in">
+                    <div class="flex justify-between items-start mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold text-stone-800">Vue.js Framework</h3>
+                            <p class="text-stone-600 mt-1">Introduction to component-based architecture and reactivity.</p>
+                        </div>
+                        <span class="bg-emerald-100 text-emerald-800 px-3 py-1 rounded text-sm font-bold">Weight: 1</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-bold text-stone-700 mb-4">Implementation Requirements</h4>
+                            <div class="space-y-4">
+                                <!-- Req 1 -->
+                                <div class="flex items-start">
+                                    <div class="bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shrink-0">1</div>
+                                    <div>
+                                        <h5 class="font-bold text-sm">Choose Setup</h5>
+                                        <p class="text-xs text-stone-500">CDN (Simple), Vue CLI, or Vite (Modern). Justify your choice in the report.</p>
+                                    </div>
+                                </div>
+                                <!-- Req 2 -->
+                                <div class="flex items-start">
+                                    <div class="bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shrink-0">2</div>
+                                    <div>
+                                        <h5 class="font-bold text-sm">Components</h5>
+                                        <p class="text-xs text-stone-500">Create at least 2 custom components (e.g., <code>&lt;NavBar /&gt;</code>, <code>&lt;Card /&gt;</code>).</p>
+                                    </div>
+                                </div>
+                                <!-- Req 3 -->
+                                <div class="flex items-start">
+                                    <div class="bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shrink-0">3</div>
+                                    <div>
+                                        <h5 class="font-bold text-sm">Props & State</h5>
+                                        <p class="text-xs text-stone-500">Pass data down via Props. Use <code>ref()</code> or <code>data()</code> for reactive state.</p>
+                                    </div>
+                                </div>
+                                <!-- Req 4 -->
+                                <div class="flex items-start">
+                                    <div class="bg-emerald-100 text-emerald-600 w-8 h-8 rounded-full flex items-center justify-center font-bold mr-3 shrink-0">4</div>
+                                    <div>
+                                        <h5 class="font-bold text-sm">Directives</h5>
+                                        <p class="text-xs text-stone-500">Use <code>v-if</code> (conditional) or <code>v-for</code> (loops) in your template.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-emerald-50 p-6 rounded-lg border border-emerald-100">
+                            <h4 class="font-bold text-emerald-900 mb-4"><i class="fas fa-lightbulb mr-2"></i>Integration Goal</h4>
+                            <p class="text-sm text-emerald-800 mb-4">
+                                Your Vue prototype should feel like an evolution of your Task 5/6 work. Try to reuse your CSS and data logic.
+                            </p>
+                            <hr class="border-emerald-200 my-4">
+                            <h4 class="font-bold text-emerald-900 mb-2">Write-Up Reflection (~1.5 Pages)</h4>
+                            <ul class="text-sm text-emerald-800 space-y-2 list-disc pl-5">
+                                <li>Show component hierarchy.</li>
+                                <li>Snippet showing props/reactivity.</li>
+                                <li>What was easier/harder than Vanilla JS?</li>
+                                <li>Would you keep using Vue? Why/Why not?</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Final Submission Checklist -->
+        <section class="bg-stone-800 text-stone-200 rounded-xl p-8">
+            <h2 class="text-xl font-bold mb-6 text-white"><i class="fas fa-clipboard-check mr-2"></i>Submission Checklist</h2>
+            <div class="mb-4">
+                 <div class="w-full bg-stone-700 rounded-full h-2.5">
+                    <div id="progress-bar" class="bg-green-500 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+                <p class="text-right text-xs mt-1 text-stone-400" id="progress-text">0% Ready</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm">
+                <!-- Checklist Items -->
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Report ≤ 5 Pages (A4)</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Tasks 4, 5, 6, 7 addressed</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>2 Browsers Compared</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>HTML5 Validated (W3C)</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Responsive (2 Breakpoints)</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>JS: DOM, Events, ES6+</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Vue: 2 Components + Props</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Code Snippets Annotated</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Screenshots Labeled</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Name & Student ID Included</span>
+                </label>
+                <label class="flex items-center space-x-3 cursor-pointer hover:bg-stone-700 p-2 rounded transition">
+                    <input type="checkbox" class="form-checkbox h-5 w-5 text-orange-500 rounded focus:ring-orange-500 bg-stone-600 border-none check-item">
+                    <span>Source Code Attached (Zip/Link)</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-stone-400 text-xs py-6">
+            <p>Based on "Week 02 — Front-End Development" Assignment.</p>
+            <p class="mt-2">Disclaimer: Do not deploy to public servers without security checks. Back up your work.</p>
+            <p>© 2026 Cyber.SoHo — Educational Purpose Only.</p>
+        </footer>
+
+    </main>
+
+    <script>
+        // --- 1. Chart.js Implementation ---
+        
+        // Data derived from the "Ponderation Explained" table in source
+        const timeData = {
+            labels: ['Task 4: Browser', 'Task 5/6: HTML/CSS/JS', 'Task 7: Vue'],
+            datasets: [{
+                data: [1.5, 3, 1.5], // Hours
+                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'], // Amber, Blue, Emerald
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        };
+
+        const pageData = {
+            labels: ['Task 4: Browser', 'Task 5/6: HTML/CSS/JS', 'Task 7: Vue'],
+            datasets: [{
+                data: [1, 2.5, 1.5], // Pages
+                backgroundColor: ['#f59e0b', '#3b82f6', '#10b981'],
+                borderWidth: 0,
+                hoverOffset: 4
+            }]
+        };
+
+        // Common Chart Config
+        const commonOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { font: { size: 10 }, usePointStyle: true, boxWidth: 8 }
+                }
+            }
+        };
+
+        // Render Time Chart
+        new Chart(document.getElementById('timeChart'), {
+            type: 'doughnut',
+            data: timeData,
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    tooltip: { callbacks: { label: (ctx) => ` ${ctx.raw} Hours` } }
+                }
+            }
+        });
+
+        // Render Page Chart
+        new Chart(document.getElementById('pageChart'), {
+            type: 'doughnut',
+            data: pageData,
+            options: {
+                ...commonOptions,
+                plugins: {
+                    ...commonOptions.plugins,
+                    tooltip: { callbacks: { label: (ctx) => ` ~${ctx.raw} Pages` } }
+                }
+            }
+        });
+
+        // --- 2. Functional Navigation (Tabs) ---
+        
+        function switchTab(tabId) {
+            // Hide all contents
+            ['task4', 'task56', 'task7'].forEach(id => {
+                document.getElementById(`content-${id}`).classList.add('hidden');
+                document.getElementById(`tab-${id}`).classList.remove('tab-active');
+                document.getElementById(`tab-${id}`).classList.add('tab-inactive');
+            });
+
+            // Show selected
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('tab-active');
+            document.getElementById(`tab-${tabId}`).classList.remove('tab-inactive');
+        }
+
+        // --- 3. Accordion Interaction ---
+
+        function toggleAccordion(id) {
+            const el = document.getElementById(id);
+            const isHidden = el.classList.contains('hidden');
+            
+            // Toggle visibility
+            if (isHidden) {
+                el.classList.remove('hidden');
+            } else {
+                el.classList.add('hidden');
+            }
+            
+            // Rotate icon (simple implementation via class replacement for cleaner DOM)
+            const btn = el.previousElementSibling;
+            const icon = btn.querySelector('i');
+            if (isHidden) {
+                icon.classList.remove('fa-chevron-down');
+                icon.classList.add('fa-chevron-up');
+            } else {
+                icon.classList.remove('fa-chevron-up');
+                icon.classList.add('fa-chevron-down');
+            }
+        }
+
+        // --- 4. Interactive Checklist Logic ---
+
+        const checkboxes = document.querySelectorAll('.check-item');
+        const progressBar = document.getElementById('progress-bar');
+        const progressText = document.getElementById('progress-text');
+
+        function updateProgress() {
+            const total = checkboxes.length;
+            const checked = Array.from(checkboxes).filter(cb => cb.checked).length;
+            const percentage = Math.round((checked / total) * 100);
+
+            progressBar.style.width = `${percentage}%`;
+            progressText.innerText = `${percentage}% Ready for Submission`;
+
+            // Color change based on completion
+            if (percentage === 100) {
+                progressBar.classList.remove('bg-green-500');
+                progressBar.classList.add('bg-orange-500'); // Celebration color
+                progressText.innerText = "Ready to Submit! Good Luck!";
+            }
+        }
+
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', updateProgress);
+        });
+
+    </script>
+</body>
+</html>
+
+
+

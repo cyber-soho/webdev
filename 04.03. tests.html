@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browser Mechanics Study App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Flashcard Flip Animations */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .transition-transform { transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
+        
+        /* Custom scrollbar for rationale */
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col items-center py-8 px-4 sm:px-8">
+
+    <div class="max-w-3xl w-full">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-slate-900 mb-2">Browser Mechanics</h1>
+            <p class="text-slate-500">Master the internals of modern web browsers</p>
+        </header>
+
+        <!-- Tabs -->
+        <div class="flex space-x-2 mb-6 bg-slate-200/50 p-1 rounded-lg">
+            <button id="tab-flashcards" class="flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-blue-700" onclick="switchTab('flashcards')">
+                Flashcards (25)
+            </button>
+            <button id="tab-quiz" class="flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-200" onclick="switchTab('quiz')">
+                Practice Quiz (10)
+            </button>
+        </div>
+
+        <!-- Flashcards Section -->
+        <section id="section-flashcards" class="block">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col items-center">
+                
+                <!-- Progress -->
+                <div class="w-full flex justify-between text-sm text-slate-500 font-medium mb-4">
+                    <span>Card <span id="fc-current">1</span> of <span id="fc-total">25</span></span>
+                    <span id="fc-hint" class="text-blue-500 cursor-pointer hover:underline" onclick="flipCard()">Click card to flip</span>
+                </div>
+
+                <!-- Flashcard -->
+                <div class="w-full h-64 sm:h-80 perspective-1000 cursor-pointer" onclick="flipCard()">
+                    <div id="flashcard-inner" class="relative w-full h-full transform-style-3d transition-transform duration-500">
+                        <!-- Front -->
+                        <div class="absolute w-full h-full backface-hidden bg-slate-50 border-2 border-slate-200 rounded-xl flex items-center justify-center p-8 text-center shadow-inner">
+                            <h2 id="fc-front-text" class="text-xl sm:text-2xl font-semibold text-slate-800">Front Text</h2>
+                        </div>
+                        <!-- Back -->
+                        <div class="absolute w-full h-full backface-hidden bg-blue-50 border-2 border-blue-200 rounded-xl flex items-center justify-center p-8 text-center rotate-y-180 shadow-inner">
+                            <p id="fc-back-text" class="text-lg sm:text-xl text-blue-900 font-medium">Back Text</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="flex justify-center items-center space-x-6 w-full mt-6">
+                    <button onclick="prevCard()" class="p-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                    </button>
+                    <button onclick="flipCard()" class="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm">
+                        Flip
+                    </button>
+                    <button onclick="nextCard()" class="p-3 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors focus:outline-none">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="section-quiz" class="hidden">
+            <div id="quiz-container" class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
+                
+                <!-- Quiz Header -->
+                <div class="flex justify-between items-center mb-6">
+                    <span class="text-sm font-bold text-slate-400 uppercase tracking-wider">Question <span id="quiz-current">1</span>/10</span>
+                    <span class="text-sm font-medium bg-blue-100 text-blue-700 py-1 px-3 rounded-full">Score: <span id="quiz-score">0</span></span>
+                </div>
+
+                <!-- Question -->
+                <h3 id="quiz-question-text" class="text-xl font-semibold text-slate-900 mb-6">Question text goes here?</h3>
+
+                <!-- Hint -->
+                <div class="mb-6">
+                    <button id="btn-show-hint" onclick="toggleHint()" class="text-sm text-blue-600 hover:text-blue-800 font-medium flex items-center transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        Show Hint
+                    </button>
+                    <div id="quiz-hint" class="hidden mt-2 p-3 bg-amber-50 border border-amber-200 text-amber-800 text-sm rounded-lg italic">
+                        Hint text goes here.
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div id="quiz-options" class="space-y-3 mb-6">
+                    <!-- Options injected via JS -->
+                </div>
+
+                <!-- Rationale & Next -->
+                <div id="quiz-feedback" class="hidden border-t border-slate-100 pt-6 mt-6">
+                    <h4 id="feedback-title" class="font-bold text-lg mb-2">Feedback</h4>
+                    <p id="feedback-rationale" class="text-slate-600 mb-6 custom-scrollbar max-h-32 overflow-y-auto">Rationale text.</p>
+                    <button id="btn-next-quiz" onclick="nextQuizQuestion()" class="w-full py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-lg font-medium transition-colors shadow-sm">
+                        Next Question
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quiz Results (Hidden initially) -->
+            <div id="quiz-results" class="hidden bg-white p-8 rounded-2xl shadow-sm border border-slate-200 text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-4">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900 mb-2">Quiz Completed!</h2>
+                <p class="text-lg text-slate-600 mb-6">You scored <span id="final-score" class="font-bold text-blue-600">0</span> out of 10.</p>
+                <button onclick="restartQuiz()" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm">
+                    Restart Quiz
+                </button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Application Logic -->
+    <script>
+        // --- DATA ---
+        const flashcardsData = [
+            { front: "The five major functions of a web browser", back: "Request engine, parser, renderer, script executor, and security guard." },
+            { front: "Rendering engine used by Chrome, Edge, and Opera", back: "Blink" },
+            { front: "Rendering engine used by Firefox", back: "Gecko" },
+            { front: "Rendering engine used by Safari and all iOS browsers", back: "WebKit" },
+            { front: "The 8 stages of the Rendering Pipeline", back: "DNS Lookup, TCP/TLS, HTTP, HTML Parsing (DOM), CSS Parsing (CSSOM), Render Tree, Layout, Paint." },
+            { front: "Definition of the DOM (Document Object Model)", back: "A live, in-memory tree of objects representing the HTML page that JavaScript can read and modify." },
+            { front: "Difference between HTML and the DOM", back: "HTML is the static text file; the DOM is the living data structure created by the browser after parsing the HTML." },
+            { front: "DOM method to find the first element matching a CSS selector", back: "document.querySelector()" },
+            { front: "DOM method used to create a new element node", back: "document.createElement()" },
+            { front: "DevTools panel for inspecting the live DOM and CSS", back: "Elements Panel" },
+            { front: "DevTools panel for monitoring HTTP requests and responses", back: "Network Panel" },
+            { front: "Purpose of Normalize.css or a CSS Reset", back: "To standardize or strip the browser's built-in user-agent stylesheet, ensuring consistent rendering across different browsers." },
+            { front: "Client-side storage type sent to the server with every request", back: "Cookies" },
+            { front: "Client-side storage that persists permanently until cleared", back: "localStorage" },
+            { front: "Client-side storage that is cleared when the tab is closed", back: "sessionStorage" },
+            { front: "HTTP method used to retrieve data", back: "GET" },
+            { front: "HTTP method used to submit data (e.g., forms)", back: "POST" },
+            { front: "Meaning of HTTP Status Code 200", back: "OK (Request succeeded)" },
+            { front: "Meaning of HTTP Status Code 404", back: "Not Found (The requested URL does not exist)" },
+            { front: "Meaning of HTTP Status Code 500", back: "Internal Server Error" },
+            { front: "Protocol ensuring encrypted connections between browser and server", back: "HTTPS (TLS/SSL)" },
+            { front: "Same-Origin Policy (SOP)", back: "A security measure preventing scripts from one origin (domain) from reading data from a different origin." },
+            { front: "Components of a Web \"Origin\"", back: "Protocol + Domain + Port" },
+            { front: "CORS (Cross-Origin Resource Sharing)", back: "A mechanism that allows servers to explicitly grant permission for browsers to bypass the Same-Origin Policy." },
+            { front: "Content Security Policy (CSP)", back: "A security layer where the server restricts which sources (domains) are allowed to execute scripts, preventing XSS attacks." }
+        ];
+
+        const quizData = [
+            {
+                question: "Which rendering engine is primarily used by Google Chrome, Microsoft Edge, and Opera?",
+                hint: "This engine was forked from WebKit in 2013 and is maintained by Google.",
+                options: [
+                    { text: "Blink", isCorrect: true, rationale: "Blink is the rendering engine maintained by Google and used by Chromium-based browsers like Chrome, Edge, and Opera." },
+                    { text: "Gecko", isCorrect: false, rationale: "Gecko is the rendering engine developed by the Mozilla Foundation and is primarily used in Firefox." },
+                    { text: "WebKit", isCorrect: false, rationale: "WebKit is the engine used by Apple for Safari and is required for all browsers running on iOS." },
+                    { text: "Trident", isCorrect: false, rationale: "Trident was the proprietary engine used by older versions of Internet Explorer, not modern browsers like Chrome or Edge." }
+                ]
+            },
+            {
+                question: "In the critical rendering path, what immediate step follows the creation of the DOM and CSSOM?",
+                hint: "The browser must combine the content (structure) and the styles (rules) to determine what is actually visible before calculating positions.",
+                options: [
+                    { text: "Render Tree Construction", isCorrect: true, rationale: "The browser merges the DOM and CSSOM into the Render Tree, which contains only the nodes required to render the page." },
+                    { text: "Paint", isCorrect: false, rationale: "Painting happens much later, after the browser has calculated the geometry of the page in the Layout phase." },
+                    { text: "DNS Lookup", isCorrect: false, rationale: "DNS Lookup is the very first step of the network phase, occurring before any HTML is even received or parsed." },
+                    { text: "Layout (Reflow)", isCorrect: false, rationale: "Layout cannot happen until the browser knows which elements are visible and what styles apply to them, which is defined in the Render Tree." }
+                ]
+            },
+            {
+                question: "Which of the following best describes the Document Object Model (DOM)?",
+                hint: "Think of it as a dynamic structure that JavaScript can modify in real-time, rather than the raw text file you wrote.",
+                options: [
+                    { text: "A live, in-memory tree of objects representing the page structure", isCorrect: true, rationale: "The DOM is a living data structure generated by the browser upon parsing HTML, allowing JavaScript to manipulate the content dynamically." },
+                    { text: "The static HTML text file stored on the web server", isCorrect: false, rationale: "The HTML file is just text; the DOM is the object-based representation of that text created by the browser." },
+                    { text: "A style sheet that defines the visual appearance of elements", isCorrect: false, rationale: "This describes CSS or the CSSOM (CSS Object Model), not the DOM, which deals with document structure." },
+                    { text: "A security protocol for encrypting data between client and server", isCorrect: false, rationale: "This describes protocols like TLS/SSL used in HTTPS, unrelated to the document structure model." }
+                ]
+            },
+            {
+                question: "You are debugging a website and need to see exactly how long the `hero-image.jpg` file took to download. Which DevTools panel is most appropriate?",
+                hint: "This panel provides a 'waterfall' view of every resource requested by the browser.",
+                options: [
+                    { text: "Network", isCorrect: true, rationale: "The Network panel logs every HTTP request, displaying timing waterfalls, file sizes, and status codes for all resources." },
+                    { text: "Elements", isCorrect: false, rationale: "The Elements panel is for inspecting the DOM structure and CSS styles, not for analyzing request timing or download speeds." },
+                    { text: "Console", isCorrect: false, rationale: "The Console is primarily for JavaScript logs and errors, though it may show network errors, it does not provide detailed timing charts." },
+                    { text: "Sources", isCorrect: false, rationale: "The Sources panel is used for viewing file contents and debugging JavaScript code with breakpoints." }
+                ]
+            },
+            {
+                question: "Why might a heading element have different default margins in Safari compared to Firefox if no CSS reset is used?",
+                hint: "Every browser has a built-in set of 'factory default' styles that it applies to elements before your CSS is even loaded.",
+                options: [
+                    { text: "Browsers have different user-agent stylesheets", isCorrect: true, rationale: "Each browser engine comes with its own built-in 'User-Agent' stylesheet that applies default styles if not overridden." },
+                    { text: "Safari does not support the margin property", isCorrect: false, rationale: "All modern browsers support standard CSS properties like margin; the difference lies in the default values applied." },
+                    { text: "Firefox forces all margins to zero by default", isCorrect: false, rationale: "Firefox, like other browsers, applies non-zero default margins to many block-level elements unless a reset is used." },
+                    { text: "The DOM tree is constructed differently in Safari", isCorrect: false, rationale: "While engines differ, the DOM structure for standard HTML is generally consistent; the visual difference is due to default CSS." }
+                ]
+            },
+            {
+                question: "Which storage mechanism would be best for saving a user's 'Dark Mode' preference so it persists even if they close and reopen the browser next week?",
+                hint: "This storage type has a permanent lifetime and does not get sent to the server with every request.",
+                options: [
+                    { text: "localStorage", isCorrect: true, rationale: "localStorage is designed for permanent storage across browser sessions and does not expire until explicitly cleared." },
+                    { text: "sessionStorage", isCorrect: false, rationale: "sessionStorage data is cleared immediately when the tab or window is closed, making it unsuitable for long-term preferences." },
+                    { text: "Cookies", isCorrect: false, rationale: "While cookies can persist, they are sent to the server with every request, which is unnecessary overhead for a client-side UI preference." },
+                    { text: "A global variable", isCorrect: false, rationale: "JavaScript variables are stored in memory (RAM) and are lost the moment the page is reloaded or closed." }
+                ]
+            },
+            {
+                question: "Which HTTP status code signifies that the server successfully found and returned the requested resource?",
+                hint: "This is the 'OK' code you implicitly get every time a page loads correctly.",
+                options: [
+                    { text: "200", isCorrect: true, rationale: "Status code 200 (OK) is the standard response for successful HTTP requests." },
+                    { text: "404", isCorrect: false, rationale: "Status code 404 indicates that the resource was Not Found on the server." },
+                    { text: "500", isCorrect: false, rationale: "Status code 500 indicates an Internal Server Error, meaning the server failed to process the request." },
+                    { text: "301", isCorrect: false, rationale: "Status code 301 indicates a Permanent Redirect, meaning the resource has moved to a new URL." }
+                ]
+            },
+            {
+                question: "Under the Same-Origin Policy, which of the following URLs shares the same origin as `https://example.com:443`?",
+                hint: "An origin is defined strictly by the combination of Protocol, Domain, and Port. The path (everything after the domain/port) does not affect the origin.",
+                options: [
+                    { text: "https://example.com:443/login", isCorrect: true, rationale: "This URL shares the same protocol (https), domain (example.com), and port (443); only the path (/login) is different." },
+                    { text: "http://example.com:443/login", isCorrect: false, rationale: "This uses a different protocol (http instead of https), so it is considered a different origin." },
+                    { text: "https://api.example.com:443/login", isCorrect: false, rationale: "This uses a different subdomain (api.example.com), so it is considered a different origin." },
+                    { text: "https://example.com:8080/login", isCorrect: false, rationale: "This uses a different port (8080 instead of 443), so it is considered a different origin." }
+                ]
+            },
+            {
+                question: "Which HTTP method is typically used when you submit a form to send data to a server?",
+                hint: "This method is used when you are 'posting' new information to the database.",
+                options: [
+                    { text: "POST", isCorrect: true, rationale: "The POST method is designed to send data to the server to create or update a resource, common in form submissions." },
+                    { text: "GET", isCorrect: false, rationale: "The GET method is used to retrieve data. While forms can use GET, POST is the standard for sending data to be processed." },
+                    { text: "DELETE", isCorrect: false, rationale: "The DELETE method is specifically used to remove a resource from the server." },
+                    { text: "HEAD", isCorrect: false, rationale: "The HEAD method asks for a response identical to a GET request, but without the response body." }
+                ]
+            },
+            {
+                question: "Which security layer allows a server to specify which domains are permitted to access its resources, creating an exception to the Same-Origin Policy?",
+                hint: "This involves the server sending headers like `Access-Control-Allow-Origin`.",
+                options: [
+                    { text: "CORS (Cross-Origin Resource Sharing)", isCorrect: true, rationale: "CORS uses specific HTTP headers to allow a server to explicitly grant permission to other origins." },
+                    { text: "CSP (Content Security Policy)", isCorrect: false, rationale: "CSP restricts the sources from which a browser is allowed to load resources (like scripts) to prevent attacks like XSS." },
+                    { text: "HTTPS (Hypertext Transfer Protocol Secure)", isCorrect: false, rationale: "HTTPS encrypts the communication channel but does not inherently manage cross-origin permission rules." },
+                    { text: "DNS (Domain Name System)", isCorrect: false, rationale: "DNS translates domain names to IP addresses and has no role in browser security policies regarding origins." }
+                ]
+            }
+        ];
+
+        // --- TAB LOGIC ---
+        function switchTab(tabId) {
+            const fcTab = document.getElementById('tab-flashcards');
+            const qzTab = document.getElementById('tab-quiz');
+            const fcSec = document.getElementById('section-flashcards');
+            const qzSec = document.getElementById('section-quiz');
+
+            if (tabId === 'flashcards') {
+                fcTab.className = "flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-blue-700";
+                qzTab.className = "flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-200";
+                fcSec.style.display = 'block';
+                qzSec.style.display = 'none';
+            } else {
+                qzTab.className = "flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors bg-white shadow-sm text-blue-700";
+                fcTab.className = "flex-1 py-2.5 px-4 rounded-md text-sm font-medium transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-200";
+                fcSec.style.display = 'none';
+                qzSec.style.display = 'block';
+            }
+        }
+
+        // --- FLASHCARD LOGIC ---
+        let currentFcIndex = 0;
+        let isFlipped = false;
+
+        function loadFlashcard() {
+            const card = flashcardsData[currentFcIndex];
+            document.getElementById('fc-front-text').innerText = card.front;
+            document.getElementById('fc-back-text').innerText = card.back;
+            document.getElementById('fc-current').innerText = currentFcIndex + 1;
+            
+            // Ensure card is front-facing when changing
+            if (isFlipped) {
+                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                isFlipped = false;
+            }
+        }
+
+        function flipCard() {
+            const inner = document.getElementById('flashcard-inner');
+            if (isFlipped) {
+                inner.classList.remove('rotate-y-180');
+            } else {
+                inner.classList.add('rotate-y-180');
+            }
+            isFlipped = !isFlipped;
+        }
+
+        function nextCard() {
+            currentFcIndex = (currentFcIndex + 1) % flashcardsData.length;
+            loadFlashcard();
+        }
+
+        function prevCard() {
+            currentFcIndex = (currentFcIndex - 1 + flashcardsData.length) % flashcardsData.length;
+            loadFlashcard();
+        }
+
+        // --- QUIZ LOGIC ---
+        let currentQuizIndex = 0;
+        let quizScore = 0;
+        let isQuizAnswered = false;
+
+        function shuffleArray(array) {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        }
+
+        function loadQuizQuestion() {
+            if (currentQuizIndex >= quizData.length) {
+                showQuizResults();
+                return;
+            }
+
+            const q = quizData[currentQuizIndex];
+            isQuizAnswered = false;
+            
+            // Reset UI
+            document.getElementById('quiz-current').innerText = currentQuizIndex + 1;
+            document.getElementById('quiz-question-text').innerText = q.question;
+            document.getElementById('quiz-hint').innerText = q.hint;
+            document.getElementById('quiz-hint').classList.add('hidden');
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = ''; // Clear previous
+
+            // Shuffle and render options
+            const shuffledOptions = shuffleArray(q.options);
+            shuffledOptions.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl border-2 border-slate-200 hover:border-blue-400 hover:bg-blue-50 font-medium text-slate-700 transition-all focus:outline-none";
+                btn.innerText = opt.text;
+                btn.onclick = () => selectQuizAnswer(opt, btn, shuffledOptions);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function toggleHint() {
+            const hintEl = document.getElementById('quiz-hint');
+            hintEl.classList.toggle('hidden');
+        }
+
+        function selectQuizAnswer(selectedOption, selectedBtn, allOptions) {
+            if (isQuizAnswered) return; // Prevent multiple clicks
+            isQuizAnswered = true;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            const buttons = optionsContainer.children;
+
+            // Update Score
+            if (selectedOption.isCorrect) {
+                quizScore++;
+                document.getElementById('quiz-score').innerText = quizScore;
+                document.getElementById('feedback-title').innerText = "✅ Correct!";
+                document.getElementById('feedback-title').className = "font-bold text-lg mb-2 text-green-600";
+            } else {
+                document.getElementById('feedback-title').innerText = "❌ Incorrect";
+                document.getElementById('feedback-title').className = "font-bold text-lg mb-2 text-red-600";
+            }
+
+            // Show rationale
+            document.getElementById('feedback-rationale').innerText = selectedOption.rationale;
+            document.getElementById('quiz-feedback').classList.remove('hidden');
+
+            // Style buttons to show correct/incorrect
+            for (let i = 0; i < buttons.length; i++) {
+                buttons[i].disabled = true;
+                buttons[i].classList.remove('hover:border-blue-400', 'hover:bg-blue-50', 'cursor-pointer');
+                
+                if (allOptions[i].isCorrect) {
+                    buttons[i].classList.add('bg-green-50', 'border-green-500', 'text-green-800');
+                } else if (buttons[i] === selectedBtn && !selectedOption.isCorrect) {
+                    buttons[i].classList.add('bg-red-50', 'border-red-400', 'text-red-800');
+                } else {
+                    buttons[i].classList.add('opacity-50');
+                }
+            }
+        }
+
+        function nextQuizQuestion() {
+            currentQuizIndex++;
+            loadQuizQuestion();
+        }
+
+        function showQuizResults() {
+            document.getElementById('quiz-container').classList.add('hidden');
+            document.getElementById('quiz-results').classList.remove('hidden');
+            document.getElementById('final-score').innerText = quizScore;
+        }
+
+        function restartQuiz() {
+            currentQuizIndex = 0;
+            quizScore = 0;
+            document.getElementById('quiz-score').innerText = quizScore;
+            document.getElementById('quiz-results').classList.add('hidden');
+            document.getElementById('quiz-container').classList.remove('hidden');
+            loadQuizQuestion();
+        }
+
+        // --- INIT ---
+        window.onload = () => {
+            loadFlashcard();
+            loadQuizQuestion();
+        };
+
+    </script>
+</body>
+</html>
+
+
+

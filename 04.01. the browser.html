@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Browser: Your Window to the Web</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d6d3d1;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a8a29e;
+        }
+        
+        /* Tree Visualization Lines */
+        .tree ul {
+            padding-top: 20px; position: relative;
+            transition: all 0.5s;
+        }
+        .tree li {
+            float: left; text-align: center;
+            list-style-type: none;
+            position: relative;
+            padding: 20px 5px 0 5px;
+            transition: all 0.5s;
+        }
+        .tree li::before, .tree li::after {
+            content: '';
+            position: absolute; top: 0; right: 50%;
+            border-top: 2px solid #a8a29e;
+            width: 50%; height: 20px;
+        }
+        .tree li::after {
+            right: auto; left: 50%;
+            border-left: 2px solid #a8a29e;
+        }
+        .tree li:only-child::after, .tree li:only-child::before {
+            display: none;
+        }
+        .tree li:only-child { padding-top: 0; }
+        .tree li:first-child::before, .tree li:last-child::after {
+            border: 0 none;
+        }
+        .tree li:last-child::before{
+            border-right: 2px solid #a8a29e;
+            border-radius: 0 5px 0 0;
+        }
+        .tree li:first-child::after{
+            border-radius: 5px 0 0 0;
+        }
+        .tree ul ul::before{
+            content: '';
+            position: absolute; top: 0; left: 50%;
+            border-left: 2px solid #a8a29e;
+            width: 0; height: 20px;
+        }
+
+        /* Chart Container Classes */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        
+        .active-tab {
+            border-bottom: 2px solid #ea580c;
+            color: #ea580c;
+            font-weight: 600;
+        }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals with Burnt Orange Accent -->
+    <!-- Application Structure Plan: 
+         Designed as a "Browser Internals Dashboard".
+         1. Header/Intro: Defines the browser functionally.
+         2. Engine Room: Visualizes the "Big Five" and Engines using a breakdown chart.
+         3. Pipeline Viewer: An interactive 8-stage stepper. Users click steps to reveal details and the "House Building" analogy.
+         4. DOM Inspector: A visual tree representing the DOM structure vs HTML, with interactive node highlighting.
+         5. DevTools Simulator: A tabbed interface mimicking real DevTools to explain the 6 panels without overwhelming the user.
+         6. Compatibility & Storage: A split section. Left: Chart showing storage comparison. Right: Explanation of compatibility.
+         7. Network Lab: A simulated Waterfall chart to explain HTTP requests/responses and status codes.
+         8. Security Briefing: Grid of cards for security concepts (SOP, CORS, etc.).
+         Reasoning: The report covers distinct technical modules. A single long scroll with distinct "interactive labs" for each module prevents cognitive overload and keeps engagement high.
+    -->
+    <!-- Visualization & Content Choices:
+         1. Engines: Pie Chart (Chart.js) to show the dominance/grouping of Blink vs WebKit vs Gecko.
+         2. Pipeline: Custom HTML/CSS Stepper. Charts aren't suitable for sequential process flows; a stepper is intuitive.
+         3. DOM: CSS-styled nested lists to create a "Tree" visual. No generic charts; this needs specific hierarchy visualization.
+         4. Network: Horizontal Bar Chart (Chart.js) to simulate a network "Waterfall" timeline, familiar to developers.
+         5. Storage: Comparison Grid + Interactive "Save" buttons to demonstrate persistence (using JS to mimic the logic described).
+         6. Icons: Unicode characters used throughout to avoid external image dependencies.
+         7. Confirmation: NO SVG or Mermaid used.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased selection:bg-orange-200">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 bg-stone-100/90 backdrop-blur-md border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2">
+                    <span class="text-2xl">🌐</span>
+                    <span class="font-bold text-xl tracking-tight text-stone-900">Browser<span class="text-orange-600">DeepDive</span></span>
+                </div>
+                <div class="hidden md:flex space-x-8">
+                    <button onclick="scrollToSection('engines')" class="hover:text-orange-600 transition-colors text-sm font-medium">Engines</button>
+                    <button onclick="scrollToSection('pipeline')" class="hover:text-orange-600 transition-colors text-sm font-medium">Pipeline</button>
+                    <button onclick="scrollToSection('dom')" class="hover:text-orange-600 transition-colors text-sm font-medium">DOM</button>
+                    <button onclick="scrollToSection('devtools')" class="hover:text-orange-600 transition-colors text-sm font-medium">DevTools</button>
+                    <button onclick="scrollToSection('storage')" class="hover:text-orange-600 transition-colors text-sm font-medium">Storage</button>
+                    <button onclick="scrollToSection('network')" class="hover:text-orange-600 transition-colors text-sm font-medium">Network</button>
+                </div>
+                <!-- Mobile menu button wrapper -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-stone-600 hover:text-stone-900 focus:outline-none">
+                        <span class="text-2xl">☰</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-stone-100 border-b border-stone-200 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="scrollToSection('engines')" class="block w-full text-left py-2 hover:bg-stone-200 rounded px-2">Engines</button>
+            <button onclick="scrollToSection('pipeline')" class="block w-full text-left py-2 hover:bg-stone-200 rounded px-2">Pipeline</button>
+            <button onclick="scrollToSection('dom')" class="block w-full text-left py-2 hover:bg-stone-200 rounded px-2">DOM</button>
+            <button onclick="scrollToSection('devtools')" class="block w-full text-left py-2 hover:bg-stone-200 rounded px-2">DevTools</button>
+            <button onclick="scrollToSection('storage')" class="block w-full text-left py-2 hover:bg-stone-200 rounded px-2">Storage</button>
+            <button onclick="scrollToSection('network')" class="block w-full text-left py-2 hover:bg-stone-200 rounded px-2">Network</button>
+        </div>
+    </nav>
+
+    <!-- Hero / Intro -->
+    <header class="bg-white border-b border-stone-200 py-16">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6">More Than A Search Bar</h1>
+            <p class="text-xl text-stone-600 mb-8 max-w-3xl mx-auto">
+                A web browser is a request engine, parser, renderer, script executor, and security guard all in one. 
+                Explore the hidden machinery that turns code into the web you see.
+            </p>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-3xl mx-auto text-sm text-stone-500">
+                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">📡 Sends HTTP Requests</div>
+                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">📥 Parses HTML/CSS/JS</div>
+                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">🎨 Renders Pixels</div>
+                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">⚡ Executes JavaScript</div>
+                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">🔒 Manages Security</div>
+                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100">💾 Stores Cookies</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Section 1: The Engines -->
+    <section id="engines" class="py-16 bg-stone-50">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-10 text-center">
+                <h2 class="text-3xl font-bold text-stone-900">The "Big Five" & The Three Engines</h2>
+                <p class="mt-4 text-stone-600 max-w-2xl mx-auto">
+                    While there are many browser brands, only three major rendering engines rule the web. 
+                    Understanding these engines helps predict cross-browser behavior.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <!-- Visual: Chart -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="text-lg font-semibold text-stone-800 mb-4 text-center">Engine Distribution</h3>
+                    <div class="chart-container">
+                        <canvas id="engineChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Content: Interaction -->
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="text-lg font-semibold text-stone-800 mb-4">Engine Family Tree</h3>
+                        <div class="space-y-4">
+                            <div class="group cursor-pointer hover:bg-blue-50 p-3 rounded transition" onclick="highlightEngine(0)">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-blue-900">Blink</span>
+                                    <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">Google-backed</span>
+                                </div>
+                                <p class="text-sm text-stone-600 mt-1">Powering Chrome, Edge, Opera, Brave, Vivaldi.</p>
+                            </div>
+                            <div class="group cursor-pointer hover:bg-orange-50 p-3 rounded transition" onclick="highlightEngine(1)">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-orange-900">Gecko</span>
+                                    <span class="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">Mozilla</span>
+                                </div>
+                                <p class="text-sm text-stone-600 mt-1">The heart of Firefox.</p>
+                            </div>
+                            <div class="group cursor-pointer hover:bg-slate-50 p-3 rounded transition" onclick="highlightEngine(2)">
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold text-slate-900">WebKit</span>
+                                    <span class="text-xs bg-slate-100 text-slate-800 px-2 py-1 rounded-full">Apple</span>
+                                </div>
+                                <p class="text-sm text-stone-600 mt-1">Safari & ALL iOS browsers (enforced by Apple).</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4">
+                        <p class="text-sm text-yellow-800">
+                            <strong>Why it matters:</strong> If a feature works in Chrome (Blink), it likely works in Edge and Opera. Safari (WebKit) and Firefox (Gecko) are the usual outliers you need to test separately.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 2: Rendering Pipeline -->
+    <section id="pipeline" class="py-16 bg-white border-t border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-10">
+                <h2 class="text-3xl font-bold text-stone-900">The Rendering Pipeline: From URL to Pixels</h2>
+                <p class="mt-4 text-stone-600">
+                    Every time you load a page, the browser runs an 8-stage assembly line. 
+                    Click through the stages below to see how a "House Construction" analogy explains the technical process.
+                </p>
+            </div>
+
+            <!-- Pipeline Interactive Stepper -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left: The Steps -->
+                <div class="col-span-1 space-y-2" id="pipeline-buttons">
+                    <!-- Generated by JS -->
+                </div>
+
+                <!-- Right: The Detail View -->
+                <div class="col-span-1 lg:col-span-2 bg-stone-50 rounded-2xl p-8 border border-stone-200 flex flex-col justify-center min-h-[400px]">
+                    <div id="pipeline-content" class="transition-opacity duration-300">
+                        <span class="text-orange-600 font-bold tracking-wider text-sm uppercase mb-2 block" id="pipeline-stage-type">Network Phase</span>
+                        <h3 class="text-3xl font-bold text-stone-900 mb-6" id="pipeline-title">1. DNS Lookup</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="font-semibold text-stone-900 mb-2 flex items-center">
+                                    <span class="bg-stone-200 p-1 rounded mr-2">💻</span> Technical Reality
+                                </h4>
+                                <p class="text-stone-600 leading-relaxed" id="pipeline-tech">
+                                    Converts the domain name (google.com) into an IP address. It's the internet's phone book lookup managed by ICANN.
+                                </p>
+                            </div>
+                            <div class="bg-white p-6 rounded-xl border-l-4 border-orange-400 shadow-sm">
+                                <h4 class="font-semibold text-orange-900 mb-2 flex items-center">
+                                    <span class="mr-2">🏠</span> House Analogy
+                                </h4>
+                                <p class="text-stone-600 italic" id="pipeline-analogy">
+                                    Looking up the exact plot address in the city records before you can go there.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 3: The DOM -->
+    <section id="dom" class="py-16 bg-stone-50 border-t border-stone-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-10">
+                <h2 class="text-3xl font-bold text-stone-900">The DOM (Document Object Model)</h2>
+                <p class="mt-4 text-stone-600 max-w-3xl mx-auto">
+                    The DOM is <strong>not</strong> your HTML file. It's a live, in-memory tree of objects that JavaScript can manipulate. 
+                    When you change the DOM, the browser re-renders the page.
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Visual Tree -->
+                <div class="bg-white p-8 rounded-xl shadow-sm border border-stone-200 overflow-x-auto">
+                    <h3 class="text-center font-bold text-stone-400 mb-6 uppercase tracking-widest text-xs">Live Tree Structure</h3>
+                    <div class="tree flex justify-center min-w-[300px]">
+                        <ul>
+                            <li>
+                                <a href="#" class="bg-stone-800 text-white px-3 py-2 rounded shadow font-mono text-sm">Document</a>
+                                <ul>
+                                    <li>
+                                        <a href="#" class="bg-blue-100 text-blue-900 px-3 py-2 rounded shadow font-mono text-sm border border-blue-200">html</a>
+                                        <ul>
+                                            <li>
+                                                <a href="#" class="bg-green-100 text-green-900 px-3 py-2 rounded shadow font-mono text-sm border border-green-200">body</a>
+                                                <ul>
+                                                    <li>
+                                                        <a href="#" class="bg-yellow-100 text-yellow-900 px-3 py-2 rounded shadow font-mono text-sm border border-yellow-200 hover:scale-110 transition" id="node-h1">h1</a>
+                                                        <ul>
+                                                            <li><a href="#" class="bg-stone-50 text-stone-500 px-2 py-1 rounded border border-stone-200 text-xs italic">"Hello"</a></li>
+                                                        </ul>
+                                                    </li>
+                                                    <li>
+                                                        <a href="#" class="bg-yellow-100 text-yellow-900 px-3 py-2 rounded shadow font-mono text-sm border border-yellow-200 hover:scale-110 transition" id="node-p">p</a>
+                                                        <ul>
+                                                            <li><a href="#" class="bg-stone-50 text-stone-500 px-2 py-1 rounded border border-stone-200 text-xs italic">"World"</a></li>
+                                                        </ul>
+                                                    </li>
+                                                </ul>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Interactive Manipulation -->
+                <div class="bg-stone-900 rounded-xl p-6 text-stone-300 font-mono text-sm shadow-xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex gap-2 mb-4 border-b border-stone-700 pb-2">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                            <span class="ml-auto text-xs text-stone-500">JS Console</span>
+                        </div>
+                        <p class="text-stone-500 mb-2">// Click buttons to execute DOM methods</p>
+                        <div id="code-output" class="space-y-2 h-40 overflow-y-auto">
+                            <p>> const h1 = document.querySelector('h1');</p>
+                            <p class="text-green-400"><- &lt;h1&gt;Hello&lt;/h1&gt;</p>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-2 mt-4">
+                        <button onclick="simDom('text')" class="bg-stone-700 hover:bg-stone-600 text-white py-2 px-4 rounded text-left transition">
+                            h1.textContent = "Hola!";
+                        </button>
+                        <button onclick="simDom('style')" class="bg-stone-700 hover:bg-stone-600 text-white py-2 px-4 rounded text-left transition">
+                            h1.style.color = "red";
+                        </button>
+                        <button onclick="simDom('create')" class="bg-stone-700 hover:bg-stone-600 text-white py-2 px-4 rounded text-left transition">
+                            document.createElement('div');
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 4: DevTools Simulator -->
+    <section id="devtools" class="py-16 bg-white border-t border-stone-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="mb-8">
+                <h2 class="text-3xl font-bold text-stone-900">DevTools: Your X-Ray Vision</h2>
+                <p class="text-stone-600 mt-2">Built into every browser (F12). Explore the 6 essential panels below.</p>
+            </div>
+
+            <div class="border border-stone-300 rounded-lg shadow-lg overflow-hidden bg-white">
+                <!-- Fake Tab Bar -->
+                <div class="bg-stone-100 border-b border-stone-300 flex overflow-x-auto">
+                    <button class="px-4 py-2 text-sm text-stone-600 hover:bg-white border-r border-stone-200 focus:outline-none dt-tab active-tab" data-tab="elements" onclick="switchDevTab('elements')">Elements</button>
+                    <button class="px-4 py-2 text-sm text-stone-600 hover:bg-white border-r border-stone-200 focus:outline-none dt-tab" data-tab="console" onclick="switchDevTab('console')">Console</button>
+                    <button class="px-4 py-2 text-sm text-stone-600 hover:bg-white border-r border-stone-200 focus:outline-none dt-tab" data-tab="network" onclick="switchDevTab('network')">Network</button>
+                    <button class="px-4 py-2 text-sm text-stone-600 hover:bg-white border-r border-stone-200 focus:outline-none dt-tab" data-tab="sources" onclick="switchDevTab('sources')">Sources</button>
+                    <button class="px-4 py-2 text-sm text-stone-600 hover:bg-white border-r border-stone-200 focus:outline-none dt-tab" data-tab="application" onclick="switchDevTab('application')">Application</button>
+                    <button class="px-4 py-2 text-sm text-stone-600 hover:bg-white border-r border-stone-200 focus:outline-none dt-tab" data-tab="performance" onclick="switchDevTab('performance')">Performance</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6 h-80 overflow-y-auto bg-white font-mono text-sm text-stone-800" id="dt-content">
+                    <!-- Content injected by JS -->
+                </div>
+                
+                <!-- Explanation Footer -->
+                <div class="bg-orange-50 p-4 border-t border-orange-100 flex items-start gap-3">
+                    <span class="text-2xl">💡</span>
+                    <p class="text-sm text-orange-900" id="dt-explanation">
+                        <strong>Elements Panel:</strong> View and edit the live DOM and CSS. Double-click any tag to edit it instantly. The primary tool for layout debugging.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 5: Network & HTTP -->
+    <section id="network" class="py-16 bg-stone-50 border-t border-stone-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold text-stone-900 mb-4">HTTP & The Network Waterfall</h2>
+            <p class="text-stone-600 mb-10 max-w-3xl">
+                The Network tab shows the conversation between Browser and Server. Every file is a request. 
+                Below is a visualization of a typical page load "waterfall" and HTTP status codes.
+            </p>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Waterfall Chart -->
+                <div class="lg:col-span-2 bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-stone-800 mb-4">Request Waterfall Simulation</h3>
+                    <div class="chart-container">
+                        <canvas id="networkChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Status Codes -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                        <h3 class="font-bold text-stone-800 mb-4 text-center">Status Code Groups</h3>
+                        <div class="chart-container" style="height: 200px;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="bg-stone-200 rounded-lg p-4 text-sm">
+                        <p class="font-bold mb-2">Key Methods:</p>
+                        <ul class="list-disc list-inside space-y-1 text-stone-700">
+                            <li><span class="font-mono bg-stone-300 px-1 rounded">GET</span> Retrieve data (Page load)</li>
+                            <li><span class="font-mono bg-stone-300 px-1 rounded">POST</span> Send data (Forms)</li>
+                            <li><span class="font-mono bg-stone-300 px-1 rounded">PUT/PATCH</span> Update data</li>
+                            <li><span class="font-mono bg-stone-300 px-1 rounded">DELETE</span> Remove data</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 6: Storage & Compatibility -->
+    <section id="storage" class="py-16 bg-white border-t border-stone-200">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-16">
+                
+                <!-- Storage Column -->
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-900 mb-6">Browser Storage</h2>
+                    <p class="text-stone-600 mb-6 text-sm">
+                        Choose the right "box" for your data.
+                    </p>
+
+                    <!-- Interactive Storage Demo -->
+                    <div class="bg-stone-50 border border-stone-200 rounded-xl p-6 mb-8">
+                        <h4 class="font-bold text-stone-700 mb-3">Storage Lab</h4>
+                        <div class="flex gap-2 mb-4">
+                            <input type="text" id="storageInput" placeholder="Enter preference..." class="flex-1 p-2 border border-stone-300 rounded text-sm">
+                            <button onclick="saveStorage('local')" class="bg-blue-600 text-white px-3 py-2 rounded text-sm hover:bg-blue-700">Local</button>
+                            <button onclick="saveStorage('session')" class="bg-green-600 text-white px-3 py-2 rounded text-sm hover:bg-green-700">Session</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4 text-xs font-mono">
+                            <div class="bg-white p-2 rounded border border-stone-200">
+                                <span class="block text-stone-400 mb-1">LocalStorage (Permanent)</span>
+                                <span id="localDisplay" class="text-blue-600 font-bold">Empty</span>
+                            </div>
+                            <div class="bg-white p-2 rounded border border-stone-200">
+                                <span class="block text-stone-400 mb-1">SessionStorage (Temp)</span>
+                                <span id="sessionDisplay" class="text-green-600 font-bold">Empty</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comparison Table -->
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-stone-100 text-stone-600 font-semibold">
+                                <tr>
+                                    <th class="p-2">Feature</th>
+                                    <th class="p-2">🍪 Cookies</th>
+                                    <th class="p-2">📦 Local</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-100">
+                                <tr><td class="p-2 font-medium">Capacity</td><td class="p-2 text-xs">~4KB</td><td class="p-2 text-xs">~5MB</td></tr>
+                                <tr><td class="p-2 font-medium">Lifetime</td><td class="p-2 text-xs">Expiry date</td><td class="p-2 text-xs">Permanent</td></tr>
+                                <tr><td class="p-2 font-medium">Server?</td><td class="p-2 text-xs">Sent every req</td><td class="p-2 text-xs">Client only</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Compatibility Column -->
+                <div>
+                    <h2 class="text-2xl font-bold text-stone-900 mb-6">Cross-Browser Compat</h2>
+                    <p class="text-stone-600 mb-6 text-sm">
+                        Why pages look different: Rendering engines interpret CSS differently and have different default stylesheets.
+                    </p>
+                    
+                    <div class="space-y-4">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-orange-100 text-orange-600 p-2 rounded-lg text-xl">🛠️</div>
+                            <div>
+                                <h4 class="font-bold text-stone-800">Normalization</h4>
+                                <p class="text-stone-600 text-sm">Use <strong>Normalize.css</strong> or a CSS Reset to strip default browser styles and ensure a level playing field.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-100 text-blue-600 p-2 rounded-lg text-xl">🔍</div>
+                            <div>
+                                <h4 class="font-bold text-stone-800">Can I Use?</h4>
+                                <p class="text-stone-600 text-sm">Always check <strong>caniuse.com</strong> before using new CSS/JS features to see support across engines.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 bg-stone-900 text-stone-300 p-4 rounded-lg font-mono text-xs">
+                        <p class="text-stone-500 mb-2">/* User Agent Stylesheet Example */</p>
+                        <p><span class="text-purple-400">body</span> {</p>
+                        <p class="pl-4">display: <span class="text-yellow-300">block</span>;</p>
+                        <p class="pl-4">margin: <span class="text-yellow-300">8px</span>; <span class="text-stone-500">// Different browsers may vary!</span></p>
+                        <p>}</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Section 7: Security -->
+    <section class="py-16 bg-stone-900 text-stone-100">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-3xl font-bold mb-10 text-center">Security Layers</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Card 1 -->
+                <div class="bg-stone-800 p-6 rounded-xl border border-stone-700 hover:border-green-500 transition duration-300">
+                    <div class="text-3xl mb-4">🔒 HTTPS</div>
+                    <h3 class="font-bold text-lg mb-2">Encryption</h3>
+                    <p class="text-stone-400 text-sm">Encrypts connection between browser and server (TLS). Prevents eavesdropping on Wi-Fi.</p>
+                </div>
+                <!-- Card 2 -->
+                <div class="bg-stone-800 p-6 rounded-xl border border-stone-700 hover:border-red-500 transition duration-300">
+                    <div class="text-3xl mb-4">🏠 SOP</div>
+                    <h3 class="font-bold text-lg mb-2">Same-Origin Policy</h3>
+                    <p class="text-stone-400 text-sm">Most important. Scripts from Site A cannot read data from Site B. Isolates your bank from evil.com.</p>
+                </div>
+                <!-- Card 3 -->
+                <div class="bg-stone-800 p-6 rounded-xl border border-stone-700 hover:border-yellow-500 transition duration-300">
+                    <div class="text-3xl mb-4">🔑 CORS</div>
+                    <h3 class="font-bold text-lg mb-2">Cross-Origin Sharing</h3>
+                    <p class="text-stone-400 text-sm">Controlled exception to SOP. Server explicitly grants permission via headers to specific domains.</p>
+                </div>
+                <!-- Card 4 -->
+                <div class="bg-stone-800 p-6 rounded-xl border border-stone-700 hover:border-blue-500 transition duration-300">
+                    <div class="text-3xl mb-4">🛡️ CSP</div>
+                    <h3 class="font-bold text-lg mb-2">Content Security</h3>
+                    <p class="text-stone-400 text-sm">Server tells browser "Only run scripts from these sources". Prevents XSS injection attacks.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-stone-950 text-stone-500 py-12 text-center text-sm">
+        <p>&copy; 2026 Cyber.SoHo. Educational Material.</p>
+    </footer>
+
+    <script>
+        // --- Navigation Scroll Logic ---
+        function scrollToSection(id) {
+            const el = document.getElementById(id);
+            if(el) {
+                el.scrollIntoView({ behavior: 'smooth' });
+            }
+            // Close mobile menu if open
+            const mobileMenu = document.getElementById('mobile-menu');
+            if(!mobileMenu.classList.contains('hidden')) {
+                mobileMenu.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // --- Chart 1: Engines (Pie Chart) ---
+        const ctxEngine = document.getElementById('engineChart').getContext('2d');
+        const engineChart = new Chart(ctxEngine, {
+            type: 'doughnut',
+            data: {
+                labels: ['Blink (Chrome/Edge/Opera)', 'WebKit (Safari/iOS)', 'Gecko (Firefox)'],
+                datasets: [{
+                    data: [70, 20, 10], // Approximate market share for visual rep
+                    backgroundColor: ['#3b82f6', '#64748b', '#f97316'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        function highlightEngine(index) {
+            // Simple visual feedback using Chart.js API
+            engineChart.setActiveElements([{datasetIndex: 0, index: index}]);
+            engineChart.update();
+        }
+
+        // --- Pipeline Stepper Logic ---
+        const pipelineSteps = [
+            { title: "1. DNS Lookup", type: "Network Phase", tech: "Converts domain name -> IP address. Internet's phone book.", analogy: "Looking up the plot address in the city records." },
+            { title: "2. TCP/TLS Handshake", type: "Network Phase", tech: "Establishes a reliable, encrypted connection via 3-way handshake.", analogy: "Signing the construction contract securely." },
+            { title: "3. HTTP Request", type: "Network Phase", tech: "Browser sends GET /index.html. Server replies with 200 OK.", analogy: "Architect delivers the blueprint (HTML) to the site." },
+            { title: "4. HTML Parsing -> DOM", type: "Parsing Phase", tech: "Reads HTML characters, builds the Document Object Model tree.", analogy: "Reading the blueprint room-by-room." },
+            { title: "5. CSS Parsing -> CSSOM", type: "Parsing Phase", tech: "Reads CSS, builds Style Object Model. Maps styles to selectors.", analogy: "Reading the interior design spec." },
+            { title: "6. Render Tree", type: "Rendering Phase", tech: "Merges DOM + CSSOM. Excludes 'display: none' elements.", analogy: "Merging room list with design spec (ignoring hidden rooms)." },
+            { title: "7. Layout (Reflow)", type: "Rendering Phase", tech: "Calculates geometry (width, height, position) for every node.", analogy: "Measuring exact dimensions for walls and windows." },
+            { title: "8. Paint & Composite", type: "Rendering Phase", tech: "Fills pixels (colors, images) and layers them (GPU acceleration).", analogy: "Painting walls, laying tiles, installing lights." }
+        ];
+
+        const btnContainer = document.getElementById('pipeline-buttons');
+        pipelineSteps.forEach((step, index) => {
+            const btn = document.createElement('button');
+            btn.className = `w-full text-left p-4 rounded-lg border transition-all duration-200 mb-2 ${index === 0 ? 'bg-orange-600 text-white border-orange-600 shadow-md' : 'bg-white border-stone-200 hover:border-orange-300 text-stone-600'}`;
+            btn.innerHTML = `<span class="font-bold text-lg mr-2">${index + 1}</span> ${step.title.split('.')[1] || step.title}`;
+            btn.onclick = () => updatePipeline(index, btn);
+            btnContainer.appendChild(btn);
+        });
+
+        function updatePipeline(index, activeBtn) {
+            // Update UI Buttons
+            Array.from(btnContainer.children).forEach(b => {
+                b.className = 'w-full text-left p-4 rounded-lg border transition-all duration-200 mb-2 bg-white border-stone-200 hover:border-orange-300 text-stone-600';
+            });
+            activeBtn.className = 'w-full text-left p-4 rounded-lg border transition-all duration-200 mb-2 bg-orange-600 text-white border-orange-600 shadow-md';
+
+            // Update Content
+            const contentDiv = document.getElementById('pipeline-content');
+            contentDiv.style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('pipeline-title').innerText = pipelineSteps[index].title;
+                document.getElementById('pipeline-stage-type').innerText = pipelineSteps[index].type;
+                document.getElementById('pipeline-tech').innerText = pipelineSteps[index].tech;
+                document.getElementById('pipeline-analogy').innerText = pipelineSteps[index].analogy;
+                contentDiv.style.opacity = '1';
+            }, 300);
+        }
+
+        // --- DOM Simulator ---
+        function simDom(action) {
+            const output = document.getElementById('code-output');
+            const newLog = document.createElement('p');
+            newLog.className = "border-t border-stone-800 pt-1 mt-1";
+            
+            if (action === 'text') {
+                newLog.innerHTML = `<span class="text-stone-400">> h1.textContent = "Hola!";</span><br><span class="text-green-400">"Hola!"</span>`;
+                // Visual Effect
+                const node = document.getElementById('node-h1');
+                const originalText = node.nextElementSibling.querySelector('a').innerText;
+                node.nextElementSibling.querySelector('a').innerText = '"Hola!"';
+                node.classList.add('bg-red-200');
+                setTimeout(() => { 
+                    node.classList.remove('bg-red-200'); 
+                    node.nextElementSibling.querySelector('a').innerText = originalText;
+                }, 1500);
+            } else if (action === 'style') {
+                newLog.innerHTML = `<span class="text-stone-400">> h1.style.color = "red";</span><br><span class="text-green-400">"red"</span>`;
+                const node = document.getElementById('node-h1');
+                node.classList.add('text-red-600', 'font-bold');
+                setTimeout(() => { node.classList.remove('text-red-600', 'font-bold'); }, 1500);
+            } else if (action === 'create') {
+                newLog.innerHTML = `<span class="text-stone-400">> document.createElement('div');</span><br><span class="text-green-400">&lt;div&gt;&lt;/div&gt;</span>`;
+            }
+            
+            output.appendChild(newLog);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        // --- DevTools Tab Logic ---
+        const dtData = {
+            'elements': {
+                content: `<div class="text-blue-600">&lt;html&gt;</div>
+                          <div class="pl-4 text-blue-600">&lt;body&gt;</div>
+                          <div class="pl-8 text-blue-800">&lt;h1&gt;<span class="text-black">Hello World</span>&lt;/h1&gt;</div>
+                          <div class="pl-8 text-blue-800">&lt;p <span class="text-orange-600">class</span>="text-lg"&gt;<span class="text-black">This is the DOM.</span>&lt;/p&gt;</div>
+                          <div class="pl-4 text-blue-600">&lt;/body&gt;</div>
+                          <div class="text-blue-600">&lt;/html&gt;</div>`,
+                desc: "Elements Panel: Inspect & edit live DOM and CSS. Double-click text to edit, add/remove styles on the fly."
+            },
+            'console': {
+                content: `<div class="text-stone-500">Google Chrome 122.0.6261.94</div>
+                          <div class="text-red-600 bg-red-50 p-1 border-l-2 border-red-500">Uncaught ReferenceError: x is not defined</div>
+                          <div class="text-blue-600">> console.log("Hello");</div>
+                          <div class="text-stone-800">Hello</div>`,
+                desc: "Console Panel: Run JS commands, view errors/logs, and debug logic."
+            },
+            'network': {
+                content: `<table class="w-full text-left">
+                            <tr class="text-stone-400 border-b"><th>Name</th><th>Status</th><th>Type</th><th>Time</th></tr>
+                            <tr><td>index.html</td><td class="text-green-600">200</td><td>doc</td><td>20ms</td></tr>
+                            <tr><td>style.css</td><td class="text-green-600">200</td><td>css</td><td>15ms</td></tr>
+                            <tr><td>app.js</td><td class="text-stone-400">304</td><td>script</td><td>10ms</td></tr>
+                            <tr><td>logo.png</td><td class="text-red-500">404</td><td>img</td><td>5ms</td></tr>
+                          </table>`,
+                desc: "Network Panel: Watch every HTTP request. Check status codes (200 OK, 404 Not Found) and waterfall timing."
+            },
+            'sources': {
+                content: `<div class="flex"><div class="text-stone-400 border-r pr-2 mr-2">1<br>2<br>3</div><div>function init() {<br>  debugger; <span class="text-stone-400">// Breakpoint hit</span><br>  console.log("Start");<br>}</div></div>`,
+                desc: "Sources Panel: View source code and debug JS with breakpoints to pause execution."
+            },
+            'application': {
+                content: `<div class="grid grid-cols-2 gap-4">
+                            <div class="border-r"><strong>Storage</strong><br>Cookies<br>Local Storage<br>Session Storage</div>
+                            <div>Key: "theme"<br>Value: "dark"</div>
+                          </div>`,
+                desc: "Application Panel: Inspect Cookies, LocalStorage, SessionStorage, and Caches."
+            },
+            'performance': {
+                content: `<div class="h-20 bg-stone-100 relative mt-4 border">
+                            <div class="absolute top-0 left-0 h-full bg-green-200 w-1/4">Scripting</div>
+                            <div class="absolute top-0 left-1/4 h-full bg-purple-200 w-1/4">Rendering</div>
+                            <div class="absolute top-0 left-2/4 h-full bg-orange-200 w-1/4">Painting</div>
+                          </div>`,
+                desc: "Performance Panel: Record and analyze rendering speed and find bottlenecks."
+            }
+        };
+
+        function switchDevTab(tabName) {
+            // UI Tabs
+            document.querySelectorAll('.dt-tab').forEach(t => {
+                if(t.dataset.tab === tabName) {
+                    t.classList.add('active-tab');
+                } else {
+                    t.classList.remove('active-tab');
+                }
+            });
+            
+            // Content
+            document.getElementById('dt-content').innerHTML = dtData[tabName].content;
+            document.getElementById('dt-explanation').innerHTML = `<strong>${tabName.charAt(0).toUpperCase() + tabName.slice(1)} Panel:</strong> ${dtData[tabName].desc}`;
+        }
+        
+        // Initialize default tab
+        switchDevTab('elements');
+
+        // --- Chart 2: Network Waterfall (Horizontal Bar) ---
+        const ctxNet = document.getElementById('networkChart').getContext('2d');
+        new Chart(ctxNet, {
+            type: 'bar',
+            data: {
+                labels: ['DNS Lookup', 'TCP Connection', 'SSL/TLS', 'Time to First Byte', 'Content Download'],
+                datasets: [{
+                    label: 'Time (ms)',
+                    data: [20, 15, 30, 45, 100],
+                    backgroundColor: ['#94a3b8', '#64748b', '#475569', '#334155', '#1e293b'],
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+
+        // --- Chart 3: Status Codes (Donut) ---
+        const ctxStatus = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctxStatus, {
+            type: 'doughnut',
+            data: {
+                labels: ['2xx Success', '3xx Redirect', '4xx Client Err', '5xx Server Err'],
+                datasets: [{
+                    data: [60, 10, 20, 10],
+                    backgroundColor: ['#22c55e', '#eab308', '#ef4444', '#a855f7'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // --- Storage Logic ---
+        function saveStorage(type) {
+            const val = document.getElementById('storageInput').value;
+            if(!val) return;
+            
+            if(type === 'local') {
+                document.getElementById('localDisplay').innerText = val;
+                // In a real app: localStorage.setItem('demo', val);
+            } else {
+                document.getElementById('sessionDisplay').innerText = val;
+                // In a real app: sessionStorage.setItem('demo', val);
+            }
+        }
+        
+    </script>
+</body>
+</html>
+
+
