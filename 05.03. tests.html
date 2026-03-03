@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced HTML5 & CSS Study App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom styles for the 3D flip card effect */
+        .flip-card {
+            perspective: 1000px;
+        }
+        .flip-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .flip-card.flipped .flip-card-inner {
+            transform: rotateY(180deg);
+        }
+        .flip-card-front, .flip-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+        .flip-card-front {
+            background-color: #ffffff;
+            color: #1e293b;
+            border: 2px solid #e2e8f0;
+        }
+        .flip-card-back {
+            background-color: #f8fafc;
+            color: #0f172a;
+            transform: rotateY(180deg);
+            border: 2px solid #cbd5e1;
+        }
+        
+        /* Smooth tab transition */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Custom radio button styles */
+        input[type="radio"]:checked + label {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .correct-answer { border-color: #22c55e !important; background-color: #f0fdf4 !important; }
+        .wrong-answer { border-color: #ef4444 !important; background-color: #fef2f2 !important; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+
+    <div class="max-w-4xl mx-auto p-4 md:p-8">
+        
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 mb-2">Advanced HTML5 & CSS</h1>
+            <p class="text-slate-500">Interactive Study Environment</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="flex justify-center mb-8 bg-white rounded-xl shadow-sm p-1 max-w-md mx-auto border border-slate-200">
+            <button id="tab-btn-flashcards" onclick="switchTab('flashcards')" class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors bg-blue-600 text-white">
+                Flashcards (25)
+            </button>
+            <button id="tab-btn-quiz" onclick="switchTab('quiz')" class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100">
+                Practice Quiz (10)
+            </button>
+        </div>
+
+        <!-- TAB 1: FLASHCARDS -->
+        <div id="tab-flashcards" class="tab-content active max-w-2xl mx-auto">
+            <div class="mb-4 flex justify-between items-center text-sm font-medium text-slate-500">
+                <span id="card-counter">Card 1 of 25</span>
+                <button onclick="shuffleCards()" class="hover:text-blue-600 flex items-center gap-1 transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 3 21 3 21 8"></polyline><line x1="4" y1="20" x2="21" y2="3"></line><polyline points="21 16 21 21 16 21"></polyline><line x1="15" y1="15" x2="21" y2="21"></line><line x1="4" y1="4" x2="9" y2="9"></line></svg>
+                    Shuffle
+                </button>
+            </div>
+            
+            <!-- Card Container -->
+            <div class="h-64 md:h-80 w-full mb-8 cursor-pointer" onclick="flipCard()">
+                <div id="flashcard" class="flip-card w-full h-full">
+                    <div class="flip-card-inner">
+                        <div class="flip-card-front">
+                            <h2 id="card-front-text" class="text-xl md:text-2xl font-semibold text-center leading-snug"></h2>
+                        </div>
+                        <div class="flip-card-back">
+                            <p id="card-back-text" class="text-lg md:text-xl text-center leading-relaxed"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                <button onclick="prevCard()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors">
+                    &larr; Previous
+                </button>
+                <button onclick="flipCard()" class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors shadow-sm">
+                    Flip Card
+                </button>
+                <button onclick="nextCard()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-medium transition-colors">
+                    Next &rarr;
+                </button>
+            </div>
+        </div>
+
+        <!-- TAB 2: QUIZ -->
+        <div id="tab-quiz" class="tab-content">
+            <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                <div class="mb-6 pb-6 border-b border-slate-100 flex justify-between items-end">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-800">Knowledge Check</h2>
+                        <p class="text-slate-500 mt-1">Test your understanding of advanced HTML/CSS concepts.</p>
+                    </div>
+                    <div id="score-display" class="hidden text-right">
+                        <span class="text-sm font-medium text-slate-500 uppercase tracking-wider">Your Score</span>
+                        <div class="text-3xl font-bold text-blue-600" id="score-text">0/10</div>
+                    </div>
+                </div>
+
+                <form id="quiz-form" onsubmit="submitQuiz(event)">
+                    <div id="quiz-container" class="space-y-8">
+                        <!-- Quiz questions will be dynamically injected here -->
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-slate-100 flex justify-end gap-4">
+                        <button type="button" onclick="resetQuiz()" id="reset-quiz-btn" class="hidden px-6 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors">
+                            Retake Quiz
+                        </button>
+                        <button type="submit" id="submit-quiz-btn" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold shadow-md transition-colors">
+                            Submit Answers
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- DATA ---
+
+        const flashcardsData = [
+            { front: "The problem with \"Div Soup\" before HTML5", back: "Screen readers and search engines had no structural clues for indexing, making pages less accessible and harder to maintain." },
+            { front: "Three pillars of value for Semantic Elements", back: "Accessibility (a11y), SEO (Search Engine Optimization), and Developer Experience." },
+            { front: "HTML5 semantic tag for primary content", back: "<main> (Should only be used once per page)." },
+            { front: "CSS Flexbox primary layout model", back: "A one-dimensional layout model that distributes items along a single axis (either a row or a column)." },
+            { front: "Purpose of 'justify-content' in Flexbox", back: "Controls the spacing and alignment of items along the main axis." },
+            { front: "Purpose of 'align-items' in Flexbox", back: "Controls the spacing and alignment of items along the cross axis." },
+            { front: "Flexbox shorthand property order (flex:)", back: "flex-grow, flex-shrink, and flex-basis (e.g., flex: 1 1 260px)." },
+            { front: "CSS Grid primary layout model", back: "A two-dimensional layout system designed to control both rows and columns simultaneously." },
+            { front: "'fr' unit in CSS Grid", back: "Fractional unit representing one share of the remaining available space in the grid container." },
+            { front: "Three core steps to a CSS Grid workflow", back: "1. Define Tracks, 2. Name Areas, 3. Place Items." },
+            { front: "Primary requirement to activate a CSS Transition", back: "It requires a trigger, such as a pseudo-class like :hover, :focus, or a JavaScript class toggle." },
+            { front: "Advantage of @keyframes over Transitions", back: "They allow for multi-step animations with unlimited states that can run automatically and loop infinitely." },
+            { front: "'ease-out' timing function behavior", back: "The animation moves quickly at the start and slows down towards the end." },
+            { front: "Three pillars of Responsive Web Design (RWD)", back: "Fluid Grids, Flexible Media, and CSS Media Queries." },
+            { front: "Mobile-First Approach workflow", back: "Writing the base CSS for the smallest screens first, then adding complexity for larger screens using min-width media queries." },
+            { front: "Critical HTML tag required for Responsive Web Design", back: "The viewport meta tag (<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">)." },
+            { front: "Benefit of HTML5 built-in form validation", back: "It handles constraints like required fields or proper email formats directly in the browser, eliminating the need for heavy JavaScript validation." },
+            { front: "HTML5 form attribute for Regular Expressions", back: "The 'pattern' attribute (e.g., pattern=\"[0-9]{4}\")." },
+            { front: "Function of the <datalist> element", back: "Provides autocomplete suggestions for a standard <input> field while still allowing users to type freely." },
+            { front: "CSS pseudo-classes for automatic form validation feedback", back: ":valid and :invalid" },
+            { front: "CSS Variables (Custom Properties) definition syntax", back: "They are declared with a double-hyphen prefix (e.g., --brand-color: #6c5ce7;)." },
+            { front: "CSS Variables retrieval syntax", back: "Used with the var() function (e.g., background: var(--brand-color);)." },
+            { front: "Standard selector for global CSS Variable scoping", back: "The :root pseudo-class, making variables accessible everywhere in the document." },
+            { front: "Method for dynamic theming using CSS Variables", back: "Defining default variables in :root, overriding them in a theme class (like .dark), and toggling that class on the <html> tag." },
+            { front: "HTML5 semantic tag for self-contained content", back: "<article> (ideal for blog posts or news stories)." }
+        ];
+
+        const quizData = [
+            {
+                question: "You are building a blog post component that contains a title, author, and the article text. This component should make sense and be readable even if it were syndicated or shared on a completely different website. Which semantic HTML tag should wrap this component?",
+                hint: "Consider which HTML5 element is specifically designed for content that is independent and self-contained.",
+                options: [
+                    { text: "&lt;article&gt;", isCorrect: true, rationale: "The <article> tag is explicitly designed for self-contained, independent content like blog posts or news items that could be distributed separately from the rest of the page." },
+                    { text: "&lt;section&gt;", isCorrect: false, rationale: "While better than a generic <div>, <section> is used for thematic grouping of content usually within a larger document, rather than content intended to stand completely on its own." },
+                    { text: "&lt;aside&gt;", isCorrect: false, rationale: "The <aside> element is intended for content that is tangentially related to the main content around it, such as sidebars or call-out boxes, not the primary content itself." },
+                    { text: "&lt;main&gt;", isCorrect: false, rationale: "The <main> tag should only be used once per page to wrap the dominant content of the document, not to wrap individual, repeatable components like blog post cards." }
+                ]
+            },
+            {
+                question: "You have a navigation bar with a company logo on the far left and a group of navigation links on the far right. The container has `display: flex;` and `flex-direction: row;`. Which CSS property will push the logo and the links to opposite ends of the container?",
+                hint: "Think about how to distribute the remaining free space along the primary axis of a flex container.",
+                options: [
+                    { text: "justify-content: space-between;", isCorrect: true, rationale: "This property distributes items along the main axis so that the first item is flush with the start edge and the last item is flush with the end edge, placing all available space between them." },
+                    { text: "align-items: space-between;", isCorrect: false, rationale: "The align-items property controls alignment on the cross axis (vertical, in this case), and 'space-between' is not a valid value for this property." },
+                    { text: "justify-content: flex-end;", isCorrect: false, rationale: "This would push both the logo and the links together to the far right side of the container, rather than separating them." },
+                    { text: "align-content: space-around;", isCorrect: false, rationale: "The align-content property only has an effect when there are multiple lines of flex items wrapped using flex-wrap, which is not applicable for a single-row navigation bar." }
+                ]
+            },
+            {
+                question: "You are creating a complex dashboard layout and want to define the visual structure (header, sidebar, main content, footer) directly in the CSS of the parent container using a visual, ASCII-like mapping. Which CSS Grid property allows you to do this?",
+                hint: "Look for the property that allows you to assign names to rectangular groups of cells and arrange them visually.",
+                options: [
+                    { text: "grid-template-areas", isCorrect: true, rationale: "This container property allows developers to map out named grid areas visually in the CSS using string values, creating an intuitive blueprint of the layout." },
+                    { text: "grid-template-columns", isCorrect: false, rationale: "This property defines the size and number of columns in the grid, but it does not assign names to specific layout regions." },
+                    { text: "grid-area", isCorrect: false, rationale: "This is an item property applied to the child elements to place them into the named regions defined by the parent, not the property used to create the layout blueprint itself." },
+                    { text: "repeat()", isCorrect: false, rationale: "This is a functional notation used within grid-template-columns or rows to quickly create multiple tracks of the same size, not for defining layout areas." }
+                ]
+            },
+            {
+                question: "You are designing a button that changes color when a user hovers over it. Inside the button, a loading icon should spin continuously while a form submits. Which CSS techniques should be applied to achieve this?",
+                hint: "Consider which tool requires a user interaction to trigger, and which tool can run autonomously on a loop.",
+                options: [
+                    { text: "A CSS transition on the button hover, and a @keyframes animation on the icon.", isCorrect: true, rationale: "Transitions are perfect for smooth, two-state changes triggered by an event like :hover. @keyframes are required for multi-step, autonomous motion that loops infinitely." },
+                    { text: "CSS transitions for both the color change and the spinning icon.", isCorrect: false, rationale: "Transitions only move from state A to state B and stop; they cannot loop infinitely, making them unsuitable for a continuous spinning loading icon." },
+                    { text: "@keyframes animations for both the color change and the spinning icon.", isCorrect: false, rationale: "While @keyframes could technically handle the color change, using them for simple hover states is overly complex and less performant than a standard transition." },
+                    { text: "A @keyframes animation on the button hover, and a CSS transition on the icon.", isCorrect: false, rationale: "This applies the tools backwards. A transition cannot loop indefinitely to spin the icon, and @keyframes are overkill for a simple color change on hover." }
+                ]
+            },
+            {
+                question: "Following the mobile-first approach, you are styling a product grid. It should display 1 column on phones, 2 columns on tablets (600px+), and 4 columns on desktops (1024px+). How should you write your CSS?",
+                hint: "Remember that in a progressive enhancement workflow, the base CSS is written for the smallest device, and complexity is layered on as the screen grows.",
+                options: [
+                    { text: "Write base CSS for 1 column, then use @media (min-width: 600px) for 2 columns, and @media (min-width: 1024px) for 4 columns.", isCorrect: true, rationale: "This directly applies the mobile-first principle: default styles serve the smallest/slowest devices, and min-width queries conditionally add complexity for larger screens." },
+                    { text: "Write base CSS for 4 columns, then use @media (max-width: 1023px) for 2 columns, and @media (max-width: 599px) for 1 column.", isCorrect: false, rationale: "This is a desktop-first approach (graceful degradation), which forces mobile devices to load and parse complex layout rules before immediately overriding them." },
+                    { text: "Write base CSS for 2 columns (tablets), then use max-width for phones and min-width for desktops.", isCorrect: false, rationale: "Starting in the middle breaks the linear cascade of mobile-first design and makes CSS harder to maintain and debug." },
+                    { text: "Use only @media (max-width) queries for all three states to ensure maximum compatibility.", isCorrect: false, rationale: "Using exclusively max-width queries forces a desktop-first workflow, which is contrary to modern mobile-first best practices." }
+                ]
+            },
+            {
+                question: "You deploy a responsive website, but when opening it on a mobile phone, the browser attempts to load the entire desktop layout scaled down to fit the screen, making the text unreadable. What crucial element is missing?",
+                hint: "Browsers need a specific instruction in the HTML document head to know they should match the device's actual screen width rather than rendering a zoomed-out desktop canvas.",
+                options: [
+                    { text: "The <meta name=\"viewport\"> tag in the document <head>.", isCorrect: true, rationale: "Without the viewport meta tag (setting width=device-width), mobile browsers default to rendering a desktop-width canvas (usually around 980px) and zooming out to fit it on the screen." },
+                    { text: "The flex-wrap: wrap; property on the main container.", isCorrect: false, rationale: "While flex-wrap allows items to stack, the browser will still render the page at a zoomed-out desktop width if it doesn't know it's supposed to respect the device's native viewport." },
+                    { text: "A @media (max-width: 600px) query in the CSS.", isCorrect: false, rationale: "Even if the CSS has media queries, they rely on the browser accurately reporting its width. Without the viewport tag, the browser tells the CSS it is a desktop screen." },
+                    { text: "The &lt;main&gt; semantic element.", isCorrect: false, rationale: "Semantic elements improve accessibility and SEO, but they have no impact on how the browser engine handles viewport scaling and rendering." }
+                ]
+            },
+            {
+                question: "You want the browser to natively prevent a user from submitting a form unless they enter a 4-digit PIN code exactly, without writing any JavaScript validation logic. Which attribute combination on the <input> element achieves this?",
+                hint: "Identify the attribute that accepts Regular Expressions to enforce specific formatting rules on the user's input.",
+                options: [
+                    { text: "required pattern=\"[0-9]{4}\"", isCorrect: true, rationale: "The 'required' attribute ensures the field isn't empty, and the 'pattern' attribute uses a Regular Expression to force the browser to accept only exactly four digits." },
+                    { text: "type=\"number\" max=\"9999\"", isCorrect: false, rationale: "This would allow the user to enter '1', '12', or '123' as well, meaning it does not strictly enforce an exact 4-digit requirement." },
+                    { text: "maxlength=\"4\" minlength=\"4\"", isCorrect: false, rationale: "While this enforces exactly four characters, it does not prevent the user from typing four letters (e.g., 'abcd') instead of numbers." },
+                    { text: "step=\"4\" required", isCorrect: false, rationale: "The 'step' attribute controls the increment jumps for a number input (e.g., counting by 4s), it does not enforce a specific character count or format pattern." }
+                ]
+            },
+            {
+                question: "To improve User Experience, you want a form field's border to instantly turn green when the user inputs a correctly formatted email address. Which CSS pseudo-class should you use to hook into the browser's native validation state?",
+                hint: "Look for the pseudo-class that specifically activates when the data entered passes all HTML5 rules applied to the input.",
+                options: [
+                    { text: "input:valid", isCorrect: true, rationale: "The :valid pseudo-class is automatically applied by the browser to any input element whose current value successfully satisfies all its validation constraints (like type=\"email\")." },
+                    { text: "input:focus", isCorrect: false, rationale: "The :focus pseudo-class applies styling whenever the user clicks into the field, regardless of whether the text they type is actually a correct email format or not." },
+                    { text: "input:required", isCorrect: false, rationale: "The :required pseudo-class applies styling statically to any input that has the 'required' attribute, but it does not check if the value entered is formatted correctly." },
+                    { text: "input::after", isCorrect: false, rationale: "This is a pseudo-element used to insert cosmetic content after an element, not a state selector that reacts to form validation logic." }
+                ]
+            },
+            {
+                question: "You have a flex container with three items. You want the first and third items to shrink to fit their content, but the middle item should stretch to absorb all remaining available space. What CSS property should you apply to the middle item?",
+                hint: "Consider the specific item property that dictates how much of the positive free space an element is allowed to consume.",
+                options: [
+                    { text: "flex-grow: 1;", isCorrect: true, rationale: "By default, flex items do not grow. Setting flex-grow to 1 tells the middle item to consume any remaining free space in the container after the other items are sized." },
+                    { text: "flex-shrink: 0;", isCorrect: false, rationale: "This prevents the item from shrinking when space is tight, but it does not instruct the item to expand and fill available empty space." },
+                    { text: "flex-basis: 100%;", isCorrect: false, rationale: "Setting the initial ideal size to 100% will cause the item to try to take up the entire container on its own, pushing the other items out of proportion." },
+                    { text: "justify-content: stretch;", isCorrect: false, rationale: "First, justify-content is a container property, not an item property. Second, 'stretch' is not a valid value for justify-content in Flexbox." }
+                ]
+            },
+            {
+                question: "You want to implement a 'Dark Mode' toggle on your web application. What is the most robust and maintainable way to implement this using CSS Custom Properties (Variables)?",
+                hint: "Think about how cascading works and how overriding values at the highest level of the document tree affects everything below it.",
+                options: [
+                    { text: "Define default color variables in :root, redefine those variables inside a .dark class on the <html> element, and toggle that class with JavaScript.", isCorrect: true, rationale: "This leverages the cascade perfectly. The whole app references the variable names, and simply applying the .dark class at the root overrides the variable values instantly application-wide." },
+                    { text: "Write a JavaScript function that loops through every DOM element and updates the inline CSS variable values dynamically.", isCorrect: false, rationale: "Looping through the entire DOM to inject inline styles is incredibly inefficient and defeats the purpose of using CSS rules to handle visual states." },
+                    { text: "Define variables inside every individual component class, and use JavaScript to swap out the component classes entirely.", isCorrect: false, rationale: "This violates the DRY (Don't Repeat Yourself) principle. Variables should be defined globally at the root to avoid maintaining hundreds of separate color definitions." },
+                    { text: "Use a @media query targeting max-width to change the variables when the screen gets smaller.", isCorrect: false, rationale: "While @media queries can override variables, screen size has nothing to do with enabling a dark mode toggle based on user preference." }
+                ]
+            }
+        ];
+
+        // --- APP LOGIC ---
+
+        // Tab Switching
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            
+            const btnFlash = document.getElementById('tab-btn-flashcards');
+            const btnQuiz = document.getElementById('tab-btn-quiz');
+            
+            if(tabId === 'flashcards') {
+                btnFlash.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors bg-blue-600 text-white shadow-sm";
+                btnQuiz.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+            } else {
+                btnQuiz.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors bg-blue-600 text-white shadow-sm";
+                btnFlash.className = "flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:text-slate-900 hover:bg-slate-100";
+            }
+        }
+
+        // Flashcards Logic
+        let activeCards = [...flashcardsData];
+        let currentCardIndex = 0;
+        const cardElement = document.getElementById('flashcard');
+        const frontText = document.getElementById('card-front-text');
+        const backText = document.getElementById('card-back-text');
+        const counterText = document.getElementById('card-counter');
+
+        function renderFlashcard() {
+            // Unflip before changing content if flipped
+            if (cardElement.classList.contains('flipped')) {
+                cardElement.classList.remove('flipped');
+                setTimeout(() => {
+                    updateCardContent();
+                }, 300); // wait for animation
+            } else {
+                updateCardContent();
+            }
+        }
+
+        function updateCardContent() {
+            frontText.innerHTML = activeCards[currentCardIndex].front.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            backText.innerHTML = activeCards[currentCardIndex].back.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            counterText.textContent = `Card ${currentCardIndex + 1} of ${activeCards.length}`;
+        }
+
+        function flipCard() {
+            cardElement.classList.toggle('flipped');
+        }
+
+        function nextCard() {
+            currentCardIndex = (currentCardIndex + 1) % activeCards.length;
+            renderFlashcard();
+        }
+
+        function prevCard() {
+            currentCardIndex = (currentCardIndex - 1 + activeCards.length) % activeCards.length;
+            renderFlashcard();
+        }
+
+        function shuffleCards() {
+            for (let i = activeCards.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [activeCards[i], activeCards[j]] = [activeCards[j], activeCards[i]];
+            }
+            currentCardIndex = 0;
+            renderFlashcard();
+        }
+
+        // Quiz Logic
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = '';
+            
+            quizData.forEach((q, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = "p-6 border border-slate-200 rounded-xl bg-slate-50";
+                
+                let optionsHtml = '';
+                // Shuffle options for this question
+                let shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+                
+                shuffledOptions.forEach((opt, optIndex) => {
+                    const inputId = `q${index}_opt${optIndex}`;
+                    optionsHtml += `
+                        <div class="relative flex items-start">
+                            <input type="radio" id="${inputId}" name="q${index}" value="${opt.isCorrect}" class="peer sr-only">
+                            <label for="${inputId}" class="w-full flex items-center p-4 border border-slate-200 rounded-lg cursor-pointer transition-all hover:bg-slate-100 peer-checked:border-blue-500 peer-focus:ring-2 peer-focus:ring-blue-500 bg-white">
+                                <span class="text-slate-700 font-medium">${opt.text}</span>
+                            </label>
+                            <div id="rationale-${inputId}" class="hidden w-full mt-2 p-3 text-sm rounded-lg border">
+                                ${opt.rationale}
+                            </div>
+                        </div>
+                    `;
+                });
+
+                qDiv.innerHTML = `
+                    <div class="mb-4">
+                        <span class="inline-block px-2 py-1 bg-slate-200 text-slate-700 text-xs font-bold rounded mb-2">Q${index + 1}</span>
+                        <h3 class="text-lg font-semibold text-slate-800">${q.question}</h3>
+                        <p class="text-sm text-slate-500 mt-1 italic flex gap-1 items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                            Hint: ${q.hint}
+                        </p>
+                    </div>
+                    <div class="space-y-3" id="options-container-${index}">
+                        ${optionsHtml}
+                    </div>
+                `;
+                container.appendChild(qDiv);
+            });
+        }
+
+        function submitQuiz(event) {
+            event.preventDefault();
+            const form = event.target;
+            let score = 0;
+            let answeredCount = 0;
+
+            quizData.forEach((q, index) => {
+                const selected = form.querySelector(`input[name="q${index}"]:checked`);
+                const container = document.getElementById(`options-container-${index}`);
+                const labels = container.querySelectorAll('label');
+                const inputs = container.querySelectorAll('input');
+                const rationales = container.querySelectorAll('div[id^="rationale-"]');
+
+                if (selected) answeredCount++;
+
+                // Disable inputs and show feedback
+                inputs.forEach((input, i) => {
+                    input.disabled = true;
+                    const label = labels[i];
+                    const rationale = rationales[i];
+                    const isCorrectOption = input.value === "true";
+
+                    if (input.checked) {
+                        rationale.classList.remove('hidden');
+                        if (isCorrectOption) {
+                            label.classList.add('correct-answer');
+                            rationale.classList.add('bg-green-50', 'text-green-800', 'border-green-200');
+                            score++;
+                        } else {
+                            label.classList.add('wrong-answer');
+                            rationale.classList.add('bg-red-50', 'text-red-800', 'border-red-200');
+                        }
+                    } else if (isCorrectOption) {
+                        // Highlight correct answer even if not selected
+                        label.classList.add('border-green-400', 'border-2');
+                    }
+                });
+            });
+
+            if (answeredCount < quizData.length) {
+                alert(`You answered ${answeredCount} out of ${quizData.length} questions. Check the uncolored ones!`);
+            }
+
+            // Show score
+            const scoreDisplay = document.getElementById('score-display');
+            const scoreText = document.getElementById('score-text');
+            scoreText.textContent = `${score}/${quizData.length}`;
+            scoreDisplay.classList.remove('hidden');
+
+            // Toggle buttons
+            document.getElementById('submit-quiz-btn').classList.add('hidden');
+            document.getElementById('reset-quiz-btn').classList.remove('hidden');
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function resetQuiz() {
+            document.getElementById('quiz-form').reset();
+            document.getElementById('score-display').classList.add('hidden');
+            document.getElementById('submit-quiz-btn').classList.remove('hidden');
+            document.getElementById('reset-quiz-btn').classList.add('hidden');
+            renderQuiz();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Initialize App
+        window.onload = () => {
+            renderFlashcard();
+            renderQuiz();
+        };
+    </script>
+</body>
+</html>
+
+
+
+

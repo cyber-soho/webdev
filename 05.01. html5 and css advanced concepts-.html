@@ -1,0 +1,862 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Week 05 — HTML5/CSS: Advanced Concepts | Cyber.SoHo</title>
+<style>
+/* ═══════ RESET & VARIABLES ═══════ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --navy:#1E2761;--deep:#0F1535;--ice:#CADCFC;--accent:#58A6FF;
+  --bg:#F5F7FB;--card:#FFFFFF;--text:#1E293B;--muted:#64748B;
+  --green:#2ECC71;--red:#E74C3C;--orange:#F39C12;--teal:#0D9488;
+  --coral:#E17055;--purple:#6C5CE7;
+  --font-head:'Georgia','Palatino Linotype',serif;
+  --font-body:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --font-mono:'Cascadia Code','Fira Code','Consolas',monospace;
+  --radius:12px;--shadow:0 4px 24px rgba(0,0,0,0.08);
+  --transition:0.35s cubic-bezier(.4,0,.2,1);
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);line-height:1.7;overflow-x:hidden}
+::selection{background:var(--accent);color:white}
+
+/* ═══════ SCROLLBAR ═══════ */
+::-webkit-scrollbar{width:8px}
+::-webkit-scrollbar-track{background:var(--deep)}
+::-webkit-scrollbar-thumb{background:var(--accent);border-radius:4px}
+
+/* ═══════ HERO ═══════ */
+.hero{background:linear-gradient(135deg,var(--deep) 0%,var(--navy) 50%,#1a3a6e 100%);color:white;padding:4rem 2rem 3rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-50%;right:-20%;width:600px;height:600px;background:radial-gradient(circle,rgba(88,166,255,0.08) 0%,transparent 70%);border-radius:50%}
+.hero::after{content:'';position:absolute;bottom:-30%;left:-10%;width:400px;height:400px;background:radial-gradient(circle,rgba(108,92,231,0.1) 0%,transparent 70%);border-radius:50%}
+.hero-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.hero .week-badge{display:inline-block;background:rgba(88,166,255,0.15);color:var(--accent);padding:0.4rem 1.2rem;border-radius:20px;font-size:0.85rem;font-weight:700;letter-spacing:2px;margin-bottom:1.5rem;border:1px solid rgba(88,166,255,0.25)}
+.hero h1{font-family:var(--font-head);font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.15;margin-bottom:1rem;letter-spacing:-0.5px}
+.hero h1 span{color:var(--accent)}
+.hero .subtitle{font-size:1.15rem;color:var(--ice);max-width:600px;opacity:0.85}
+.hero .meta-line{margin-top:1.5rem;font-size:0.85rem;color:rgba(255,255,255,0.4);display:flex;gap:2rem;flex-wrap:wrap}
+
+/* ═══════ NAV ═══════ */
+.toc-nav{position:sticky;top:0;z-index:100;background:rgba(15,21,53,0.97);backdrop-filter:blur(12px);border-bottom:1px solid rgba(88,166,255,0.15);overflow-x:auto}
+.toc-nav-inner{max-width:1100px;margin:0 auto;display:flex;gap:0;padding:0 1rem}
+.toc-nav a{padding:0.8rem 1.2rem;color:var(--ice);text-decoration:none;font-size:0.8rem;font-weight:600;white-space:nowrap;border-bottom:2px solid transparent;transition:var(--transition);letter-spacing:0.5px}
+.toc-nav a:hover,.toc-nav a.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(88,166,255,0.05)}
+@media(max-width:768px){.toc-nav a{padding:0.7rem 0.8rem;font-size:0.72rem}}
+
+/* ═══════ SECTIONS ═══════ */
+.section{max-width:1100px;margin:0 auto;padding:3.5rem 1.5rem}
+.section-divider{background:linear-gradient(135deg,var(--deep),var(--navy));color:white;padding:3rem 2rem;margin:0;position:relative;overflow:hidden}
+.section-divider::before{content:attr(data-num);position:absolute;right:2rem;top:50%;transform:translateY(-50%);font-family:var(--font-head);font-size:clamp(6rem,12vw,10rem);font-weight:700;color:rgba(88,166,255,0.07);line-height:1}
+.section-divider-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.section-divider .num{font-family:var(--font-head);font-size:1.2rem;color:var(--accent);font-weight:700;margin-bottom:0.5rem}
+.section-divider h2{font-family:var(--font-head);font-size:clamp(1.8rem,4vw,2.5rem);margin-bottom:0.3rem}
+.section-divider p{color:var(--ice);opacity:0.7;font-size:1rem}
+
+/* ═══════ CONTENT ELEMENTS ═══════ */
+h3{font-family:var(--font-head);font-size:1.5rem;color:var(--navy);margin:2rem 0 1rem;position:relative;padding-left:1rem;border-left:4px solid var(--accent)}
+.intro-text{font-size:1.05rem;color:var(--muted);margin-bottom:2rem;max-width:800px;line-height:1.8}
+
+/* Cards */
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.8rem;margin-bottom:1.5rem;border:1px solid rgba(0,0,0,0.04);transition:var(--transition)}
+.card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.12)}
+.card-accent{border-left:4px solid var(--accent)}
+.card-green{border-left:4px solid var(--green)}
+.card-orange{border-left:4px solid var(--orange)}
+
+/* Takeaway boxes */
+.takeaway{background:linear-gradient(135deg,#0a1628,#142240);border-radius:var(--radius);padding:2rem;margin:2rem 0;border-left:4px solid var(--green);position:relative}
+.takeaway::before{content:'KEY TAKEAWAY';position:absolute;top:0.8rem;left:2rem;font-size:0.7rem;color:var(--green);font-weight:700;letter-spacing:2px}
+.takeaway p{color:var(--ice);font-size:1rem;line-height:1.8;margin-top:0.5rem}
+
+/* Tables */
+.table-wrap{overflow-x:auto;margin:1.5rem 0;border-radius:var(--radius);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;background:var(--card);font-size:0.9rem}
+thead{background:var(--navy)}
+th{color:white;padding:0.9rem 1.2rem;text-align:left;font-weight:600;font-size:0.8rem;letter-spacing:0.5px}
+td{padding:0.75rem 1.2rem;border-bottom:1px solid #f0f0f0}
+tr:nth-child(even){background:#f8fafc}
+tr:hover{background:#eef2ff}
+td code,th code{background:rgba(88,166,255,0.1);color:var(--accent);padding:0.15rem 0.5rem;border-radius:4px;font-family:var(--font-mono);font-size:0.82rem}
+
+/* Code blocks */
+.code-block{background:#0d1117;border-radius:var(--radius);padding:1.5rem;margin:1.5rem 0;overflow-x:auto;position:relative;border:1px solid #21262d}
+.code-block::before{content:attr(data-lang);position:absolute;top:0.6rem;right:0.8rem;font-size:0.7rem;color:var(--accent);font-weight:600;letter-spacing:1px;text-transform:uppercase}
+.code-block pre{color:#c9d1d9;font-family:var(--font-mono);font-size:0.85rem;line-height:1.7;white-space:pre-wrap;word-break:break-word}
+.code-block .comment{color:#8b949e;font-style:italic}
+.code-block .tag{color:#7ee787}
+.code-block .attr{color:#d2a8ff}
+.code-block .val{color:#a5d6ff}
+.code-block .kw{color:#ff7b72}
+.code-block .str{color:#a5d6ff}
+.code-block .prop{color:#79c0ff}
+
+/* Icon cards grid */
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1.2rem;margin:1.5rem 0}
+.icon-card{background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border:1px solid rgba(0,0,0,0.04);transition:var(--transition)}
+.icon-card:hover{transform:translateY(-3px);box-shadow:0 8px 30px rgba(0,0,0,0.12)}
+.icon-card .ic{width:48px;height:48px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;margin-bottom:1rem}
+.icon-card h4{font-size:1.05rem;color:var(--navy);margin-bottom:0.4rem}
+.icon-card p{font-size:0.88rem;color:var(--muted);line-height:1.6}
+
+/* Comparison columns */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin:1.5rem 0}
+@media(max-width:640px){.compare{grid-template-columns:1fr}}
+.compare-col{background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);border-top:3px solid var(--accent)}
+.compare-col.alt{border-top-color:var(--green)}
+.compare-col h4{font-size:1rem;color:var(--navy);margin-bottom:0.8rem}
+.compare-col li{margin-bottom:0.5rem;font-size:0.9rem;color:var(--muted)}
+
+/* Callout */
+.callout{background:rgba(88,166,255,0.06);border:1px solid rgba(88,166,255,0.15);border-radius:var(--radius);padding:1.2rem 1.5rem;margin:1.5rem 0;display:flex;gap:0.8rem;align-items:flex-start}
+.callout.warn{background:rgba(243,156,18,0.06);border-color:rgba(243,156,18,0.2)}
+.callout-icon{font-size:1.3rem;flex-shrink:0;margin-top:0.1rem}
+.callout p{font-size:0.92rem;color:var(--text);line-height:1.6}
+.callout code{background:rgba(88,166,255,0.1);color:var(--accent);padding:0.1rem 0.4rem;border-radius:3px;font-family:var(--font-mono);font-size:0.82rem}
+
+/* Interactive demos */
+.demo-area{background:#0d1117;border-radius:var(--radius);padding:2rem;margin:1.5rem 0;border:1px solid #21262d}
+.demo-area h4{color:var(--accent);font-size:0.85rem;letter-spacing:1px;margin-bottom:1rem;text-transform:uppercase}
+.demo-controls{display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.demo-btn{padding:0.4rem 0.9rem;border:1px solid #30363d;background:#161b22;color:#c9d1d9;border-radius:6px;cursor:pointer;font-size:0.78rem;transition:var(--transition);font-family:var(--font-mono)}
+.demo-btn:hover,.demo-btn.active{background:var(--accent);color:var(--deep);border-color:var(--accent)}
+.demo-box{display:flex;gap:8px;padding:1rem;background:#161b22;border-radius:8px;min-height:100px;transition:all 0.4s ease;align-items:stretch}
+.demo-block{width:50px;height:50px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:white;font-weight:700;font-size:0.85rem;flex-shrink:0}
+
+/* Animation showcase */
+.anim-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin:1.5rem 0}
+.anim-card{background:#161b22;border:1px solid #21262d;border-radius:10px;padding:1.5rem;text-align:center}
+.anim-card h5{color:var(--accent);font-size:0.8rem;margin-bottom:1rem;letter-spacing:1px}
+.anim-shape{width:40px;height:40px;margin:0 auto 0.8rem;border-radius:6px}
+.anim-card code{color:var(--muted);font-size:0.7rem;font-family:var(--font-mono)}
+@keyframes pulse-demo{0%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:0.7}100%{transform:scale(1);opacity:1}}
+@keyframes spin-demo{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes slide-demo{0%{transform:translateX(-15px)}50%{transform:translateX(15px)}100%{transform:translateX(-15px)}}
+@keyframes morph-demo{0%{background:#e74c3c;border-radius:6px}25%{background:#f39c12;border-radius:50%}50%{background:#2ecc71;border-radius:6px}75%{background:#9b59b6;border-radius:50%}100%{background:#e74c3c;border-radius:6px}}
+
+/* Progress bars */
+.skill-bar{margin-bottom:1.2rem}
+.skill-bar .label{display:flex;justify-content:space-between;margin-bottom:0.3rem;font-size:0.88rem;font-weight:600}
+.skill-bar .track{height:14px;background:rgba(255,255,255,0.06);border-radius:7px;overflow:hidden}
+.skill-bar .fill{height:100%;border-radius:7px;width:0;transition:width 1.8s cubic-bezier(.4,0,.2,1)}
+
+/* Form demo */
+.form-demo{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin:1.5rem 0}
+@media(max-width:640px){.form-demo{grid-template-columns:1fr}}
+.form-demo .field{display:flex;flex-direction:column;gap:0.3rem}
+.form-demo label{font-size:0.8rem;font-weight:600;color:var(--muted)}
+.form-demo input,.form-demo select{padding:0.6rem 0.8rem;border:2px solid #e0e0e0;border-radius:8px;font-size:0.9rem;font-family:inherit;outline:none;transition:var(--transition)}
+.form-demo input:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(108,92,231,0.15)}
+.form-demo input:valid:not(:placeholder-shown){border-color:var(--green)}
+.form-demo input:invalid:not(:placeholder-shown){border-color:var(--red)}
+
+/* Theme demo */
+.theme-demo{border-radius:var(--radius);overflow:hidden;margin:1.5rem 0;transition:var(--transition)}
+.theme-demo .td-header{padding:1rem 1.5rem;transition:var(--transition)}
+.theme-demo .td-body{padding:1.5rem;transition:var(--transition)}
+.theme-demo .td-btn{padding:0.5rem 1rem;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.85rem;transition:var(--transition)}
+.theme-bar{display:flex;gap:0.5rem;margin:1rem 0}
+.theme-bar button{padding:0.5rem 1.2rem;border:2px solid #ddd;background:white;border-radius:20px;cursor:pointer;font-size:0.8rem;font-weight:600;transition:var(--transition)}
+.theme-bar button.active{border-color:var(--accent);background:var(--accent);color:white}
+
+/* Resources table */
+.resources-section{background:linear-gradient(135deg,var(--deep),var(--navy));padding:3rem 2rem;margin-top:3rem}
+.resources-section .section{padding:2rem 0}
+.resources-section h2{color:white;font-family:var(--font-head);font-size:2rem;margin-bottom:1.5rem}
+.resources-section table{background:#142240;border:1px solid rgba(88,166,255,0.1)}
+.resources-section th{background:rgba(88,166,255,0.15)}
+.resources-section td{color:var(--ice);border-bottom:1px solid rgba(255,255,255,0.05)}
+.resources-section tr:nth-child(even){background:rgba(255,255,255,0.02)}
+.resources-section tr:hover{background:rgba(88,166,255,0.05)}
+.resources-section a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent;transition:var(--transition)}
+.resources-section a:hover{border-bottom-color:var(--accent)}
+
+/* Disclaimer */
+.disclaimer{background:var(--deep);color:var(--ice);padding:3rem 2rem}
+.disclaimer .section{padding:2rem 0;max-width:900px}
+.disclaimer h2{font-family:var(--font-head);font-size:1.5rem;color:white;margin-bottom:1.5rem}
+.disclaimer h4{color:var(--accent);margin:1.5rem 0 0.5rem;font-size:0.95rem}
+.disclaimer p{font-size:0.85rem;opacity:0.7;line-height:1.8;margin-bottom:0.8rem}
+.disclaimer a{color:var(--accent)}
+
+/* Footer */
+.site-footer{background:#080c1a;color:rgba(255,255,255,0.3);text-align:center;padding:2rem;font-size:0.8rem}
+
+/* Back to top */
+.btt{position:fixed;bottom:2rem;right:2rem;width:44px;height:44px;background:var(--accent);color:white;border:none;border-radius:50%;font-size:1.2rem;cursor:pointer;opacity:0;transition:var(--transition);z-index:99;box-shadow:0 4px 15px rgba(88,166,255,0.3)}
+.btt.visible{opacity:1}
+.btt:hover{transform:translateY(-3px);background:var(--navy)}
+
+/* Responsive */
+@media(max-width:768px){
+  .hero{padding:2.5rem 1.2rem 2rem}
+  .section{padding:2rem 1.2rem}
+  .hero h1{font-size:2rem}
+  .icon-grid{grid-template-columns:1fr}
+}
+
+/* Print */
+@media print{
+  .toc-nav,.btt,.demo-area,.anim-grid,.theme-demo,.form-demo{display:none!important}
+  .hero{background:white!important;color:black!important;padding:1rem!important}
+  .hero h1,.hero h1 span{color:black!important}
+  .section-divider{background:white!important;color:black!important;border:2px solid #333!important}
+  body{background:white!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════ HERO ═══════ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="week-badge">WEEK 05</div>
+    <h1>HTML5/CSS:<br><span>Advanced Concepts</span></h1>
+    <p class="subtitle">Front-End Development — Web Applications Development. Seven concepts that transform a plain homework page into a website people actually want to use.</p>
+    <div class="meta-line">
+      <span>Prepared by Cyber.SoHo</span>
+      <span>March 2026</span>
+      <span>~1 Hour Lecture</span>
+      <span>Undergraduate CS (Computer Science)</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════ STICKY NAV ═══════ -->
+<nav class="toc-nav" id="tocNav">
+  <div class="toc-nav-inner">
+    <a href="#s1">1. Semantics</a>
+    <a href="#s2">2. Flexbox</a>
+    <a href="#s3">3. Grid</a>
+    <a href="#s4">4. Animations</a>
+    <a href="#s5">5. Responsive</a>
+    <a href="#s6">6. Forms</a>
+    <a href="#s7">7. Variables</a>
+    <a href="#resources">Resources</a>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 1: SEMANTIC ELEMENTS               -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider" data-num="01" id="s1">
+  <div class="section-divider-inner">
+    <div class="num">TOPIC 01</div>
+    <h2>HTML5 Semantic Elements</h2>
+    <p>Giving meaning to your markup</p>
+  </div>
+</div>
+<div class="section">
+  <p class="intro-text">Before HTML5 (HyperText Markup Language, version 5), every page was built from generic <code>&lt;div&gt;</code> tags — hundreds of them. Screen readers, search engines, and future-you all saw nothing but anonymous boxes. HTML5 introduced <strong>semantic elements</strong> — tags whose names describe their purpose.</p>
+
+  <h3>Semantic Tags Reference</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Semantic Tag</th><th>What It Replaces</th><th>Purpose</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt;header&gt;</code></td><td><code>&lt;div id="header"&gt;</code></td><td>Page or section banner</td></tr>
+        <tr><td><code>&lt;nav&gt;</code></td><td><code>&lt;div class="navigation"&gt;</code></td><td>Navigation links</td></tr>
+        <tr><td><code>&lt;main&gt;</code></td><td><code>&lt;div id="content"&gt;</code></td><td>Primary content (only one per page)</td></tr>
+        <tr><td><code>&lt;article&gt;</code></td><td><code>&lt;div class="post"&gt;</code></td><td>Self-contained content (blog post, news story)</td></tr>
+        <tr><td><code>&lt;section&gt;</code></td><td><code>&lt;div class="group"&gt;</code></td><td>Thematic grouping of related content</td></tr>
+        <tr><td><code>&lt;aside&gt;</code></td><td><code>&lt;div class="sidebar"&gt;</code></td><td>Tangentially related content (sidebar)</td></tr>
+        <tr><td><code>&lt;footer&gt;</code></td><td><code>&lt;div id="footer"&gt;</code></td><td>Closing information — copyright, links</td></tr>
+        <tr><td><code>&lt;figure&gt;</code> / <code>&lt;figcaption&gt;</code></td><td><code>&lt;div class="img-wrap"&gt;</code></td><td>Image, diagram, or code block with caption</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Why Should You Care?</h3>
+  <div class="icon-grid">
+    <div class="icon-card">
+      <div class="ic" style="background:rgba(88,166,255,0.12)">♿</div>
+      <h4>Accessibility (a11y)</h4>
+      <p>Screen readers like <a href="https://www.nvaccess.org/" target="_blank" rel="noopener">NVDA</a> and <a href="https://www.freedomscientific.com/products/software/jaws/" target="_blank" rel="noopener">JAWS</a> use semantic tags as landmarks. Visually impaired users can jump straight to <code>&lt;main&gt;</code>, skipping repeated navigation.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ic" style="background:rgba(46,204,113,0.12)">🔍</div>
+      <h4>SEO (Search Engine Optimization)</h4>
+      <p>Search engines reward pages with semantic HTML because it makes content easier to index. The <a href="https://www.w3.org/" target="_blank" rel="noopener">W3C (World Wide Web Consortium)</a> authored HTML5 to encourage this.</p>
+    </div>
+    <div class="icon-card">
+      <div class="ic" style="background:rgba(108,92,231,0.12)">🧑‍💻</div>
+      <h4>Developer Experience</h4>
+      <p>Six months from now, <code>&lt;nav&gt;</code> tells you instantly what that block does. <code>&lt;div class="x34-top"&gt;</code> does not. Semantic code is maintainable code.</p>
+    </div>
+  </div>
+
+  <h3>Code Example — Campus Newspaper</h3>
+  <div class="code-block" data-lang="HTML">
+<pre><span class="comment">&lt;!-- HEADER: the banner identifying the site --&gt;</span>
+<span class="tag">&lt;header&gt;</span>
+    <span class="tag">&lt;h1&gt;</span>Campus Chronicle<span class="tag">&lt;/h1&gt;</span>
+    <span class="tag">&lt;p&gt;</span>Delivering campus stories since 2024<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/header&gt;</span>
+
+<span class="comment">&lt;!-- NAV: primary navigation links --&gt;</span>
+<span class="tag">&lt;nav&gt;</span>
+    <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"#news"</span><span class="tag">&gt;</span>News<span class="tag">&lt;/a&gt;</span>
+    <span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="val">"#sports"</span><span class="tag">&gt;</span>Sports<span class="tag">&lt;/a&gt;</span>
+<span class="tag">&lt;/nav&gt;</span>
+
+<span class="comment">&lt;!-- MAIN: the dominant, unique content --&gt;</span>
+<span class="tag">&lt;main&gt;</span>
+    <span class="comment">&lt;!-- ARTICLE: a self-contained story --&gt;</span>
+    <span class="tag">&lt;article&gt;</span>
+        <span class="tag">&lt;h2&gt;</span>New CS Building Opens<span class="tag">&lt;/h2&gt;</span>
+        <span class="tag">&lt;p&gt;</span>The long-awaited wing will feature three web-dev labs...<span class="tag">&lt;/p&gt;</span>
+    <span class="tag">&lt;/article&gt;</span>
+<span class="tag">&lt;/main&gt;</span>
+
+<span class="comment">&lt;!-- ASIDE: secondary content (sidebar) --&gt;</span>
+<span class="tag">&lt;aside&gt;</span>
+    <span class="tag">&lt;h3&gt;</span>Upcoming Events<span class="tag">&lt;/h3&gt;</span>
+<span class="tag">&lt;/aside&gt;</span>
+
+<span class="comment">&lt;!-- FOOTER: page-bottom info --&gt;</span>
+<span class="tag">&lt;footer&gt;</span>
+    <span class="tag">&lt;p&gt;</span>&amp;copy; 2026 Campus Chronicle<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;/footer&gt;</span></pre>
+  </div>
+
+  <div class="takeaway">
+    <p>Replace structural <code>&lt;div&gt;</code> tags with HTML5 semantic elements. Your pages become accessible, search-engine-friendly, and self-documenting — with zero performance cost.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 2: FLEXBOX                          -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider" data-num="02" id="s2">
+  <div class="section-divider-inner">
+    <div class="num">TOPIC 02</div>
+    <h2>CSS Flexbox</h2>
+    <p>One-dimensional layouts made easy</p>
+  </div>
+</div>
+<div class="section">
+  <p class="intro-text">Flexbox (Flexible Box Layout) distributes items along <strong>one axis</strong> — either a row or a column. Before Flexbox, centering a div vertically required hacky workarounds. Flexbox solved that with a single line: <code>align-items: center</code>.</p>
+
+  <h3>Container Properties</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Property</th><th>Controls</th><th>Common Values</th></tr></thead>
+      <tbody>
+        <tr><td><code>flex-direction</code></td><td>Main axis direction</td><td><code>row</code>, <code>column</code>, <code>row-reverse</code>, <code>column-reverse</code></td></tr>
+        <tr><td><code>justify-content</code></td><td>Main-axis spacing</td><td><code>flex-start</code>, <code>center</code>, <code>space-between</code>, <code>space-around</code></td></tr>
+        <tr><td><code>align-items</code></td><td>Cross-axis alignment</td><td><code>flex-start</code>, <code>center</code>, <code>stretch</code>, <code>flex-end</code></td></tr>
+        <tr><td><code>flex-wrap</code></td><td>Multi-line wrapping</td><td><code>nowrap</code> (default), <code>wrap</code></td></tr>
+        <tr><td><code>gap</code></td><td>Spacing between items</td><td>Any length: <code>1rem</code>, <code>20px</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Interactive Flexbox Playground</h3>
+  <div class="demo-area">
+    <h4>justify-content</h4>
+    <div class="demo-controls" id="jcControls">
+      <button class="demo-btn active" onclick="setFlex('justifyContent','flex-start',this,'jcControls')">flex-start</button>
+      <button class="demo-btn" onclick="setFlex('justifyContent','center',this,'jcControls')">center</button>
+      <button class="demo-btn" onclick="setFlex('justifyContent','flex-end',this,'jcControls')">flex-end</button>
+      <button class="demo-btn" onclick="setFlex('justifyContent','space-between',this,'jcControls')">space-between</button>
+      <button class="demo-btn" onclick="setFlex('justifyContent','space-around',this,'jcControls')">space-around</button>
+    </div>
+    <h4>align-items</h4>
+    <div class="demo-controls" id="aiControls">
+      <button class="demo-btn" onclick="setFlex('alignItems','flex-start',this,'aiControls')">flex-start</button>
+      <button class="demo-btn active" onclick="setFlex('alignItems','stretch',this,'aiControls')">stretch</button>
+      <button class="demo-btn" onclick="setFlex('alignItems','center',this,'aiControls')">center</button>
+      <button class="demo-btn" onclick="setFlex('alignItems','flex-end',this,'aiControls')">flex-end</button>
+    </div>
+    <h4>flex-direction</h4>
+    <div class="demo-controls" id="fdControls">
+      <button class="demo-btn active" onclick="setFlex('flexDirection','row',this,'fdControls')">row</button>
+      <button class="demo-btn" onclick="setFlex('flexDirection','row-reverse',this,'fdControls')">row-reverse</button>
+      <button class="demo-btn" onclick="setFlex('flexDirection','column',this,'fdControls')">column</button>
+      <button class="demo-btn" onclick="setFlex('flexDirection','column-reverse',this,'fdControls')">column-reverse</button>
+    </div>
+    <div class="demo-box" id="flexDemo">
+      <div class="demo-block" style="background:#e74c3c">1</div>
+      <div class="demo-block" style="background:#2ecc71;height:70px">2</div>
+      <div class="demo-block" style="background:#3498db;height:35px">3</div>
+      <div class="demo-block" style="background:#f39c12;height:55px">4</div>
+      <div class="demo-block" style="background:#9b59b6">5</div>
+    </div>
+  </div>
+
+  <div class="takeaway">
+    <p>Flexbox handles <strong>one-dimensional</strong> layouts — rows OR columns. Activate with <code>display: flex</code> on the parent. Use <code>justify-content</code> (main axis) and <code>align-items</code> (cross axis) to control distribution. Use <code>flex-wrap: wrap</code> for responsive card grids.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 3: CSS GRID                         -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider" data-num="03" id="s3">
+  <div class="section-divider-inner">
+    <div class="num">TOPIC 03</div>
+    <h2>CSS Grid Layout</h2>
+    <p>Two-dimensional page structure</p>
+  </div>
+</div>
+<div class="section">
+  <p class="intro-text">CSS Grid is a <strong>two-dimensional</strong> layout system — it controls both rows and columns simultaneously. While Flexbox arranges items along a single line, Grid is purpose-built for full page layouts: dashboards, magazines, image galleries.</p>
+
+  <h3>Grid Terminology</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Grid Container</strong></td><td>The parent element with <code>display: grid</code></td></tr>
+        <tr><td><strong>Track</strong></td><td>A single row or column</td></tr>
+        <tr><td><strong>Cell</strong></td><td>The intersection of one row and one column</td></tr>
+        <tr><td><strong>Area</strong></td><td>A named rectangular group of one or more cells</td></tr>
+        <tr><td><strong>fr unit</strong></td><td>Fractional unit — "one share of the remaining space"</td></tr>
+        <tr><td><strong>Gap (Gutter)</strong></td><td>Space between tracks</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Flexbox vs. Grid — When to Use Which?</h3>
+  <div class="compare">
+    <div class="compare-col">
+      <h4>Use Flexbox When...</h4>
+      <ul>
+        <li>Content determines size</li>
+        <li>One-axis flow (nav bar, card row)</li>
+        <li>Items should grow/shrink freely</li>
+      </ul>
+    </div>
+    <div class="compare-col alt">
+      <h4>Use Grid When...</h4>
+      <ul>
+        <li>Layout determines placement</li>
+        <li>Full page structure needed</li>
+        <li>Precise row + column control</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>The Grid Workflow</h3>
+  <div class="code-block" data-lang="CSS">
+<pre><span class="comment">/* Step 1: Define Tracks */</span>
+<span class="prop">grid-template-columns</span>: <span class="val">260px 1fr 1fr</span>;
+<span class="prop">grid-template-rows</span>: <span class="val">auto 1fr auto</span>;
+
+<span class="comment">/* Step 2: Name Areas — a visual ASCII map */</span>
+<span class="prop">grid-template-areas</span>:
+    <span class="str">"sidebar header  header"</span>
+    <span class="str">"sidebar main    stats"</span>
+    <span class="str">"sidebar footer  footer"</span>;
+
+<span class="comment">/* Step 3: Place Items */</span>
+.<span class="tag">sidebar</span> { <span class="prop">grid-area</span>: <span class="val">sidebar</span>; }
+.<span class="tag">header</span>  { <span class="prop">grid-area</span>: <span class="val">header</span>; }</pre>
+  </div>
+
+  <div class="takeaway">
+    <p>CSS Grid controls <strong>both rows and columns</strong> simultaneously. Define structure with <code>grid-template-columns/rows/areas</code>, place children with <code>grid-area</code>, and use <code>fr</code> units for flexible sizing. Collapse to single column on mobile with <code>@media</code> queries.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 4: TRANSITIONS & ANIMATIONS         -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider" data-num="04" id="s4">
+  <div class="section-divider-inner">
+    <div class="num">TOPIC 04</div>
+    <h2>Transitions & Animations</h2>
+    <p>Adding motion and life to your pages</p>
+  </div>
+</div>
+<div class="section">
+  <p class="intro-text">A <strong>transition</strong> smoothly animates a property change when something triggers it (hover, focus, JS class toggle). A <strong>@keyframes animation</strong> runs on its own — no trigger needed — and can define unlimited intermediate steps.</p>
+
+  <h3>CSS Transitions</h3>
+  <div class="code-block" data-lang="CSS">
+<pre><span class="comment">/* Syntax: property | duration | timing-function | delay */</span>
+<span class="prop">transition</span>: <span class="val">width 0.5s ease-out 0.1s</span>;
+
+<span class="comment">/* Common timing functions: */</span>
+<span class="comment">/* ease — slow→fast→slow (default) */</span>
+<span class="comment">/* linear — constant speed */</span>
+<span class="comment">/* ease-in — slow start */</span>
+<span class="comment">/* ease-out — slow end */</span>
+<span class="comment">/* ease-in-out — slow start and end */</span></pre>
+  </div>
+
+  <h3>@keyframes Animations</h3>
+  <div class="code-block" data-lang="CSS">
+<pre><span class="kw">@keyframes</span> <span class="tag">fadeAndSlide</span> {
+    <span class="val">0%</span>   { <span class="prop">opacity</span>: <span class="val">0</span>; <span class="prop">transform</span>: <span class="val">translateY(20px)</span>; }
+    <span class="val">50%</span>  { <span class="prop">opacity</span>: <span class="val">0.5</span>; }
+    <span class="val">100%</span> { <span class="prop">opacity</span>: <span class="val">1</span>; <span class="prop">transform</span>: <span class="val">translateY(0)</span>; }
+}
+.<span class="tag">element</span> { <span class="prop">animation</span>: <span class="val">fadeAndSlide 1s ease-out forwards</span>; }</pre>
+  </div>
+
+  <h3>Live Animation Demos</h3>
+  <div class="demo-area">
+    <div class="anim-grid">
+      <div class="anim-card">
+        <h5>PULSE</h5>
+        <div class="anim-shape" style="background:#e74c3c;animation:pulse-demo 2s ease-in-out infinite"></div>
+        <code>scale(1) → scale(1.3)</code>
+      </div>
+      <div class="anim-card">
+        <h5>SPIN</h5>
+        <div class="anim-shape" style="background:#3498db;animation:spin-demo 3s linear infinite"></div>
+        <code>rotate(0°) → rotate(360°)</code>
+      </div>
+      <div class="anim-card">
+        <h5>SLIDE</h5>
+        <div class="anim-shape" style="background:#2ecc71;animation:slide-demo 2.5s ease-in-out infinite"></div>
+        <code>translateX(-15 → 15px)</code>
+      </div>
+      <div class="anim-card">
+        <h5>MORPH</h5>
+        <div class="anim-shape" style="animation:morph-demo 4s ease-in-out infinite"></div>
+        <code>colour + border-radius</code>
+      </div>
+    </div>
+
+    <h4 style="margin-top:1.5rem">Skill Progress Bars (Transition Demo)</h4>
+    <div id="skillBars">
+      <div class="skill-bar"><div class="label"><span style="color:#c9d1d9">HTML (HyperText Markup Language)</span><span style="color:#58a6ff">90%</span></div><div class="track"><div class="fill" data-w="90%" style="background:linear-gradient(90deg,#e44d26,#f7a041)"></div></div></div>
+      <div class="skill-bar"><div class="label"><span style="color:#c9d1d9">CSS (Cascading Style Sheets)</span><span style="color:#58a6ff">75%</span></div><div class="track"><div class="fill" data-w="75%" style="background:linear-gradient(90deg,#264de4,#58a6ff)"></div></div></div>
+      <div class="skill-bar"><div class="label"><span style="color:#c9d1d9">JavaScript (JS)</span><span style="color:#58a6ff">60%</span></div><div class="track"><div class="fill" data-w="60%" style="background:linear-gradient(90deg,#f0db4f,#e8a317)"></div></div></div>
+      <div class="skill-bar"><div class="label"><span style="color:#c9d1d9">Python</span><span style="color:#58a6ff">45%</span></div><div class="track"><div class="fill" data-w="45%" style="background:linear-gradient(90deg,#3776ab,#6db8f2)"></div></div></div>
+    </div>
+    <button class="demo-btn" onclick="animateBars()" style="margin-top:0.8rem">Replay Animation</button>
+  </div>
+
+  <h3>Comparison Table</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Feature</th><th>Transition</th><th>@keyframes Animation</th></tr></thead>
+      <tbody>
+        <tr><td>Trigger needed?</td><td>Yes (hover, focus, JS)</td><td>No (auto-plays)</td></tr>
+        <tr><td>Number of states</td><td>2 (start → end)</td><td>Unlimited (0%→25%→…→100%)</td></tr>
+        <tr><td>Looping</td><td>No</td><td>Yes (<code>infinite</code>)</td></tr>
+        <tr><td>Direction control</td><td>No</td><td>Yes (<code>alternate</code>, <code>reverse</code>)</td></tr>
+        <tr><td>Best for</td><td>Hover effects, UI polish</td><td>Spinners, attention-getters</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="takeaway">
+    <p>Use <strong>transitions</strong> for smooth, triggered state changes (hover effects, reveal animations). Use <strong>@keyframes</strong> for multi-step, autonomous animations (spinners, pulsing elements). Both use the same timing functions and <code>transform</code> property.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 5: RESPONSIVE DESIGN                -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider" data-num="05" id="s5">
+  <div class="section-divider-inner">
+    <div class="num">TOPIC 05</div>
+    <h2>Responsive Web Design</h2>
+    <p>One site, every screen size</p>
+  </div>
+</div>
+<div class="section">
+  <p class="intro-text">In 2026 your website will be viewed on a 6-inch phone, a 10-inch tablet, a 15-inch laptop, and a 32-inch monitor — sometimes all by the same person in one day. RWD (Responsive Web Design) makes one codebase work everywhere.</p>
+
+  <h3>The Three Pillars</h3>
+  <div class="icon-grid">
+    <div class="icon-card"><div class="ic" style="background:rgba(88,166,255,0.12)">📐</div><h4>Fluid Grids</h4><p>Percentage-based or <code>fr</code>-based sizing instead of fixed pixel widths.</p></div>
+    <div class="icon-card"><div class="ic" style="background:rgba(46,204,113,0.12)">🖼️</div><h4>Flexible Media</h4><p>Images and videos that scale with their container, never overflowing.</p></div>
+    <div class="icon-card"><div class="ic" style="background:rgba(108,92,231,0.12)">📱</div><h4>Media Queries</h4><p>CSS conditional blocks that apply rules only when the viewport matches a condition.</p></div>
+  </div>
+
+  <h3>Common Breakpoints</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Breakpoint</th><th>Target</th><th>Typical Layout</th></tr></thead>
+      <tbody>
+        <tr><td><code>&lt; 600px</code></td><td>Phone (portrait)</td><td>1 column, stacked</td></tr>
+        <tr><td><code>600px – 1023px</code></td><td>Tablet</td><td>2 columns</td></tr>
+        <tr><td><code>≥ 1024px</code></td><td>Desktop</td><td>3 columns</td></tr>
+        <tr><td><code>≥ 1440px</code></td><td>Large desktop</td><td>3–4 columns, wider content</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-icon">⚠️</span>
+    <p><strong>The Critical Tag:</strong> Without <code>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</code>, mobile browsers render at ~980px and zoom out, ignoring all your responsive CSS.</p>
+  </div>
+
+  <h3>Mobile-First Code Pattern</h3>
+  <div class="code-block" data-lang="CSS">
+<pre><span class="comment">/* BASE: mobile (single column) — no media query needed */</span>
+.<span class="tag">menu</span> { <span class="prop">display</span>: <span class="val">grid</span>; <span class="prop">grid-template-columns</span>: <span class="val">1fr</span>; }
+
+<span class="comment">/* TABLET: 600px and wider → two columns */</span>
+<span class="kw">@media</span> (<span class="prop">min-width</span>: <span class="val">600px</span>) {
+    .<span class="tag">menu</span> { <span class="prop">grid-template-columns</span>: <span class="val">repeat(2, 1fr)</span>; }
+}
+
+<span class="comment">/* DESKTOP: 1024px and wider → three columns */</span>
+<span class="kw">@media</span> (<span class="prop">min-width</span>: <span class="val">1024px</span>) {
+    .<span class="tag">menu</span> { <span class="prop">grid-template-columns</span>: <span class="val">repeat(3, 1fr)</span>; }
+}
+
+<span class="comment">/* PRINT: remove colours, hide buttons */</span>
+<span class="kw">@media</span> <span class="val">print</span> {
+    <span class="tag">body</span> { <span class="prop">background</span>: <span class="val">white</span>; }
+    .<span class="tag">order-btn</span> { <span class="prop">display</span>: <span class="val">none</span>; }
+}</pre>
+  </div>
+
+  <div class="takeaway">
+    <p>Use <code>&lt;meta viewport&gt;</code> + mobile-first CSS + <code>@media (min-width: ...)</code> queries to create layouts that adapt to any screen. Write for phones first, then add columns for tablets and desktops. Test with browser DevTools device toolbar (<kbd>F12</kbd>).</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 6: HTML5 FORMS                      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider" data-num="06" id="s6">
+  <div class="section-divider-inner">
+    <div class="num">TOPIC 06</div>
+    <h2>Advanced HTML5 Forms</h2>
+    <p>Built-in validation — no JavaScript needed</p>
+  </div>
+</div>
+<div class="section">
+  <p class="intro-text">Before HTML5, validating a form required dozens of lines of JavaScript. HTML5 moved most validation into the <strong>browser itself</strong> through new input types and validation attributes.</p>
+
+  <h3>New HTML5 Input Types</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Type</th><th>Validates / Renders</th><th>Example</th></tr></thead>
+      <tbody>
+        <tr><td><code>email</code></td><td>Checks for @ and domain</td><td><code>&lt;input type="email"&gt;</code></td></tr>
+        <tr><td><code>url</code></td><td>Checks for protocol (http/https)</td><td><code>&lt;input type="url"&gt;</code></td></tr>
+        <tr><td><code>date</code></td><td>Native calendar picker</td><td><code>&lt;input type="date"&gt;</code></td></tr>
+        <tr><td><code>number</code></td><td>Spinner + min/max/step</td><td><code>&lt;input type="number" min="1" max="10"&gt;</code></td></tr>
+        <tr><td><code>range</code></td><td>Draggable slider</td><td><code>&lt;input type="range"&gt;</code></td></tr>
+        <tr><td><code>tel</code></td><td>Phone keyboard on mobile</td><td><code>&lt;input type="tel"&gt;</code></td></tr>
+        <tr><td><code>color</code></td><td>OS (Operating System) colour picker</td><td><code>&lt;input type="color"&gt;</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Validation Attributes</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Attribute</th><th>What It Does</th></tr></thead>
+      <tbody>
+        <tr><td><code>required</code></td><td>Field cannot be empty</td></tr>
+        <tr><td><code>pattern="regex"</code></td><td>Must match a Regular Expression</td></tr>
+        <tr><td><code>min</code> / <code>max</code></td><td>Numeric or date boundaries</td></tr>
+        <tr><td><code>minlength</code> / <code>maxlength</code></td><td>Character count limits</td></tr>
+        <tr><td><code>step</code></td><td>Numeric increment (e.g., <code>0.01</code> for currency)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Live Form Demo — Try Submitting Invalid Data!</h3>
+  <form id="demoForm" onsubmit="event.preventDefault();document.getElementById('formResult').style.display='block';document.getElementById('formResult').textContent='All fields valid — form submitted successfully!'" style="background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:var(--shadow);margin:1.5rem 0">
+    <div class="form-demo">
+      <div class="field"><label>Full Name (required, min 2 chars)</label><input type="text" required minlength="2" placeholder="Jane Doe"></div>
+      <div class="field"><label>University Email (must end in .edu)</label><input type="email" required pattern="[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.edu" placeholder="you@university.edu"></div>
+      <div class="field"><label>Date of Birth</label><input type="date" max="2010-12-31"></div>
+      <div class="field"><label>Phone (123-456-7890)</label><input type="tel" pattern="[0-9]{3}-[0-9]{3}-[0-9]{4}" placeholder="123-456-7890"></div>
+      <div class="field"><label>Team Size (1–5)</label><input type="number" min="1" max="5" step="1" value="3"></div>
+      <div class="field"><label>Portfolio URL (Uniform Resource Locator)</label><input type="url" placeholder="https://your-site.com"></div>
+      <div class="field"><label>Confidence (range slider)</label><input type="range" min="1" max="10" value="5" oninput="this.nextElementSibling.textContent=this.value" style="width:100%"><span style="font-weight:700;color:var(--accent)">5</span></div>
+      <div class="field"><label>Team Colour</label><input type="color" value="#6c5ce7" style="height:40px"></div>
+    </div>
+    <button type="submit" style="margin-top:1rem;padding:0.7rem 2rem;background:var(--purple);color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.95rem">Submit (Browser Validates)</button>
+    <div id="formResult" style="display:none;margin-top:1rem;padding:1rem;background:#e8fce8;border-radius:8px;color:#1e7e34;font-weight:600"></div>
+  </form>
+
+  <div class="takeaway">
+    <p>HTML5 input types (<code>email</code>, <code>date</code>, <code>number</code>, <code>url</code>, <code>range</code>, <code>color</code>) and attributes (<code>required</code>, <code>pattern</code>, <code>min/max</code>) let the browser validate forms without JavaScript. Use <code>:valid</code> and <code>:invalid</code> pseudo-classes for automatic visual feedback.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- SECTION 7: CSS VARIABLES                    -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="section-divider" data-num="07" id="s7">
+  <div class="section-divider-inner">
+    <div class="num">TOPIC 07</div>
+    <h2>CSS Variables & Theming</h2>
+    <p>Maintainable, dynamic style systems</p>
+  </div>
+</div>
+<div class="section">
+  <p class="intro-text">CSS Custom Properties (commonly called "CSS Variables") let you store a value once and reuse it everywhere. Declared with the <code>--</code> prefix, used with <code>var()</code>. They follow the DRY (Don't Repeat Yourself) principle.</p>
+
+  <h3>Syntax</h3>
+  <div class="code-block" data-lang="CSS">
+<pre><span class="comment">/* Declare variables in :root (global scope) */</span>
+:<span class="tag">root</span> {
+    <span class="prop">--brand-color</span>: <span class="val">#6c5ce7</span>;
+    <span class="prop">--spacing-md</span>:  <span class="val">1.2rem</span>;
+}
+
+<span class="comment">/* Use variables anywhere with var() */</span>
+.<span class="tag">button</span> {
+    <span class="prop">background</span>: <span class="val">var(--brand-color)</span>;
+    <span class="prop">padding</span>: <span class="val">var(--spacing-md)</span>;
+}
+
+<span class="comment">/* Theme override — just redefine the variables */</span>
+<span class="tag">html</span>.<span class="attr">dark</span> {
+    <span class="prop">--brand-color</span>: <span class="val">#e17055</span>;
+}</pre>
+  </div>
+
+  <h3>Live Theme Switcher</h3>
+  <div style="margin:1.5rem 0">
+    <div class="theme-bar">
+      <button class="active" onclick="switchThemeDemo('light',this)">Light</button>
+      <button onclick="switchThemeDemo('dark',this)">Dark</button>
+      <button onclick="switchThemeDemo('ocean',this)">Ocean</button>
+      <button onclick="switchThemeDemo('forest',this)">Forest</button>
+    </div>
+    <div class="theme-demo" id="themeDemo" style="background:#ffffff;border:1px solid #ddd">
+      <div class="td-header" style="background:#6c5ce7;color:white;display:flex;justify-content:space-between;align-items:center">
+        <strong>Alex Chen — Student Profile</strong>
+        <span style="font-size:0.8rem;opacity:0.8">CS Junior</span>
+      </div>
+      <div class="td-body" style="background:#ffffff;color:#333">
+        <p style="margin-bottom:0.8rem">GPA (Grade Point Average): <strong style="font-size:1.3rem" id="tdAccentText">3.8</strong></p>
+        <p style="font-size:0.9rem;color:#666" id="tdMutedText">12 Projects • 5 Clubs • Web Dev Track</p>
+        <button class="td-btn" id="tdBtn" style="margin-top:1rem;background:#6c5ce7;color:white">View Portfolio</button>
+      </div>
+    </div>
+    <div style="margin-top:0.8rem;font-size:0.82rem;color:var(--muted)">
+      <strong>Live variable values:</strong> <code id="varInspector">--bg: #ffffff | --accent: #6c5ce7 | --text: #333333</code>
+    </div>
+  </div>
+
+  <div class="takeaway">
+    <p>CSS Custom Properties (<code>--name: value</code> / <code>var(--name)</code>) eliminate repetition and enable dynamic theming. Declare in <code>:root</code> for global scope, override in theme classes, and swap themes with a single class toggle on <code>&lt;html&gt;</code>. Every major CSS framework relies on this pattern.</p>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- RESOURCES                                    -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="resources-section" id="resources">
+  <div class="section" style="max-width:1100px;margin:0 auto">
+    <h2>Hyperlinks & Resources</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Resource</th><th>URL</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>W3C (World Wide Web Consortium)</td><td><a href="https://www.w3.org/" target="_blank" rel="noopener">w3.org</a></td><td>Publishes web standards (HTML5, CSS)</td></tr>
+          <tr><td>MDN (Mozilla Developer Network)</td><td><a href="https://developer.mozilla.org/" target="_blank" rel="noopener">developer.mozilla.org</a></td><td>Comprehensive HTML/CSS/JS reference</td></tr>
+          <tr><td>CSS Flexbox Spec</td><td><a href="https://www.w3.org/TR/css-flexbox-1/" target="_blank" rel="noopener">w3.org/TR/css-flexbox-1</a></td><td>Official W3C Flexbox specification</td></tr>
+          <tr><td>CSS-Tricks Flexbox Guide</td><td><a href="https://css-tricks.com/snippets/css/a-guide-to-flexbox/" target="_blank" rel="noopener">css-tricks.com/.../flexbox</a></td><td>Visual, beginner-friendly guide</td></tr>
+          <tr><td>CSS-Tricks Grid Guide</td><td><a href="https://css-tricks.com/snippets/css/complete-guide-grid/" target="_blank" rel="noopener">css-tricks.com/.../grid</a></td><td>Visual, beginner-friendly guide</td></tr>
+          <tr><td>Flexbox Froggy</td><td><a href="https://flexboxfroggy.com/" target="_blank" rel="noopener">flexboxfroggy.com</a></td><td>Game-based Flexbox learning</td></tr>
+          <tr><td>Grid Garden</td><td><a href="https://cssgridgarden.com/" target="_blank" rel="noopener">cssgridgarden.com</a></td><td>Game-based Grid learning</td></tr>
+          <tr><td>Can I Use</td><td><a href="https://caniuse.com/" target="_blank" rel="noopener">caniuse.com</a></td><td>Browser compatibility tables</td></tr>
+          <tr><td>Google Web Fundamentals</td><td><a href="https://developers.google.com/web/fundamentals" target="_blank" rel="noopener">developers.google.com</a></td><td>Best-practice guides for RWD</td></tr>
+          <tr><td>freeCodeCamp</td><td><a href="https://www.freecodecamp.org/" target="_blank" rel="noopener">freecodecamp.org</a></td><td>Free interactive curriculum</td></tr>
+          <tr><td>Bootstrap 5</td><td><a href="https://getbootstrap.com/" target="_blank" rel="noopener">getbootstrap.com</a></td><td>CSS framework using variables</td></tr>
+          <tr><td>Tailwind CSS</td><td><a href="https://tailwindcss.com/" target="_blank" rel="noopener">tailwindcss.com</a></td><td>Utility-first CSS framework</td></tr>
+          <tr><td>Kevin Powell (YouTube)</td><td><a href="https://www.youtube.com/@KevinPowell" target="_blank" rel="noopener">youtube.com/@KevinPowell</a></td><td>Modern CSS video tutorials</td></tr>
+          <tr><td>VirusTotal URL Checker</td><td><a href="https://www.virustotal.com/gui/home/url" target="_blank" rel="noopener">virustotal.com</a></td><td>Scan URLs for malware before visiting</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- DISCLAIMER                                   -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="disclaimer">
+  <div class="section">
+    <h2>Disclaimer</h2>
+    <h4>Intellectual Property</h4>
+    <p>All lecture content, code examples, diagrams, and supporting materials are the intellectual property of <strong>Cyber.SoHo</strong>. Unauthorised reproduction, distribution, or commercial use without explicit written permission is prohibited.</p>
+    <h4>Copyright & Non-Affiliation</h4>
+    <p>© 2026 Cyber.SoHo. All rights reserved. This material is produced independently and is <strong>not affiliated with, endorsed by, or sponsored by</strong> any organisations, companies, products, or services mentioned herein, including but not limited to the W3C, Mozilla, Google, Bootstrap, Tailwind Labs, MUI, or any university. All trademarks are property of their respective owners.</p>
+    <h4>External Links — User Responsibility</h4>
+    <p>This page contains hyperlinks to third-party websites for educational reference. Cyber.SoHo does not control the content or security of external sites. <strong>Before visiting any external link, verify the URL using <a href="https://www.virustotal.com/gui/home/url" target="_blank" rel="noopener">VirusTotal</a>.</strong></p>
+    <h4>Limitation of Liability</h4>
+    <p>This material is provided "as is" for educational purposes only. Cyber.SoHo makes no warranties regarding completeness, reliability, or suitability. In no event shall Cyber.SoHo be liable for any damages arising from the use of this material.</p>
+    <h4>Ethics Statement</h4>
+    <p>Created with commitment to academic integrity, inclusive education, and ethical knowledge sharing. All code examples are original works crafted specifically for this course.</p>
+  </div>
+</div>
+
+<footer class="site-footer">
+  <p>Week 05 — HTML5/CSS: Advanced Concepts &bull; Cyber.SoHo © 2026 &bull; Web Applications Development</p>
+</footer>
+
+<!-- Back to top button -->
+<button class="btt" id="bttBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+/* ═══════ Flexbox Playground ═══════ */
+function setFlex(prop, val, btn, groupId) {
+  document.getElementById('flexDemo').style[prop] = val;
+  document.getElementById(groupId).querySelectorAll('.demo-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ═══════ Skill Bar Animations ═══════ */
+function animateBars() {
+  document.querySelectorAll('#skillBars .fill').forEach(f => { f.style.width = '0'; });
+  setTimeout(() => {
+    document.querySelectorAll('#skillBars .fill').forEach(f => { f.style.width = f.dataset.w; });
+  }, 100);
+}
+
+/* ═══════ Theme Demo ═══════ */
+const themes = {
+  light:  { bg:'#ffffff', accent:'#6c5ce7', text:'#333333', muted:'#666666', btnBg:'#6c5ce7', btnCol:'#fff', border:'#ddd' },
+  dark:   { bg:'#16213e', accent:'#e17055', text:'#dfe6e9', muted:'#b2bec3', btnBg:'#e17055', btnCol:'#fff', border:'#2d3436' },
+  ocean:  { bg:'#ffffff', accent:'#0984e3', text:'#2d3436', muted:'#636e72', btnBg:'#0984e3', btnCol:'#fff', border:'#b2bec3' },
+  forest: { bg:'#264536', accent:'#00b894', text:'#dfe6e9', muted:'#b2bec3', btnBg:'#00b894', btnCol:'#1e3a2f', border:'#2d6a4f' },
+};
+function switchThemeDemo(t, btn) {
+  const th = themes[t], d = document.getElementById('themeDemo');
+  d.style.background = th.bg; d.style.borderColor = th.border;
+  d.querySelector('.td-header').style.background = th.accent;
+  d.querySelector('.td-body').style.background = th.bg;
+  d.querySelector('.td-body').style.color = th.text;
+  document.getElementById('tdAccentText').style.color = th.accent;
+  document.getElementById('tdMutedText').style.color = th.muted;
+  const b = document.getElementById('tdBtn'); b.style.background = th.accent; b.style.color = th.btnCol;
+  document.getElementById('varInspector').textContent = `--bg: ${th.bg} | --accent: ${th.accent} | --text: ${th.text}`;
+  document.querySelectorAll('.theme-bar button').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+/* ═══════ Back-to-Top Visibility ═══════ */
+window.addEventListener('scroll', () => {
+  document.getElementById('bttBtn').classList.toggle('visible', window.scrollY > 500);
+});
+
+/* ═══════ Sticky Nav Active State ═══════ */
+const sections = document.querySelectorAll('.section-divider[id]');
+const navLinks = document.querySelectorAll('.toc-nav a');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.id;
+      navLinks.forEach(l => l.classList.toggle('active', l.getAttribute('href') === '#' + id));
+    }
+  });
+}, { threshold: 0.3, rootMargin: '-80px 0px -60% 0px' });
+sections.forEach(s => observer.observe(s));
+
+/* ═══════ Animate bars on scroll into view ═══════ */
+const barObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => { if (entry.isIntersecting) { animateBars(); barObserver.unobserve(entry.target); } });
+}, { threshold: 0.5 });
+barObserver.observe(document.getElementById('skillBars'));
+</script>
+</body>
+</html>
