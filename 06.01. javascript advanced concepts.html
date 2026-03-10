@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Advanced Concepts | Cyber.SoHo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        stone: {
+                            50: '#fafaf9',
+                            100: '#f5f5f4',
+                            200: '#e7e5e4',
+                            800: '#292524',
+                            900: '#1c1917',
+                        },
+                        sage: {
+                            600: '#4a6b63',
+                            700: '#38534c',
+                        },
+                        terracotta: {
+                            500: '#d97757',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 180px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 180px;
+            max-height: 180px;
+        }
+        body {
+            background-color: #fafaf9;
+            color: #292524;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #e7e5e4;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #d6d3d1;
+        }
+        .code-block {
+            background-color: #1c1917;
+            color: #f5f5f4;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="flex flex-col md:flex-row h-screen overflow-hidden text-stone-800 antialiased">
+
+    <!-- Chosen Palette: Warm Neutrals (Stone/Sand) with Sage Green and Terracotta Accents -->
+    
+    <!-- Application Structure Plan: The SPA is designed as an interactive learning dashboard. The source report is a linear slide deck, which can cause cognitive overload. By transforming it into a modular dashboard with a sidebar navigation, users can explore topics at their own pace. A progress chart gamifies the reading experience. Complex topics like the Event Loop and HOFs are presented with interactive toggle states to encourage active learning rather than passive reading. -->
+    
+    <!-- Visualization & Content Choices: 
+         1. Course Roadmap -> Goal: Inform/Progress -> Viz: Doughnut Chart (Chart.js) -> Interaction: Updates as user clicks through modules -> Justification: Provides immediate visual feedback on completion.
+         2. Event Loop -> Goal: Explain Process -> Viz: CSS Grid visualizer with Unicode -> Interaction: Step-by-step state highlighting via JS -> Justification: Breaks down concurrency into digestible steps without relying on complex external SVGs.
+         3. Code Examples (HOFs, Async) -> Goal: Inform -> Viz: Styled pre/code blocks -> Interaction: "Run Code" simulation buttons -> Justification: Mimics a real development environment. 
+         Library/Method: Tailwind CSS for layout, Vanilla JS for state/interactivity, Chart.js for progress. -->
+         
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <aside class="w-full md:w-72 bg-stone-100 border-r border-stone-200 flex flex-col h-auto md:h-full z-20 shadow-sm">
+        <div class="p-6 border-b border-stone-200">
+            <h1 class="text-xl font-bold tracking-tight text-stone-900">Cyber.SoHo</h1>
+            <p class="text-xs text-sage-600 font-medium mt-1 uppercase tracking-wider">Front-End Track</p>
+            <h2 class="text-sm font-semibold mt-4">Week 05: JS Advanced</h2>
+            
+            <div class="mt-6">
+                <div class="chart-container">
+                    <canvas id="progressChart"></canvas>
+                </div>
+                <p class="text-center text-xs text-stone-500 mt-2 font-medium"><span id="progressText">0</span>% Completed</p>
+            </div>
+        </div>
+        
+        <nav class="flex-1 overflow-y-auto p-4 space-y-1" id="nav-container">
+        </nav>
+        
+        <div class="p-4 border-t border-stone-200 text-xs text-stone-400 text-center">
+            © Cyber.SoHo Version 1.0
+        </div>
+    </aside>
+
+    <main class="flex-1 h-full overflow-y-auto bg-stone-50 relative">
+        <div class="max-w-4xl mx-auto p-6 md:p-12 pb-24" id="main-content">
+        </div>
+    </main>
+
+    <script>
+        const courseData = [
+            {
+                id: 'roadmap',
+                title: 'Course Roadmap & Intro',
+                icon: '🗺️',
+                intro: 'Welcome to Week 5 of the Web Applications Development track. This section outlines our current position in the curriculum and the critical advanced JavaScript concepts we will cover today. These concepts are the foundation of all modern frameworks.',
+                content: `
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 fade-in">
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                            <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="text-xl">📍</span> Where We Are</h3>
+                            <ul class="space-y-3">
+                                <li class="flex items-center gap-3 text-stone-500"><span class="w-6 text-center">03</span> <span>HTML & CSS Fundamentals</span></li>
+                                <li class="flex items-center gap-3 text-stone-500"><span class="w-6 text-center">04</span> <span>JavaScript Basics & DOM</span></li>
+                                <li class="flex items-center gap-3 text-sage-600 font-bold bg-sage-50 p-2 rounded-lg -ml-2"><span class="w-6 text-center">05</span> <span>Advanced Concepts (Current)</span></li>
+                                <li class="flex items-center gap-3 text-stone-400"><span class="w-6 text-center">06</span> <span>Intro to React</span></li>
+                                <li class="flex items-center gap-3 text-stone-400"><span class="w-6 text-center">07</span> <span>APIs & Data Fetching</span></li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                            <h3 class="text-lg font-bold mb-4 flex items-center gap-2"><span class="text-xl">📋</span> Today's Agenda</h3>
+                            <div class="grid grid-cols-1 gap-2 text-sm">
+                                <div class="p-2 bg-stone-50 rounded border border-stone-100">1. Scope & Closures</div>
+                                <div class="p-2 bg-stone-50 rounded border border-stone-100">2. Higher-Order Functions</div>
+                                <div class="p-2 bg-stone-50 rounded border border-stone-100">3. The 'this' Keyword & Arrows</div>
+                                <div class="p-2 bg-stone-50 rounded border border-stone-100">4. Promises & Async/Await</div>
+                                <div class="p-2 bg-stone-50 rounded border border-stone-100">5. The Event Loop</div>
+                                <div class="p-2 bg-stone-50 rounded border border-stone-100">6. ES6+ Power Features</div>
+                                <div class="p-2 bg-stone-50 rounded border border-stone-100">7. Error Handling</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 p-4 bg-terracotta-500/10 border border-terracotta-500/20 rounded-xl text-terracotta-500 font-medium flex gap-3">
+                        <span class="text-xl">💡</span>
+                        <p><strong>Why it matters:</strong> Every modern JavaScript framework (React, Vue, Angular) is built entirely on top of exactly these concepts.</p>
+                    </div>
+                `
+            },
+            {
+                id: 'scope',
+                title: 'Scope & Closures',
+                icon: '📦',
+                intro: 'Understanding where your variables live and how they are accessed is crucial for bug-free code. This section explores the visibility range of variables (Scope) and how functions can remember their surrounding state (Closures), which is the primary mechanism for private data in JS.',
+                content: `
+                    <div class="fade-in space-y-8">
+                        <div>
+                            <h3 class="text-xl font-bold mb-4">The Three Scope Types</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div class="bg-white p-5 rounded-xl border border-stone-200 border-t-4 border-t-red-400">
+                                    <div class="font-mono text-sm font-bold mb-2">var (Global/Function)</div>
+                                    <p class="text-sm text-stone-600">Accessible everywhere or entirely inside a function. Escapes 'if' and 'for' blocks causing bugs.</p>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl border border-stone-200 border-t-4 border-t-sage-600">
+                                    <div class="font-mono text-sm font-bold mb-2">let (Block)</div>
+                                    <p class="text-sm text-stone-600">Lives only inside { } braces. Can be reassigned. Well-behaved.</p>
+                                </div>
+                                <div class="bg-white p-5 rounded-xl border border-stone-200 border-t-4 border-t-sage-600">
+                                    <div class="font-mono text-sm font-bold mb-2">const (Block)</div>
+                                    <p class="text-sm text-stone-600">Lives only inside { } braces. Cannot be reassigned. Use as default.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-stone-900 text-stone-50 rounded-xl overflow-hidden">
+                            <div class="bg-stone-800 p-3 text-xs font-mono text-stone-400 flex justify-between items-center">
+                                <span>closure_example.js</span>
+                                <button onclick="simulateClosure()" class="bg-sage-600 text-white px-3 py-1 rounded hover:bg-sage-700 transition">Run Code</button>
+                            </div>
+                            <div class="p-6 font-mono text-sm">
+                                <span class="text-pink-400">function</span> <span class="text-blue-400">createCounter</span>() {<br>
+                                &nbsp;&nbsp;<span class="text-pink-400">let</span> count = <span class="text-orange-400">0</span>; <span class="text-stone-500">// Outer variable</span><br>
+                                &nbsp;&nbsp;<span class="text-pink-400">return function</span>() {<br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;count++; <span class="text-stone-500">// Inner function remembers 'count'</span><br>
+                                &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">return</span> count;<br>
+                                &nbsp;&nbsp;}<br>
+                                }<br><br>
+                                <span class="text-pink-400">const</span> myCounter = <span class="text-blue-400">createCounter</span>();<br>
+                                <span class="text-blue-400">console.log</span>(myCounter()); <span class="text-stone-500" id="closure-out-1"></span><br>
+                                <span class="text-blue-400">console.log</span>(myCounter()); <span class="text-stone-500" id="closure-out-2"></span>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl border border-stone-200">
+                            <h4 class="font-bold mb-2 text-terracotta-500">Key Takeaway 🎯</h4>
+                            <p class="text-stone-700">A closure is the primary mechanism for <strong>private state</strong> in JavaScript. Every time you see a function returned from another function — that's a closure.</p>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'hof',
+                title: 'Higher-Order Functions',
+                icon: '🔄',
+                intro: 'Higher-Order Functions (HOFs) either accept functions as arguments or return them. They are the foundation of functional programming in JS, eliminating repetitive loops and making code declarative. This section visualizes the "Big Three": map, filter, and reduce.',
+                content: `
+                    <div class="fade-in space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            
+                            <div class="bg-white p-6 rounded-xl border border-stone-200 flex flex-col items-center text-center shadow-sm">
+                                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl font-bold mb-4">M</div>
+                                <h4 class="font-mono font-bold mb-2">.map()</h4>
+                                <p class="text-sm text-stone-600 mb-4">Transforms every item. Returns a new array of the same length.</p>
+                                <div class="bg-stone-50 p-2 w-full text-xs font-mono rounded border border-stone-100">
+                                    [1, 2] → [2, 4]
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-xl border border-stone-200 flex flex-col items-center text-center shadow-sm">
+                                <div class="w-12 h-12 bg-sage-100 text-sage-600 rounded-full flex items-center justify-center text-xl font-bold mb-4">F</div>
+                                <h4 class="font-mono font-bold mb-2">.filter()</h4>
+                                <p class="text-sm text-stone-600 mb-4">Keeps items passing a test. Returns a new, possibly shorter array.</p>
+                                <div class="bg-stone-50 p-2 w-full text-xs font-mono rounded border border-stone-100">
+                                    [8, 3, 9] → [8, 9]
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-xl border border-stone-200 flex flex-col items-center text-center shadow-sm">
+                                <div class="w-12 h-12 bg-terracotta-100 text-terracotta-600 rounded-full flex items-center justify-center text-xl font-bold mb-4">R</div>
+                                <h4 class="font-mono font-bold mb-2">.reduce()</h4>
+                                <p class="text-sm text-stone-600 mb-4">Collapses an array down to a single value.</p>
+                                <div class="bg-stone-50 p-2 w-full text-xs font-mono rounded border border-stone-100">
+                                    [8, 3, 9] → 20
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="bg-stone-900 text-stone-50 rounded-xl p-6 font-mono text-sm relative">
+                            <h4 class="text-stone-400 mb-4 text-xs uppercase tracking-wider">Chaining Example</h4>
+                            <span class="text-blue-400">students</span><br>
+                            &nbsp;&nbsp;.<span class="text-blue-400">filter</span>(s => s.score >= <span class="text-orange-400">60</span>) &nbsp;&nbsp;<span class="text-stone-500">// 1. remove failures</span><br>
+                            &nbsp;&nbsp;.<span class="text-blue-400">map</span>(s => s.name) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-stone-500">// 2. extract names</span><br>
+                            &nbsp;&nbsp;.<span class="text-blue-400">sort</span>() &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-stone-500">// 3. alphabetical order</span>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'this-arrow',
+                title: 'this & Arrow Functions',
+                icon: '🎯',
+                intro: 'The \'this\' keyword dynamically refers to the object executing the current function. Arrow functions were introduced to solve common bugs associated with \'this\' by inheriting context from their parent scope.',
+                content: `
+                    <div class="fade-in space-y-6">
+                        <table class="w-full text-sm text-left bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+                            <thead class="bg-stone-100 text-stone-700">
+                                <tr>
+                                    <th class="px-6 py-4 border-b border-stone-200">How Called</th>
+                                    <th class="px-6 py-4 border-b border-stone-200">'this' Value</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-100">
+                                <tr><td class="px-6 py-3 font-mono">obj.method()</td><td class="px-6 py-3">The object <code class="bg-stone-100 px-1 rounded">obj</code></td></tr>
+                                <tr><td class="px-6 py-3 font-mono">Standalone function</td><td class="px-6 py-3 font-mono text-terracotta-500">window (global)</td></tr>
+                                <tr><td class="px-6 py-3 font-mono">Callback in setTimeout</td><td class="px-6 py-3 font-mono text-terracotta-500">window</td></tr>
+                                <tr><td class="px-6 py-3 font-mono">Arrow function</td><td class="px-6 py-3 text-sage-600 font-bold">Inherited from parent scope</td></tr>
+                            </tbody>
+                        </table>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-red-50 p-6 rounded-xl border border-red-100">
+                                <h4 class="font-bold text-red-700 mb-2">❌ The Classic Bug</h4>
+                                <div class="font-mono text-xs text-stone-800 bg-white p-3 rounded">
+                                    setTimeout(function() {<br>
+                                    &nbsp;&nbsp;console.log(this.name); <span class="text-red-500">// undefined</span><br>
+                                    }, 1000);
+                                </div>
+                            </div>
+                            <div class="bg-sage-50 p-6 rounded-xl border border-sage-100">
+                                <h4 class="font-bold text-sage-700 mb-2">✅ The Arrow Fix</h4>
+                                <div class="font-mono text-xs text-stone-800 bg-white p-3 rounded">
+                                    setTimeout(() => {<br>
+                                    &nbsp;&nbsp;console.log(this.name); <span class="text-sage-600">// Works!</span><br>
+                                    }, 1000);
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'async',
+                title: 'Asynchronous JS',
+                icon: '⏳',
+                intro: 'JavaScript is single-threaded. To prevent web pages from freezing during long tasks (like network requests), JS uses asynchronous non-blocking patterns. This section tracks the evolution from Callbacks to Promises, to modern Async/Await.',
+                content: `
+                    <div class="fade-in space-y-8">
+                        
+                        <div class="flex flex-col items-center p-8 bg-white border border-stone-200 rounded-xl shadow-sm">
+                            <h3 class="font-bold text-lg mb-6 w-full text-center">Promise Lifecycle</h3>
+                            <div class="flex flex-col md:flex-row items-center gap-4 w-full justify-center">
+                                <div class="bg-stone-100 px-4 py-2 rounded-full font-mono font-bold text-stone-600 border border-stone-200">PENDING</div>
+                                <div class="hidden md:block text-stone-300 text-2xl">→</div>
+                                <div class="flex flex-col gap-4 w-full md:w-auto mt-4 md:mt-0">
+                                    <div class="bg-sage-50 px-6 py-3 rounded-lg border border-sage-200 text-center">
+                                        <div class="font-mono font-bold text-sage-700">FULFILLED</div>
+                                        <div class="text-xs text-sage-600 mt-1">.then(data)</div>
+                                    </div>
+                                    <div class="bg-red-50 px-6 py-3 rounded-lg border border-red-200 text-center">
+                                        <div class="font-mono font-bold text-red-700">REJECTED</div>
+                                        <div class="text-xs text-red-600 mt-1">.catch(error)</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-6 w-full max-w-md border-t border-stone-100 pt-4 text-center">
+                                <div class="font-mono font-bold text-stone-500">SETTLED</div>
+                                <div class="text-xs text-stone-400 mt-1">.finally() - Always runs</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-stone-900 text-stone-50 rounded-xl p-6 font-mono text-sm shadow-md">
+                            <h4 class="text-stone-400 mb-4 text-xs uppercase tracking-wider">Modern Syntax: async / await</h4>
+                            <span class="text-pink-400">async function</span> <span class="text-blue-400">loadData</span>() {<br>
+                            &nbsp;&nbsp;<span class="text-pink-400">try</span> {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">const</span> response = <span class="text-pink-400">await</span> <span class="text-blue-400">fetch</span>(url); <span class="text-stone-500">// Pauses THIS function</span><br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-pink-400">const</span> data = <span class="text-pink-400">await</span> response.<span class="text-blue-400">json</span>();<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">render</span>(data);<br>
+                            &nbsp;&nbsp;} <span class="text-pink-400">catch</span> (error) {<br>
+                            &nbsp;&nbsp;&nbsp;&nbsp;<span class="text-blue-400">showError</span>(error.message);<br>
+                            &nbsp;&nbsp;}<br>
+                            }
+                        </div>
+
+                    </div>
+                `
+            },
+            {
+                id: 'event-loop',
+                title: 'The Event Loop',
+                icon: '⚙️',
+                intro: 'How does single-threaded JavaScript handle concurrent tasks? It delegates them to the browser via Web APIs, and coordinates the return of results using Queues and the Event Loop. Interact with the visualizer below to see how code moves through the engine.',
+                content: `
+                    <div class="fade-in space-y-6">
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm flex flex-col items-center">
+                            
+                            <div class="w-full flex justify-between items-center mb-6">
+                                <h3 class="font-bold">Execution Engine</h3>
+                                <button onclick="simulateEventLoop()" class="bg-stone-800 text-white px-4 py-2 rounded text-sm hover:bg-stone-700 transition font-medium flex items-center gap-2">
+                                    <span>▶</span> Next Step
+                                </button>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
+                                <div class="border-2 border-stone-200 rounded-lg p-4 h-48 flex flex-col transition-colors duration-300" id="el-stack">
+                                    <h4 class="font-mono font-bold text-center border-b pb-2 mb-2 text-sm">Call Stack</h4>
+                                    <div id="stack-item" class="bg-blue-100 text-blue-800 p-2 rounded text-xs font-mono text-center hidden mb-2 transition-all">console.log('1')</div>
+                                    <div id="stack-item-2" class="bg-purple-100 text-purple-800 p-2 rounded text-xs font-mono text-center hidden transition-all">setTimeout(cb, 0)</div>
+                                </div>
+                                
+                                <div class="border-2 border-stone-200 rounded-lg p-4 h-48 flex flex-col transition-colors duration-300" id="el-api">
+                                    <h4 class="font-mono font-bold text-center border-b pb-2 mb-2 text-sm text-stone-500">Web APIs (Browser)</h4>
+                                    <div id="api-item" class="bg-stone-100 text-stone-600 p-2 rounded text-xs font-mono text-center hidden border border-stone-200 border-dashed">Timer cb</div>
+                                </div>
+
+                                <div class="border-2 border-stone-200 rounded-lg p-4 h-48 flex flex-col transition-colors duration-300" id="el-queue">
+                                    <h4 class="font-mono font-bold text-center border-b pb-2 mb-2 text-sm text-stone-500">Callback Queue</h4>
+                                    <div id="queue-item" class="bg-sage-100 text-sage-800 p-2 rounded text-xs font-mono text-center hidden mt-auto">cb()</div>
+                                </div>
+                            </div>
+                            
+                            <div class="mt-6 text-center w-full p-3 bg-stone-50 rounded text-sm font-mono text-stone-600" id="el-console">
+                                Console: <span id="el-output"></span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="bg-white p-4 rounded border border-stone-200">
+                                <h4 class="font-bold text-sm mb-1 flex items-center gap-2">⚡ Microtasks</h4>
+                                <p class="text-xs text-stone-600">Promise <code class="bg-stone-100 px-1">.then()</code>, <code class="bg-stone-100 px-1">await</code>. Highest priority. Drain completely before next render.</p>
+                            </div>
+                            <div class="bg-white p-4 rounded border border-stone-200">
+                                <h4 class="font-bold text-sm mb-1 flex items-center gap-2">⏳ Macrotasks</h4>
+                                <p class="text-xs text-stone-600"><code class="bg-stone-100 px-1">setTimeout</code>, <code class="bg-stone-100 px-1">fetch</code>. Lower priority. Executed one per loop iteration.</p>
+                            </div>
+                        </div>
+                    </div>
+                `
+            },
+            {
+                id: 'es6',
+                title: 'ES6+ Power Features',
+                icon: '✨',
+                intro: 'Since 2015, JavaScript has evolved into a robust engineering platform. This section highlights modern syntax that drastically reduces boilerplate and improves code safety, such as destructuring, spread operators, and optional chaining.',
+                content: `
+                    <div class="fade-in grid grid-cols-1 md:grid-cols-2 gap-6">
+                        
+                        <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                            <h4 class="font-bold mb-3 border-b pb-2 text-stone-800">Destructuring</h4>
+                            <div class="font-mono text-xs text-stone-600 bg-stone-50 p-3 rounded">
+                                <span class="text-stone-400">// Object</span><br>
+                                const { name, age = 18 } = user;<br><br>
+                                <span class="text-stone-400">// Array</span><br>
+                                const [first, second] = [1, 2, 3];
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                            <h4 class="font-bold mb-3 border-b pb-2 text-stone-800">Spread & Rest (...)</h4>
+                            <div class="font-mono text-xs text-stone-600 bg-stone-50 p-3 rounded">
+                                <span class="text-stone-400">// Spread (expand)</span><br>
+                                const custom = { ...defaults, lang: 'fr' };<br><br>
+                                <span class="text-stone-400">// Rest (collect)</span><br>
+                                function sum(...numbers) { ... }
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                            <h4 class="font-bold mb-3 border-b pb-2 text-stone-800">Optional Chaining (?.)</h4>
+                            <p class="text-xs text-stone-500 mb-2">Prevents crashes when accessing deep properties.</p>
+                            <div class="font-mono text-xs text-stone-600 bg-stone-50 p-3 rounded">
+                                <span class="text-red-400">// Crashes if address is null</span><br>
+                                const city = user.address.city;<br><br>
+                                <span class="text-sage-600">// Safe: returns undefined</span><br>
+                                const city = user?.address?.city;
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                            <h4 class="font-bold mb-3 border-b pb-2 text-stone-800">Nullish Coalescing (??)</h4>
+                            <p class="text-xs text-stone-500 mb-2">Fallback ONLY if null or undefined (not 0 or '').</p>
+                            <div class="font-mono text-xs text-stone-600 bg-stone-50 p-3 rounded">
+                                0 || 'fallback' &nbsp;<span class="text-stone-400">// -> 'fallback'</span><br>
+                                0 ?? 'fallback' &nbsp;<span class="text-sage-600">// -> 0</span><br><br>
+                                user?.name ?? 'Unknown'
+                            </div>
+                        </div>
+
+                    </div>
+                `
+            },
+            {
+                id: 'error',
+                title: 'Error Handling',
+                icon: '🛡️',
+                intro: 'Professional code assumes failure. Network requests drop, users input invalid data. Defensive coding using try/catch/finally ensures your application handles these failures gracefully without crashing.',
+                content: `
+                    <div class="fade-in space-y-6">
+                        <div class="bg-stone-900 text-stone-50 rounded-xl p-6 font-mono text-sm shadow-md">
+                            <span class="text-pink-400">try</span> {<br>
+                            &nbsp;&nbsp;<span class="text-stone-500">// Code that might fail</span><br>
+                            &nbsp;&nbsp;<span class="text-pink-400">const</span> data = JSON.<span class="text-blue-400">parse</span>(userInput);<br>
+                            } <span class="text-pink-400">catch</span> (error) {<br>
+                            &nbsp;&nbsp;<span class="text-stone-500">// Runs ONLY if try throws</span><br>
+                            &nbsp;&nbsp;console.<span class="text-blue-400">error</span>(error.message);<br>
+                            } <span class="text-pink-400">finally</span> {<br>
+                            &nbsp;&nbsp;<span class="text-stone-500">// ALWAYS runs — cleanup UI here</span><br>
+                            &nbsp;&nbsp;<span class="text-blue-400">hideSpinner</span>();<br>
+                            }
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl border border-stone-200 shadow-sm">
+                            <h4 class="font-bold mb-4 flex items-center gap-2"><span class="text-xl">✅</span> Defensive Coding Checklist</h4>
+                            <ul class="space-y-3 text-sm text-stone-700">
+                                <li class="flex items-start gap-3"><input type="checkbox" checked disabled class="mt-1 accent-sage-600"> <span>Validate all function inputs before using them.</span></li>
+                                <li class="flex items-start gap-3"><input type="checkbox" checked disabled class="mt-1 accent-sage-600"> <span>Check <code>response.ok</code> after every <code>fetch()</code>.</span></li>
+                                <li class="flex items-start gap-3"><input type="checkbox" checked disabled class="mt-1 accent-sage-600"> <span>Provide fallback values using <code>??</code>.</span></li>
+                                <li class="flex items-start gap-3"><input type="checkbox" checked disabled class="mt-1 accent-sage-600"> <span>Never trust data from external APIs or user input.</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                `
+            }
+        ];
+
+        let currentSectionIndex = 0;
+        let progressChartInstance = null;
+        let visitedSections = new Set([0]);
+        let elStep = 0; 
+
+        function initApp() {
+            renderNavigation();
+            initChart();
+            renderSection(0);
+        }
+
+        function renderNavigation() {
+            const navContainer = document.getElementById('nav-container');
+            navContainer.innerHTML = '';
+            
+            courseData.forEach((section, index) => {
+                const isCompleted = visitedSections.has(index);
+                const isActive = index === currentSectionIndex;
+                
+                const btn = document.createElement('button');
+                btn.className = `w-full text-left px-4 py-3 text-sm rounded-lg flex items-center justify-between transition-colors ${isActive ? 'bg-white font-semibold text-stone-900 border border-stone-200 shadow-sm' : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900'}`;
+                
+                btn.onclick = () => {
+                    currentSectionIndex = index;
+                    visitedSections.add(index);
+                    renderNavigation();
+                    renderSection(index);
+                    updateProgress();
+                };
+
+                btn.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <span class="text-lg">${section.icon}</span>
+                        <span>${section.title}</span>
+                    </div>
+                    ${isCompleted ? '<span class="text-sage-600 text-xs">✓</span>' : ''}
+                `;
+                navContainer.appendChild(btn);
+            });
+        }
+
+        function renderSection(index) {
+            const section = courseData[index];
+            const contentContainer = document.getElementById('main-content');
+            
+            contentContainer.innerHTML = `
+                <div class="mb-8 fade-in">
+                    <h2 class="text-3xl font-bold text-stone-900 tracking-tight flex items-center gap-3">
+                        <span>${section.icon}</span>
+                        ${section.title}
+                    </h2>
+                    <p class="mt-4 text-stone-600 leading-relaxed text-lg border-l-4 border-stone-300 pl-4 py-1">
+                        ${section.intro}
+                    </p>
+                </div>
+                <div class="mt-8">
+                    ${section.content}
+                </div>
+                
+                <div class="mt-16 pt-8 border-t border-stone-200 flex justify-between items-center fade-in">
+                    ${index > 0 ? `<button onclick="navigate(${index - 1})" class="text-sm font-medium text-stone-500 hover:text-stone-900 flex items-center gap-1">← Previous</button>` : '<div></div>'}
+                    ${index < courseData.length - 1 ? `<button onclick="navigate(${index + 1})" class="bg-stone-900 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-stone-800 transition shadow-sm">Next Section →</button>` : '<div class="text-sage-600 font-bold">Module Complete! 🎉</div>'}
+                </div>
+            `;
+            
+            elStep = 0; 
+        }
+
+        function navigate(index) {
+            currentSectionIndex = index;
+            visitedSections.add(index);
+            renderNavigation();
+            renderSection(index);
+            updateProgress();
+            
+            document.querySelector('main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            progressChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Completed', 'Remaining'],
+                    datasets: [{
+                        data: [1, courseData.length - 1],
+                        backgroundColor: ['#4a6b63', '#e7e5e4'],
+                        borderWidth: 0,
+                        cutout: '75%'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: false }
+                    },
+                    animation: { animateScale: true }
+                }
+            });
+            updateProgressText();
+        }
+
+        function updateProgress() {
+            const completed = visitedSections.size;
+            const remaining = courseData.length - completed;
+            
+            progressChartInstance.data.datasets[0].data = [completed, remaining];
+            progressChartInstance.update();
+            updateProgressText();
+        }
+        
+        function updateProgressText() {
+            const percent = Math.round((visitedSections.size / courseData.length) * 100);
+            document.getElementById('progressText').innerText = percent;
+        }
+
+        function simulateClosure() {
+            const out1 = document.getElementById('closure-out-1');
+            const out2 = document.getElementById('closure-out-2');
+            
+            out1.innerHTML = '';
+            out2.innerHTML = '';
+            
+            setTimeout(() => {
+                out1.innerHTML = '<span class="text-sage-400">→ 1</span>';
+                out1.classList.add('fade-in');
+                setTimeout(() => {
+                    out2.innerHTML = '<span class="text-sage-400">→ 2</span>';
+                    out2.classList.add('fade-in');
+                }, 600);
+            }, 300);
+        }
+
+        function simulateEventLoop() {
+            const stack = document.getElementById('el-stack');
+            const api = document.getElementById('el-api');
+            const queue = document.getElementById('el-queue');
+            const stackItem1 = document.getElementById('stack-item');
+            const stackItem2 = document.getElementById('stack-item-2');
+            const apiItem = document.getElementById('api-item');
+            const queueItem = document.getElementById('queue-item');
+            const out = document.getElementById('el-output');
+            
+            elStep++;
+            
+            if(elStep === 1) {
+                out.innerText = '';
+                stackItem1.classList.remove('hidden');
+                stack.classList.add('border-blue-400', 'bg-blue-50/30');
+            } else if (elStep === 2) {
+                stackItem1.classList.add('hidden');
+                stackItem2.classList.remove('hidden');
+                out.innerText = '1 ';
+            } else if (elStep === 3) {
+                stackItem2.classList.add('hidden');
+                stack.classList.remove('border-blue-400', 'bg-blue-50/30');
+                apiItem.classList.remove('hidden');
+                api.classList.add('border-stone-400', 'bg-stone-50');
+            } else if (elStep === 4) {
+                apiItem.classList.add('hidden');
+                api.classList.remove('border-stone-400', 'bg-stone-50');
+                queueItem.classList.remove('hidden');
+                queue.classList.add('border-sage-400', 'bg-sage-50/30');
+            } else if (elStep === 5) {
+                queueItem.classList.add('hidden');
+                queue.classList.remove('border-sage-400', 'bg-sage-50/30');
+                stackItem1.classList.remove('hidden');
+                stackItem1.innerText = "cb()";
+                stackItem1.className = "bg-sage-100 text-sage-800 p-2 rounded text-xs font-mono text-center mb-2";
+                stack.classList.add('border-sage-400', 'bg-sage-50/30');
+            } else if (elStep === 6) {
+                stackItem1.classList.add('hidden');
+                stack.classList.remove('border-sage-400', 'bg-sage-50/30');
+                out.innerText += ' -> Timer Done';
+                elStep = 0; 
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
+
+

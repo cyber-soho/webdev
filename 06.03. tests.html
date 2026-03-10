@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced JavaScript Study Tool</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom 3D Flip Animations */
+        .perspective-1000 {
+            perspective: 1000px;
+        }
+        .transform-style-3d {
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        .backface-hidden {
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+        }
+        .rotate-y-180 {
+            transform: rotateY(180deg);
+        }
+        
+        /* Markdown-style backticks formatting helper */
+        .code-style {
+            background-color: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 0.25rem;
+            font-family: monospace;
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col items-center py-10">
+
+    <div class="w-full max-w-4xl px-4">
+        <!-- Header & Tabs -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-indigo-700 mb-6">Advanced JavaScript Mastery</h1>
+            
+            <div class="flex justify-center space-x-2 border-b border-gray-200">
+                <button id="tab-flashcards" onclick="switchTab('flashcards')" class="px-6 py-3 text-lg font-medium text-indigo-600 border-b-2 border-indigo-600 transition-colors hover:bg-indigo-50 rounded-t-lg">
+                    Flashcards (27)
+                </button>
+                <button id="tab-quiz" onclick="switchTab('quiz')" class="px-6 py-3 text-lg font-medium text-gray-500 border-b-2 border-transparent hover:text-indigo-600 hover:bg-indigo-50 transition-colors rounded-t-lg">
+                    Practice Quiz (10)
+                </button>
+            </div>
+        </header>
+
+        <!-- Flashcards Section -->
+        <section id="section-flashcards" class="flex flex-col items-center">
+            <div class="w-full max-w-2xl perspective-1000 cursor-pointer mb-8" onclick="flipCard()">
+                <div id="flashcard-inner" class="relative w-full h-80 transform-style-3d shadow-xl rounded-2xl">
+                    <!-- Front -->
+                    <div class="absolute w-full h-full bg-white rounded-2xl border-2 border-indigo-100 flex flex-col justify-center items-center p-8 backface-hidden">
+                        <span class="absolute top-4 right-4 text-xs font-bold text-indigo-400 uppercase tracking-widest">Question</span>
+                        <h2 id="fc-front-text" class="text-2xl font-semibold text-center leading-relaxed">Loading...</h2>
+                        <span class="absolute bottom-4 text-sm text-gray-400">Click to flip</span>
+                    </div>
+                    <!-- Back -->
+                    <div class="absolute w-full h-full bg-indigo-600 rounded-2xl border-2 border-indigo-700 flex flex-col justify-center items-center p-8 backface-hidden rotate-y-180 text-white">
+                        <span class="absolute top-4 right-4 text-xs font-bold text-indigo-300 uppercase tracking-widest">Answer</span>
+                        <p id="fc-back-text" class="text-xl font-medium text-center leading-relaxed">Loading...</p>
+                        <span class="absolute bottom-4 text-sm text-indigo-300">Click to flip back</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex items-center space-x-6">
+                <button onclick="prevCard()" class="p-3 bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition shadow-sm" aria-label="Previous">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <span id="fc-counter" class="text-lg font-medium text-gray-600">1 / 27</span>
+                <button onclick="nextCard()" class="p-3 bg-white border border-gray-300 rounded-full hover:bg-gray-100 transition shadow-sm" aria-label="Next">
+                    <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
+            </div>
+        </section>
+
+        <!-- Quiz Section -->
+        <section id="section-quiz" class="hidden flex flex-col">
+            <div class="bg-white rounded-2xl shadow-lg border border-gray-100 p-8">
+                
+                <!-- Quiz Status Bar -->
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+                    <span id="quiz-counter" class="text-sm font-bold text-indigo-500 uppercase tracking-wider">Question 1 of 10</span>
+                    <span id="quiz-score" class="text-sm font-bold text-green-500 bg-green-50 px-3 py-1 rounded-full hidden">Score: 0</span>
+                </div>
+
+                <!-- Question -->
+                <h3 id="quiz-question" class="text-xl font-medium mb-6 leading-relaxed">Loading...</h3>
+                
+                <!-- Hint Button -->
+                <button onclick="toggleHint()" class="text-sm text-amber-500 font-medium mb-4 flex items-center hover:text-amber-600 transition">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Need a hint?
+                </button>
+                <div id="quiz-hint" class="hidden bg-amber-50 border border-amber-200 text-amber-800 text-sm p-3 rounded-lg mb-6"></div>
+
+                <!-- Options -->
+                <div id="quiz-options" class="space-y-3 mb-8">
+                    <!-- Injected via JS -->
+                </div>
+
+                <!-- Feedback Rationale -->
+                <div id="quiz-feedback" class="hidden p-4 rounded-lg mb-6 text-base font-medium"></div>
+
+                <!-- Actions -->
+                <div class="flex justify-between items-center mt-6">
+                    <button id="btn-submit-answer" onclick="submitAnswer()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed">
+                        Submit Answer
+                    </button>
+                    <button id="btn-next-question" onclick="nextQuestion()" class="hidden bg-gray-800 hover:bg-gray-900 text-white font-semibold py-3 px-6 rounded-lg transition-colors shadow-md">
+                        Next Question &rarr;
+                    </button>
+                </div>
+                
+                <!-- Final Results -->
+                <div id="quiz-results" class="hidden text-center py-8">
+                    <h2 class="text-3xl font-bold mb-4">Quiz Complete!</h2>
+                    <p id="quiz-final-score" class="text-xl mb-6">You scored <span class="text-indigo-600 font-bold"></span> out of 10.</p>
+                    <button onclick="restartQuiz()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-8 rounded-lg transition-colors shadow-md">
+                        Retry Quiz
+                    </button>
+                </div>
+                
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- DATA ---
+        const flashcardsData = [
+            { front: "Definition of Scope", back: "The 'visibility range' of a variable, determining which parts of the code can see and use it." },
+            { front: "Behavior of variables declared with 'var'", back: "They have global or function scope and can escape 'if' and 'for' blocks, which often causes bugs." },
+            { front: "Behavior of variables declared with 'let' and 'const'", back: "They have block scope, meaning they live exclusively inside the { } braces where they are defined." },
+            { front: "Definition of a Closure", back: "A function that remembers the variables from its parent scope, even after the parent function has finished executing." },
+            { front: "Primary mechanism for private state in JavaScript", back: "Closures. Every time you see a function returned from another function, it creates a closure." },
+            { front: "Definition of a Higher-Order Function (HOF)", back: "A function that either accepts another function as an argument OR returns a function as its result." },
+            { front: "Purpose of the .map() array method", back: "Transforms every item in an array and returns a new array of the exact same length." },
+            { front: "Purpose of the .filter() array method", back: "Keeps items that pass a specific test and returns a new, possibly shorter array." },
+            { front: "Purpose of the .reduce() array method", back: "Collapses an entire array down to a single value, such as a sum or an average." },
+            { front: "The 'this' keyword in JavaScript", back: "A keyword that refers to the object currently executing the function. Its value depends on HOW the function is called." },
+            { front: "Value of 'this' in an Arrow Function", back: "It is inherited from its parent scope. Arrow functions do not create their own 'this' context." },
+            { front: "Four features Arrow Functions lack compared to traditional functions", back: "They do not have their own 'this', their own 'arguments' object, a 'prototype' property, and cannot be used as constructors with 'new'." },
+            { front: "JavaScript Execution Threading Model", back: "Single-threaded. It can only process one synchronous task at a time." },
+            { front: "The three states of a Promise", back: "Pending (started but not done), Fulfilled (completed successfully), and Rejected (failed)." },
+            { front: "Purpose of the Promise .finally() handler", back: "It always runs after a promise is settled (whether fulfilled or rejected), making it ideal for cleanup tasks like hiding loading spinners." },
+            { front: "Effect of the 'async' keyword on a function", back: "It marks the function as asynchronous and guarantees that the function will always return a Promise." },
+            { front: "Effect of the 'await' keyword", back: "It pauses the execution of its containing async function until a Promise settles, without freezing the entire browser." },
+            { front: "Role of the Call Stack in the Event Loop", back: "It runs all synchronous JavaScript code using a Last In, First Out (LIFO) execution order." },
+            { front: "Role of Web APIs in the Event Loop", back: "Handled by the browser, they process asynchronous operations like timers (setTimeout), network requests (fetch), and DOM events outside the main thread." },
+            { front: "Primary function of the Event Loop", back: "It constantly checks if the Call Stack is empty. When it is, it pushes pending callbacks from the Callback Queue onto the stack to be executed." },
+            { front: "Microtasks vs. Macrotasks priority", back: "Microtasks (like Promise .then) have higher priority and drain completely before the Event Loop processes the next Macrotask (like setTimeout)." },
+            { front: "Destructuring assignment in ES6", back: "A syntax feature that allows you to extract multiple values from objects or arrays into distinct variables in a single line of code." },
+            { front: "Purpose of the Spread Operator (...)", back: "It expands an array or object into individual elements, making it easy to merge or shallow-copy data structures." },
+            { front: "Purpose of the Rest Operator (...)", back: "It collects remaining arguments or values into a single array, commonly used in function parameters and destructuring." },
+            { front: "Optional Chaining (?.)", back: "A safe way to access deeply nested object properties; it returns 'undefined' instead of crashing if a parent property is null or undefined." },
+            { front: "Nullish Coalescing (??)", back: "Returns the right-side fallback value ONLY if the left side is exactly 'null' or 'undefined', treating 0 and empty strings as valid values." },
+            { front: "Purpose of try/catch/finally blocks", back: "Provides structured defensive coding to handle errors gracefully without crashing the app, and ensures cleanup code runs regardless of success or failure." }
+        ];
+
+        const quizData = [
+            {
+                question: "You write an `if` statement block that declares a variable used only for a temporary calculation. Later, you notice this variable is accidentally modifying another global variable with the exact same name. Based on modern JavaScript rules, what is the most likely cause of this bug?",
+                options: [
+                    { text: "The variable was declared using the `var` keyword.", rationale: "The `var` keyword creates variables that ignore block-level boundaries like `if` statements, causing them to leak into the wider scope and overwrite existing data.", isCorrect: true },
+                    { text: "The variable was declared using the `let` keyword.", rationale: "Variables declared with `let` are strictly block-scoped and remain safely contained within the curly braces where they are defined.", isCorrect: false },
+                    { text: "The variable was declared using the `const` keyword.", rationale: "Variables declared with `const` are block-scoped and cannot be reassigned, which would prevent this exact type of leakage.", isCorrect: false },
+                    { text: "The `if` statement inadvertently created a closure.", rationale: "A closure occurs when a function remembers its parent scope, which is unrelated to basic variable leakage from a standard block statement.", isCorrect: false }
+                ],
+                hint: "Consider which older variable declaration keyword is notorious for ignoring the boundaries of standard blocks."
+            },
+            {
+                question: "You need to build a function `createIdGenerator` that returns a new function. Each time the returned function is called, it outputs the next sequential number. Crucially, the counter variable itself must be completely hidden from the rest of the application. Which JavaScript feature is explicitly designed to solve this?",
+                options: [
+                    { text: "Closures", rationale: "By returning an inner function that references a variable in its parent function, a closure is formed, allowing the inner function to maintain private, persistent state.", isCorrect: true },
+                    { text: "Higher-Order Functions", rationale: "While returning a function makes this a Higher-Order Function, HOFs alone do not inherently create private state without the specific mechanism of capturing surrounding variables.", isCorrect: false },
+                    { text: "Block Scoping", rationale: "Block scoping restricts variable visibility but does not allow an inner function to carry that state outward after the parent block has finished executing.", isCorrect: false },
+                    { text: "Arrow Functions", rationale: "Arrow functions change how the execution context is bound, but they do not manage private state or data retention across executions.", isCorrect: false }
+                ],
+                hint: "Think about how an inner function can 'remember' the variables from the outer function even after the outer function finishes running."
+            },
+            {
+                question: "You have an array of 50 student objects. You need to create a new array containing ONLY the names of the students who scored 60 or higher. Which sequence of array methods provides the most direct, declarative solution?",
+                options: [
+                    { text: ".filter() followed by .map()", rationale: "The first step isolates the passing students into a smaller array, and the second step transforms those student objects into an array of just their name strings.", isCorrect: true },
+                    { text: ".map() followed by .filter()", rationale: "Transforming the array to names first would remove the score data needed to evaluate which students actually passed.", isCorrect: false },
+                    { text: ".reduce() followed by .filter()", rationale: "Collapsing the array down to a single value first makes it impossible to subsequently weed out individual elements based on a test.", isCorrect: false },
+                    { text: ".filter() followed by .reduce()", rationale: "While isolating passing students works, collapsing the result into a single value does not produce the required array of individual names.", isCorrect: false }
+                ],
+                hint: "You need to perform two distinct actions: first, remove the failures from the group, and second, extract specific properties from the remaining items."
+            },
+            {
+                question: "You are building a 'Timer' object. Inside its `startTimer` method, you use `setTimeout` to log `this.status` after 1 second. When the timer runs, the console logs `undefined` instead of the object's status. How should you rewrite the callback inside `setTimeout` to fix this bug?",
+                options: [
+                    { text: "Use an arrow function for the callback.", rationale: "Arrow functions do not have their own execution context; instead, they inherit it from their parent scope, allowing them to access the original object's properties.", isCorrect: true },
+                    { text: "Wrap the callback in a try/catch block.", rationale: "Error handling catches exceptions but does not alter the execution context or bind missing object references to standard functions.", isCorrect: false },
+                    { text: "Declare the status variable with the let keyword.", rationale: "Changing the declaration type of a property does not resolve the fact that standard callbacks are executed in the global window context.", isCorrect: false },
+                    { text: "Change setTimeout to queueMicrotask.", rationale: "Altering the queueing mechanism changes when the code runs in the event loop, but it does not fix the lost object reference inside a standard function callback.", isCorrect: false }
+                ],
+                hint: "Standard functions create their own execution context, which often defaults to the global window. You need a function type that naturally inherits context from its surroundings."
+            },
+            {
+                question: "In an `async function`, you are fetching user data. If the network request completely drops, you want to log the failure, but regardless of success or failure, you absolutely must execute a `hideSpinner()` function. Where is the most appropriate place to put the `hideSpinner()` call?",
+                options: [
+                    { text: "Inside the finally block.", rationale: "This block is guaranteed to execute after a promise settles, making it the standard and safest location for universal UI cleanup tasks.", isCorrect: true },
+                    { text: "Inside the catch block.", rationale: "Placing cleanup code here means it will only execute if the request fails, leaving the spinner spinning indefinitely if the request succeeds.", isCorrect: false },
+                    { text: "Immediately after the await fetch() call.", rationale: "If the network request throws an error, execution immediately jumps to the error handler, skipping any code directly following the failed promise.", isCorrect: false },
+                    { text: "Inside the try block, at the very beginning.", rationale: "Running cleanup code before the asynchronous operation has even begun defeats the purpose of showing a loading indicator during the process.", isCorrect: false }
+                ],
+                hint: "Look for the specific structural block in error handling that is designed to run its code unconditionally at the very end of the process."
+            },
+            {
+                question: "Your code executes a synchronous `console.log('1')`, followed by a `setTimeout(..., 0)` that logs '3', and finally a `Promise.resolve().then(...)` that logs '2'. Based on the JavaScript Event Loop, in what exact order will these numbers appear in the console?",
+                options: [
+                    { text: "1, 2, 3", rationale: "Synchronous code runs immediately on the Call Stack (1). Then, microtasks like Promise callbacks drain completely (2), and finally, lower-priority macrotasks like timers execute (3).", isCorrect: true },
+                    { text: "1, 3, 2", rationale: "While the timer was initiated before the promise, timers are macrotasks, which have lower priority and must wait for all microtasks to finish.", isCorrect: false },
+                    { text: "3, 2, 1", rationale: "The Call Stack must be completely empty before any queued asynchronous tasks can begin executing.", isCorrect: false },
+                    { text: "2, 1, 3", rationale: "Standard synchronous execution always takes precedence and must complete before the Event Loop pushes any queued microtasks onto the stack.", isCorrect: false }
+                ],
+                hint: "Remember that Promise callbacks go into a high-priority 'fast lane' that must be completely emptied before the standard queue is processed."
+            },
+            {
+                question: "You receive a `user` object from an API, but it might be missing the `age` property. Using ES6 object destructuring, how can you extract the `name` and safely assign an `age` of 18 if the API omits it?",
+                options: [
+                    { text: "const { name, age = 18 } = user;", rationale: "This syntax correctly extracts the properties and assigns a default fallback value strictly if the targeted property is missing or undefined.", isCorrect: true },
+                    { text: "const { name, age: 18 } = user;", rationale: "Using a colon in object destructuring assigns the extracted value to a newly named variable, rather than setting a default value.", isCorrect: false },
+                    { text: "const { name, age } = user || 18;", rationale: "Applying the logical OR operator to the entire object does not set defaults for individual missing properties inside that object.", isCorrect: false },
+                    { text: "const [name, age = 18] = user;", rationale: "Square brackets are used for array destructuring, which extracts values based on sequential position rather than specific property keys.", isCorrect: false }
+                ],
+                hint: "Think about how you assign default parameters in function definitions; the syntax for default values during extraction is identical."
+            },
+            {
+                question: "You have a `defaultConfig` object `{ theme: 'dark', lang: 'en' }`. You want to create a new `userConfig` object that keeps the dark theme but overrides the language to French ('fr'). How can you achieve this cleanly using ES6 features?",
+                options: [
+                    { text: "const userConfig = { ...defaultConfig, lang: 'fr' };", rationale: "The spread operator expands all properties of the original object into the new one, and placing the new language afterward safely overwrites the original value.", isCorrect: true },
+                    { text: "const userConfig = { defaultConfig..., lang: 'fr' };", rationale: "The spread operator must strictly precede the object or array being expanded; placing it afterward causes a syntax error.", isCorrect: false },
+                    { text: "const userConfig = { lang: 'fr', defaultConfig };", rationale: "Without the spread operator, this syntax simply nests the entire original object as a property inside the new object instead of merging the keys.", isCorrect: false },
+                    { text: "const userConfig = { ...defaultConfig, ...lang('fr') };", rationale: "The spread operator is used to expand iterable objects or arrays, not for assigning primitive string values to specific keys.", isCorrect: false }
+                ],
+                hint: "You need to 'expand' the contents of the original configuration first, and then explicitly redefine the specific property you want to change."
+            },
+            {
+                question: "A form allows users to explicitly enter '0' for their years of experience. You want to save this '0', but default to 'Unknown' only if the user entirely skipped the question. Which operator correctly preserves the explicit '0'?",
+                options: [
+                    { text: "experience ?? 'Unknown'", rationale: "The nullish coalescing operator strictly checks for null or undefined, treating explicit falsy values like 0 or empty strings as completely valid inputs.", isCorrect: true },
+                    { text: "experience || 'Unknown'", rationale: "The logical OR operator treats '0' as a falsy value, which would mistakenly overwrite the user's valid input with the fallback string.", isCorrect: false },
+                    { text: "experience ?. 'Unknown'", rationale: "Optional chaining is used to safely access deeply nested properties without crashing, not to establish fallback values for primary variables.", isCorrect: false },
+                    { text: "experience && 'Unknown'", rationale: "The logical AND operator evaluates to the fallback string only if the first value is truthy, which is the exact opposite of establishing a default for missing data.", isCorrect: false }
+                ],
+                hint: "You need an operator specifically designed to distinguish between 'missing data' (null/undefined) and 'valid but falsy data' (like the number zero)."
+            },
+            {
+                question: "When writing defensive asynchronous code with `fetch()`, what crucial step should you take immediately after the `await fetch(url)` completes, before attempting to parse the JSON?",
+                options: [
+                    { text: "Check response.ok to ensure the HTTP status indicates success.", rationale: "The fetch API does not throw an error for bad HTTP statuses (like 404 or 500); it only throws on total network failure, so manual status validation is required.", isCorrect: true },
+                    { text: "Call response.catch() to intercept parsing errors.", rationale: "Catch blocks are structured outside the await sequence using try/catch syntax; the response object itself does not possess a distinct catch method for parsing.", isCorrect: false },
+                    { text: "Wrap the returned JSON in Promise.resolve().", rationale: "The `response.json()` method already returns a promise natively, making redundant promise wrapping unnecessary and ineffective for error prevention.", isCorrect: false },
+                    { text: "Immediately throw a new Error() to test the catch block.", rationale: "While manual throwing is useful for validation, doing it unconditionally would intentionally break the application regardless of a successful network response.", isCorrect: false }
+                ],
+                hint: "The fetch function only considers a complete network drop as a failure; it will happily process a '404 Not Found' page if you don't manually verify the server's status code."
+            }
+        ];
+
+        // --- FLASHCARD LOGIC ---
+        let currentCardIndex = 0;
+        let isCardFlipped = false;
+
+        function formatCode(text) {
+            // Replaces backtick quotes with styled spans
+            return text.replace(/`([^`]+)`/g, '<span class="code-style">$1</span>');
+        }
+
+        function renderFlashcard() {
+            const card = flashcardsData[currentCardIndex];
+            document.getElementById('fc-front-text').innerHTML = formatCode(card.front);
+            document.getElementById('fc-back-text').innerHTML = formatCode(card.back);
+            document.getElementById('fc-counter').textContent = `${currentCardIndex + 1} / ${flashcardsData.length}`;
+            
+            // Reset flip state if needed
+            if (isCardFlipped) {
+                document.getElementById('flashcard-inner').classList.remove('rotate-y-180');
+                isCardFlipped = false;
+            }
+        }
+
+        function flipCard() {
+            const inner = document.getElementById('flashcard-inner');
+            if (isCardFlipped) {
+                inner.classList.remove('rotate-y-180');
+            } else {
+                inner.classList.add('rotate-y-180');
+            }
+            isCardFlipped = !isCardFlipped;
+        }
+
+        function nextCard() {
+            currentCardIndex = (currentCardIndex + 1) % flashcardsData.length;
+            renderFlashcard();
+        }
+
+        function prevCard() {
+            currentCardIndex = (currentCardIndex - 1 + flashcardsData.length) % flashcardsData.length;
+            renderFlashcard();
+        }
+
+        // --- QUIZ LOGIC ---
+        let currentQuizIndex = 0;
+        let selectedOptionIndex = null;
+        let score = 0;
+
+        function renderQuiz() {
+            const q = quizData[currentQuizIndex];
+            
+            // Format Question
+            document.getElementById('quiz-question').innerHTML = formatCode(q.question);
+            document.getElementById('quiz-counter').textContent = `Question ${currentQuizIndex + 1} of ${quizData.length}`;
+            
+            // Handle Hint
+            const hintDiv = document.getElementById('quiz-hint');
+            hintDiv.textContent = q.hint;
+            hintDiv.classList.add('hidden'); // hidden by default
+
+            // Render Options
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            selectedOptionIndex = null;
+
+            // Simple shuffle for options
+            const shuffledOptions = q.options.map((opt, i) => ({...opt, originalIndex: i})).sort(() => Math.random() - 0.5);
+
+            shuffledOptions.forEach((opt, index) => {
+                const optDiv = document.createElement('div');
+                optDiv.className = 'quiz-option p-4 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-start';
+                optDiv.onclick = () => selectOption(index, shuffledOptions);
+                optDiv.id = `option-${index}`;
+                
+                optDiv.innerHTML = `
+                    <div class="mt-0.5 mr-3 flex-shrink-0 w-5 h-5 rounded-full border-2 border-gray-300 flex items-center justify-center option-radio">
+                        <div class="w-2.5 h-2.5 rounded-full bg-indigo-600 hidden indicator"></div>
+                    </div>
+                    <span class="text-gray-700">${formatCode(opt.text)}</span>
+                `;
+                optionsContainer.appendChild(optDiv);
+            });
+
+            // Reset UI States
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('btn-next-question').classList.add('hidden');
+            const submitBtn = document.getElementById('btn-submit-answer');
+            submitBtn.classList.remove('hidden');
+            submitBtn.disabled = true;
+        }
+
+        function selectOption(index, optionsArray) {
+            // Prevent selection if already submitted
+            if (!document.getElementById('btn-submit-answer').classList.contains('hidden') && document.getElementById('btn-submit-answer').disabled === false && selectedOptionIndex === index) {
+                return; // Already selected
+            }
+            if (document.getElementById('btn-submit-answer').classList.contains('hidden')) return; // already answered
+
+            selectedOptionIndex = index;
+            document.getElementById('btn-submit-answer').disabled = false;
+
+            // Reset visual state
+            document.querySelectorAll('.quiz-option').forEach(el => {
+                el.classList.remove('border-indigo-600', 'bg-indigo-50');
+                el.classList.add('border-gray-200');
+                el.querySelector('.indicator').classList.add('hidden');
+                el.querySelector('.option-radio').classList.remove('border-indigo-600');
+            });
+
+            // Set active state
+            const activeEl = document.getElementById(`option-${index}`);
+            activeEl.classList.remove('border-gray-200');
+            activeEl.classList.add('border-indigo-600', 'bg-indigo-50');
+            activeEl.querySelector('.indicator').classList.remove('hidden');
+            activeEl.querySelector('.option-radio').classList.add('border-indigo-600');
+            
+            // Store selected actual option for submission
+            window.currentSelectedOption = optionsArray[index];
+        }
+
+        function toggleHint() {
+            document.getElementById('quiz-hint').classList.toggle('hidden');
+        }
+
+        function submitAnswer() {
+            if (!window.currentSelectedOption) return;
+
+            const isCorrect = window.currentSelectedOption.isCorrect;
+            const rationale = window.currentSelectedOption.rationale;
+            
+            const feedbackDiv = document.getElementById('quiz-feedback');
+            feedbackDiv.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-red-100', 'text-red-800');
+            
+            // Highlight correct and wrong options
+            const optionsArray = Array.from(document.querySelectorAll('.quiz-option'));
+            optionsArray.forEach(optEl => optEl.onclick = null); // disable clicks
+
+            if (isCorrect) {
+                score++;
+                document.getElementById('quiz-score').textContent = `Score: ${score}`;
+                document.getElementById('quiz-score').classList.remove('hidden');
+                
+                feedbackDiv.classList.add('bg-green-100', 'text-green-800');
+                feedbackDiv.innerHTML = `<strong class="block mb-1">Correct!</strong> ${rationale}`;
+            } else {
+                feedbackDiv.classList.add('bg-red-100', 'text-red-800');
+                feedbackDiv.innerHTML = `<strong class="block mb-1">Not quite.</strong> ${rationale}`;
+            }
+
+            // Toggle buttons
+            document.getElementById('btn-submit-answer').classList.add('hidden');
+            document.getElementById('btn-next-question').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuizIndex++;
+            if (currentQuizIndex < quizData.length) {
+                renderQuiz();
+            } else {
+                // Show final score
+                document.getElementById('quiz-question').parentElement.children[2].classList.add('hidden'); // hide hint btn
+                document.getElementById('quiz-options').classList.add('hidden');
+                document.getElementById('quiz-feedback').classList.add('hidden');
+                document.getElementById('btn-submit-answer').classList.add('hidden');
+                document.getElementById('btn-next-question').classList.add('hidden');
+                document.getElementById('quiz-question').classList.add('hidden');
+                
+                document.getElementById('quiz-results').classList.remove('hidden');
+                document.getElementById('quiz-final-score').querySelector('span').textContent = score;
+            }
+        }
+
+        function restartQuiz() {
+            currentQuizIndex = 0;
+            score = 0;
+            document.getElementById('quiz-score').classList.add('hidden');
+            document.getElementById('quiz-score').textContent = 'Score: 0';
+            
+            document.getElementById('quiz-question').parentElement.children[2].classList.remove('hidden'); 
+            document.getElementById('quiz-options').classList.remove('hidden');
+            document.getElementById('quiz-question').classList.remove('hidden');
+            document.getElementById('quiz-results').classList.add('hidden');
+            
+            renderQuiz();
+        }
+
+
+        // --- TAB NAVIGATION ---
+        function switchTab(tabId) {
+            const fcTab = document.getElementById('tab-flashcards');
+            const quizTab = document.getElementById('tab-quiz');
+            const fcSection = document.getElementById('section-flashcards');
+            const quizSection = document.getElementById('section-quiz');
+
+            if (tabId === 'flashcards') {
+                fcTab.classList.replace('text-gray-500', 'text-indigo-600');
+                fcTab.classList.replace('border-transparent', 'border-indigo-600');
+                quizTab.classList.replace('text-indigo-600', 'text-gray-500');
+                quizTab.classList.replace('border-indigo-600', 'border-transparent');
+                
+                fcSection.classList.remove('hidden');
+                quizSection.classList.add('hidden');
+            } else {
+                quizTab.classList.replace('text-gray-500', 'text-indigo-600');
+                quizTab.classList.replace('border-transparent', 'border-indigo-600');
+                fcTab.classList.replace('text-indigo-600', 'text-gray-500');
+                fcTab.classList.replace('border-indigo-600', 'border-transparent');
+                
+                quizSection.classList.remove('hidden');
+                fcSection.classList.add('hidden');
+            }
+        }
+
+        // Initialize App
+        renderFlashcard();
+        renderQuiz();
+        
+        // Add keyboard navigation for flashcards
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('section-flashcards').classList.contains('hidden')) {
+                if (e.key === 'ArrowRight') nextCard();
+                if (e.key === 'ArrowLeft') prevCard();
+                if (e.key === ' ' || e.key === 'Enter') {
+                    e.preventDefault(); // prevent scroll
+                    flipCard();
+                }
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
