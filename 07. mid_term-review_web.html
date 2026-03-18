@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Applications Development Mid-Term Review</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <!-- Chosen Palette: Warm Neutrals with Indigo Accent -->
+    <!-- Application Structure Plan: The SPA is structured as a "Study Dashboard" to transition the linear document into a task-oriented learning tool. It features a persistent sidebar for navigation. Added a dedicated "Essay Prep" section as requested to handle Short Essay questions alongside the massive 80-question Quiz (45 MCQs + 35 MSQs). -->
+    <!-- Visualization & Content Choices: Dashboard -> Goal: Inform & Organize -> Viz: Doughnut Chart (Study Plan) and Bar Chart (Topic Weighting) -> Library: Chart.js within constrained div. Content Review -> Tabbed text layout. Case Studies & Essays -> Reveal Cards for active recall. Quiz -> Dynamic question UI for all 80 questions. NO SVG/Mermaid used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. All 45 MCQs, 35 MSQs, and Short Essays included. -->
+
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+        @media (min-width: 768px) { .chart-container { height: 350px; } }
+        .tab-btn.active { border-bottom-color: #4f46e5; color: #4f46e5; font-weight: 600; }
+        .nav-btn.active { background-color: #e0e7ff; color: #3730a3; border-right: 4px solid #4f46e5; }
+        .hide-scroll::-webkit-scrollbar { display: none; }
+        .hide-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 h-screen flex overflow-hidden">
+
+    <nav class="w-20 md:w-64 bg-white border-r border-stone-200 flex flex-col h-full shadow-sm z-10 transition-all duration-300">
+        <div class="p-4 md:p-6 border-b border-stone-100 flex items-center justify-center md:justify-start">
+            <span class="text-3xl mr-0 md:mr-3">🎓</span>
+            <h1 class="font-bold text-lg text-indigo-900 hidden md:block leading-tight">Web Dev<br>Review</h1>
+        </div>
+        <div class="flex-1 overflow-y-auto py-4 hide-scroll">
+            <button onclick="nav('dashboard')" id="nav-dashboard" class="nav-btn active w-full flex items-center p-4 text-stone-600 hover:bg-stone-50 transition-colors">
+                <span class="text-xl md:mr-3">📊</span><span class="hidden md:block font-medium">Dashboard</span>
+            </button>
+            <button onclick="nav('review')" id="nav-review" class="nav-btn w-full flex items-center p-4 text-stone-600 hover:bg-stone-50 transition-colors">
+                <span class="text-xl md:mr-3">📖</span><span class="hidden md:block font-medium">Content Review</span>
+            </button>
+            <button onclick="nav('cases')" id="nav-cases" class="nav-btn w-full flex items-center p-4 text-stone-600 hover:bg-stone-50 transition-colors">
+                <span class="text-xl md:mr-3">🧩</span><span class="hidden md:block font-medium">Case Studies</span>
+            </button>
+            <button onclick="nav('quiz')" id="nav-quiz" class="nav-btn w-full flex items-center p-4 text-stone-600 hover:bg-stone-50 transition-colors">
+                <span class="text-xl md:mr-3">📝</span><span class="hidden md:block font-medium">Practice Quiz (80 Qs)</span>
+            </button>
+            <button onclick="nav('essays')" id="nav-essays" class="nav-btn w-full flex items-center p-4 text-stone-600 hover:bg-stone-50 transition-colors">
+                <span class="text-xl md:mr-3">✍️</span><span class="hidden md:block font-medium">Essay Prep</span>
+            </button>
+            <button onclick="nav('glossary')" id="nav-glossary" class="nav-btn w-full flex items-center p-4 text-stone-600 hover:bg-stone-50 transition-colors">
+                <span class="text-xl md:mr-3">🗂️</span><span class="hidden md:block font-medium">Glossary</span>
+            </button>
+        </div>
+    </nav>
+
+    <main class="flex-1 h-full overflow-y-auto bg-stone-50 hide-scroll scroll-smooth">
+        
+        <!-- DASHBOARD SECTION -->
+        <section id="sec-dashboard" class="p-6 md:p-12 max-w-7xl mx-auto block">
+            <header class="mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">Study Dashboard</h2>
+                <p class="text-lg text-stone-600 leading-relaxed max-w-3xl">Welcome to your Mid-Term Review Command Center. This dashboard provides a high-level overview of your 3-hour study plan and visualizes the relative importance of course topics to help you prioritize your effort efficiently.</p>
+            </header>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-stone-100 flex flex-col">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">⏱️ 3-Hour Study Plan Allocation</h3>
+                    <p class="text-sm text-stone-500 mb-6">Recommended breakdown of your preparation time across different study activities to maximize retention.</p>
+                    <div class="flex-1 flex items-center justify-center">
+                        <div class="chart-container">
+                            <canvas id="planChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-stone-100 flex flex-col">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2">📈 Topic Emphasis in Case Studies</h3>
+                    <p class="text-sm text-stone-500 mb-6">Analysis of which core modules appear most frequently in the applied Case Study scenarios.</p>
+                    <div class="flex-1 flex items-center justify-center w-full">
+                        <div class="chart-container">
+                            <canvas id="topicChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-indigo-50 rounded-2xl p-8 border border-indigo-100">
+                <h3 class="text-2xl font-bold text-indigo-900 mb-4">📌 How to use this Interactive Guide</h3>
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>
+                        <div class="text-3xl mb-2">1️⃣</div>
+                        <h4 class="font-semibold text-indigo-800 mb-1">Review Content</h4>
+                        <p class="text-stone-600 text-sm">Read summarized notes for Modules 1 through 6.</p>
+                    </div>
+                    <div>
+                        <div class="text-3xl mb-2">2️⃣</div>
+                        <h4 class="font-semibold text-indigo-800 mb-1">Apply Knowledge</h4>
+                        <p class="text-stone-600 text-sm">Solve the 10 real-world Case Studies.</p>
+                    </div>
+                    <div>
+                        <div class="text-3xl mb-2">3️⃣</div>
+                        <h4 class="font-semibold text-indigo-800 mb-1">Take the Quiz</h4>
+                        <p class="text-stone-600 text-sm">Test yourself with the comprehensive 80-question bank.</p>
+                    </div>
+                    <div>
+                        <div class="text-3xl mb-2">4️⃣</div>
+                        <h4 class="font-semibold text-indigo-800 mb-1">Practice Essays</h4>
+                        <p class="text-stone-600 text-sm">Formulate answers to the short essay prompts.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTENT REVIEW SECTION -->
+        <section id="sec-review" class="p-6 md:p-12 max-w-7xl mx-auto hidden">
+            <header class="mb-8">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">Comprehensive Content Review</h2>
+                <p class="text-lg text-stone-600 leading-relaxed max-w-3xl">This section breaks down the foundational theory across all six modules. Use the tabs below to navigate between chapters without losing your place.</p>
+            </header>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-100 overflow-hidden">
+                <div class="flex overflow-x-auto border-b border-stone-200 hide-scroll bg-stone-50/50" id="chapter-tabs">
+                    <button onclick="switchTab('ch1')" class="tab-btn active ch1 whitespace-nowrap px-6 py-4 text-sm font-medium text-stone-500 hover:text-indigo-600 border-b-2 border-transparent transition-colors">1. UX Design</button>
+                    <button onclick="switchTab('ch2')" class="tab-btn ch2 whitespace-nowrap px-6 py-4 text-sm font-medium text-stone-500 hover:text-indigo-600 border-b-2 border-transparent transition-colors">2. User Interface</button>
+                    <button onclick="switchTab('ch3')" class="tab-btn ch3 whitespace-nowrap px-6 py-4 text-sm font-medium text-stone-500 hover:text-indigo-600 border-b-2 border-transparent transition-colors">3. Usability</button>
+                    <button onclick="switchTab('ch4')" class="tab-btn ch4 whitespace-nowrap px-6 py-4 text-sm font-medium text-stone-500 hover:text-indigo-600 border-b-2 border-transparent transition-colors">4. The Browser</button>
+                    <button onclick="switchTab('ch5')" class="tab-btn ch5 whitespace-nowrap px-6 py-4 text-sm font-medium text-stone-500 hover:text-indigo-600 border-b-2 border-transparent transition-colors">5. HTML & CSS</button>
+                    <button onclick="switchTab('ch6')" class="tab-btn ch6 whitespace-nowrap px-6 py-4 text-sm font-medium text-stone-500 hover:text-indigo-600 border-b-2 border-transparent transition-colors">6. JavaScript</button>
+                </div>
+
+                <div class="p-8 md:p-10 prose prose-stone max-w-none text-stone-700">
+                    <div id="content-ch1" class="tab-content block">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-4">Chapter 1 — User Experience Design (UXD)</h3>
+                        <p class="mb-4"><strong>What Is UXD?</strong> UXD is the disciplined process of shaping digital products so they deliver meaningful, relevant, and satisfying experiences to the people who use them. It is NOT simply about making something look attractive.</p>
+                        <h4 class="font-bold text-stone-800 mt-6 mb-2">The Five Core Components</h4>
+                        <ul class="list-disc pl-6 space-y-2 mb-6">
+                            <li><strong>User Research:</strong> Understanding users, their goals, and frustrations. The cardinal rule: <em>you are not your user</em>.</li>
+                            <li><strong>Information Architecture (IA):</strong> Organizing, structuring, and labeling content so users can find what they need without effort (e.g., a well-organized restaurant menu). Reduces cognitive load.</li>
+                            <li><strong>Interaction Design (IxD):</strong> Defining how users interact with a product (flows, transitions, feedback).</li>
+                            <li><strong>Visual Design:</strong> Purposeful aesthetics. Every visual choice must serve the user's goals.</li>
+                            <li><strong>Usability Testing:</strong> Validating with real users. Testing with 5 users reveals roughly 85% of usability problems (Jakob Nielsen).</li>
+                        </ul>
+                    </div>
+
+                    <div id="content-ch2" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-4">Chapter 2 — User Interface (UI)</h3>
+                        <p class="mb-4"><strong>UI vs. UX:</strong> UI = How the product <em>looks</em> (visual layer). UX = How the product <em>feels</em> (complete journey).</p>
+                        <h4 class="font-bold text-stone-800 mt-6 mb-2">Five Core Principles of Effective UI</h4>
+                        <ul class="list-disc pl-6 space-y-2 mb-6">
+                            <li><strong>Clarity:</strong> Elements communicate purpose immediately.</li>
+                            <li><strong>Consistency:</strong> Reduces learning burden.</li>
+                            <li><strong>Feedback:</strong> Visible system response to every user action.</li>
+                            <li><strong>Simplicity:</strong> Removes elements that don't serve the current goal.</li>
+                            <li><strong>Accessibility (a11y):</strong> Usable by people with disabilities (legal requirement under ADA/EAA).</li>
+                        </ul>
+                    </div>
+
+                    <div id="content-ch3" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-4">Chapter 3 — Usability</h3>
+                        <p class="mb-4"><strong>ISO 9241-11 Definition:</strong> "the extent to which a product can be used by specified users to achieve specified goals with effectiveness, efficiency, and satisfaction in a specified context of use."</p>
+                        <h4 class="font-bold text-stone-800 mt-6 mb-2">Nielsen's Five Pillars of Usability</h4>
+                        <ol class="list-decimal pl-6 space-y-1 mb-6">
+                            <li>Learnability</li>
+                            <li>Efficiency</li>
+                            <li>Memorability</li>
+                            <li>Errors (frequency and severity)</li>
+                            <li>Satisfaction</li>
+                        </ol>
+                    </div>
+
+                    <div id="content-ch4" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-4">Chapter 4 — The Browser</h3>
+                        <p class="mb-4"><strong>Browser Engines:</strong> Blink (Chrome, Edge, Opera), WebKit (Safari), Gecko (Firefox).</p>
+                        <h4 class="font-bold text-stone-800 mt-6 mb-2">The Rendering Pipeline</h4>
+                        <ol class="list-decimal pl-6 space-y-1 mb-6">
+                            <li>Parse HTML &rarr; Build DOM</li>
+                            <li>Parse CSS &rarr; Build CSSOM</li>
+                            <li>Combine &rarr; Build Render Tree</li>
+                            <li>Layout (Reflow) &rarr; Calculate positions</li>
+                            <li>Paint &rarr; Fill pixels</li>
+                            <li>Composite &rarr; Layer elements</li>
+                        </ol>
+                    </div>
+
+                    <div id="content-ch5" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-4">Chapter 5 — HTML5 & CSS</h3>
+                        <p class="mb-4"><strong>Semantic Elements:</strong> Replaced generic divs. Improves Accessibility (screen readers), SEO, and maintainability. Examples: header, nav, main, article, section, aside.</p>
+                        <h4 class="font-bold text-stone-800 mt-6 mb-2">Layout Systems</h4>
+                        <ul class="list-disc pl-6 space-y-2 mb-6">
+                            <li><strong>Flexbox:</strong> One-dimensional layout (row OR column). Uses justify-content (main axis) and align-items (cross axis).</li>
+                            <li><strong>Grid:</strong> Two-dimensional layout (rows AND columns simultaneously). Introduces the <code>fr</code> fractional unit.</li>
+                        </ul>
+                    </div>
+
+                    <div id="content-ch6" class="tab-content hidden">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-4">Chapter 6 — JavaScript</h3>
+                        <p class="mb-4"><strong>Scope:</strong> Use <code>let</code> and <code>const</code> for block scope instead of <code>var</code>. <strong>Closures</strong> allow inner functions to retain access to outer scope variables, enabling private state.</p>
+                        <h4 class="font-bold text-stone-800 mt-6 mb-2">Higher-Order Functions (HOFs)</h4>
+                        <ul class="list-disc pl-6 space-y-1 mb-6">
+                            <li><code>map()</code>: Transforms every element into a new array.</li>
+                            <li><code>filter()</code>: Returns new array of elements passing a test.</li>
+                            <li><code>reduce()</code>: Collapses an array into a single value.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CASE STUDIES SECTION -->
+        <section id="sec-cases" class="p-6 md:p-12 max-w-7xl mx-auto hidden">
+            <header class="mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">Applied Case Studies</h2>
+                <p class="text-lg text-stone-600 leading-relaxed max-w-3xl">Test your ability to apply theoretical concepts to real-world scenarios. Read the problem, form your own diagnosis, and click "Reveal Solution".</p>
+            </header>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="case-studies-container"></div>
+        </section>
+
+        <!-- QUIZ SECTION (80 Questions) -->
+        <section id="sec-quiz" class="p-6 md:p-12 max-w-7xl mx-auto hidden">
+            <header class="mb-10 text-center md:text-left">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">Interactive Knowledge Check</h2>
+                <p class="text-lg text-stone-600 leading-relaxed max-w-3xl mx-auto md:mx-0">Simulate exam conditions with the complete 80-question bank (45 MCQs, 35 MSQs). Select your answers and receive immediate feedback.</p>
+            </header>
+
+            <div class="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-stone-200 overflow-hidden">
+                <div class="bg-indigo-600 p-6 text-white flex justify-between items-center">
+                    <h3 class="text-xl font-bold" id="quiz-progress">Question 1 of 80</h3>
+                    <div class="text-indigo-100 text-sm font-medium px-3 py-1 bg-indigo-700 rounded-full" id="quiz-type-badge">MCQ</div>
+                </div>
+                
+                <div class="p-8">
+                    <p class="text-lg text-stone-800 font-medium mb-6" id="quiz-question-text">Loading question...</p>
+                    <div id="quiz-options-container" class="space-y-3 mb-8"></div>
+                    
+                    <div id="quiz-feedback" class="hidden rounded-xl p-5 mb-6 border">
+                        <div class="flex items-start">
+                            <span id="quiz-feedback-icon" class="text-2xl mr-3 mt-1"></span>
+                            <div>
+                                <h4 id="quiz-feedback-title" class="font-bold text-lg mb-1"></h4>
+                                <p id="quiz-feedback-explanation" class="text-stone-700"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-between items-center border-t border-stone-100 pt-6 mt-6">
+                        <div class="text-stone-500 font-medium">Score: <span id="quiz-score" class="text-indigo-600 font-bold">0</span></div>
+                        <button id="quiz-submit-btn" onclick="submitQuizAnswer()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-sm">Submit Answer</button>
+                        <button id="quiz-next-btn" onclick="nextQuizQuestion()" class="hidden bg-stone-800 hover:bg-stone-900 text-white font-bold py-3 px-8 rounded-xl transition-colors shadow-sm">Next Question &rarr;</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ESSAYS SECTION -->
+        <section id="sec-essays" class="p-6 md:p-12 max-w-7xl mx-auto hidden">
+            <header class="mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">Short Essay Questions</h2>
+                <p class="text-lg text-stone-600 leading-relaxed max-w-3xl">Practice outlining comprehensive answers to these short essay prompts. Formulate your key points mentally or on paper, then reveal the rubric to check your coverage.</p>
+            </header>
+            <div class="space-y-6" id="essays-container"></div>
+        </section>
+
+        <!-- GLOSSARY SECTION -->
+        <section id="sec-glossary" class="p-6 md:p-12 max-w-7xl mx-auto hidden">
+            <header class="mb-10">
+                <h2 class="text-3xl md:text-4xl font-extrabold text-stone-900 tracking-tight mb-3">Interactive Glossary</h2>
+                <p class="text-lg text-stone-600 leading-relaxed max-w-3xl">A comprehensive index of key acronyms and terms. Use the real-time search filter to quickly find definitions during your final review.</p>
+            </header>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-stone-200 p-6">
+                <div class="relative mb-6">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-stone-400 text-xl">🔍</span>
+                    <input type="text" id="glossary-search" oninput="filterGlossary()" placeholder="Search terms or acronyms..." class="w-full pl-12 pr-4 py-4 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all">
+                </div>
+                <div class="overflow-x-auto rounded-xl border border-stone-100">
+                    <table class="min-w-full text-left text-sm whitespace-nowrap">
+                        <thead class="uppercase tracking-wider border-b-2 border-stone-200 bg-stone-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-4 text-stone-600 font-bold w-1/4">Term / Abbreviation</th>
+                                <th scope="col" class="px-6 py-4 text-stone-600 font-bold">Definition / Full Form</th>
+                            </tr>
+                        </thead>
+                        <tbody id="glossary-body" class="divide-y divide-stone-100"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        function nav(sectionId) {
+            const sections = ['dashboard', 'review', 'cases', 'quiz', 'essays', 'glossary'];
+            sections.forEach(s => {
+                document.getElementById('sec-' + s).classList.add('hidden');
+                document.getElementById('nav-' + s).classList.remove('active', 'bg-e0e7ff', 'border-r-4', 'border-indigo-600');
+            });
+            
+            document.getElementById('sec-' + sectionId).classList.remove('hidden');
+            document.getElementById('nav-' + sectionId).classList.add('active');
+            document.getElementById('nav-' + sectionId).style.backgroundColor = '#e0e7ff';
+            document.getElementById('nav-' + sectionId).style.borderRight = '4px solid #4f46e5';
+
+            if(sectionId === 'dashboard') initCharts();
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+            
+            document.getElementById('content-' + tabId).classList.remove('hidden');
+            document.querySelector('.tab-btn.' + tabId).classList.add('active');
+        }
+
+        const caseStudiesData = [
+            { title: "Case 1: Registration Form", tags: "UXD, UI", prob: "Users abandon registration. Button invisible on mobile; cryptic error 'ERR-409'.", ans: "Violates Visibility & Recognition. Fix: Responsive flexbox layout, clear error text." },
+            { title: "Case 2: Dark Pattern Audit", tags: "Usability", prob: "Pre-checked newsletter box; hidden costs; hard-to-find cancel.", ans: "Patterns: Trick Question, Hidden Costs, Roach Motel. Fix: Opt-in explicit consent." },
+            { title: "Case 3: Browser Compatibility", tags: "The Browser", prob: "CSS backdrop-filter fails on older Safari.", ans: "Engines render differently (WebKit). Fix: caniuse.com, vendor prefixes, fallbacks." },
+            { title: "Case 4: Closure Bug", tags: "JavaScript", prob: "Loop with 'var' assigns the final index to all button event listeners.", ans: "'var' is function-scoped. Fix: Use 'let' (block-scoped) or closure wrapper." },
+            { title: "Case 5: Form Accessibility", tags: "HTML5, a11y", prob: "No labels, color-only error validation.", ans: "Violates WCAG 1.3.1/1.4.1. Fix: Use <label for>, text-based error messages." },
+            { title: "Case 6: Async Error Handling", tags: "JavaScript", prob: "Fetch crashes app when offline. No loader.", ans: "Missing try/catch and response.ok check. Fix: Add UI loader, wrap in try/catch." },
+            { title: "Case 7: Responsive Nav", tags: "CSS", prob: "Desktop nav overflows on mobile.", ans: "Fix: Media query switching flex-direction from row to column on small screens." },
+            { title: "Case 8: DOM Manipulation", tags: "Browser, JS", prob: "Event listeners attached multiple times or before DOM load.", ans: "Wrap initialization in DOMContentLoaded, attach listeners once outside repeating loops." },
+            { title: "Case 9: IA Mismatch", tags: "UXD", prob: "Users can't find E-books nested under 'Collections > Physical'.", ans: "Mental model mismatch. Fix: Card sort/Tree test, promote Digital Resources to top." },
+            { title: "Case 10: Render Blocking", tags: "Browser", prob: "Large sync script in <head> causes blank white screen.", ans: "Script blocks HTML parser. Fix: Move to bottom of body, or use 'defer'/'async'." }
+        ];
+
+        function renderCaseStudies() {
+            const container = document.getElementById('case-studies-container');
+            caseStudiesData.forEach((cs, i) => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-stone-200 rounded-2xl p-6 shadow-sm flex flex-col transition-all hover:shadow-md";
+                card.innerHTML = `
+                    <div class="text-xs font-bold text-indigo-600 uppercase tracking-wider mb-2">${cs.tags}</div>
+                    <h3 class="text-xl font-bold text-stone-900 mb-3">${cs.title}</h3>
+                    <p class="text-stone-700 mb-6 flex-1 border-l-4 border-stone-200 pl-4 py-1">${cs.prob}</p>
+                    <button onclick="toggleCard('case-ans-${i}', this, 'Solution')" class="w-full bg-stone-100 hover:bg-stone-200 text-stone-800 font-semibold py-3 rounded-xl transition-colors">Reveal Solution</button>
+                    <div id="case-ans-${i}" class="hidden mt-4 p-4 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-900 text-sm leading-relaxed font-medium">
+                        ${cs.ans}
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        const essayData = [
+            { q: "Discuss the primary differences between UX Design and UI Design. Give examples of how a product could have good UI but bad UX.", rubric: ["UX defines the overall journey and logic (research, IA, wireframes).", "UI defines the visual and interactive surface (colors, typography, buttons).", "Example: A beautiful, visually stunning website (Good UI) where users cannot figure out how to add an item to their cart or check out (Bad UX)."] },
+            { q: "Explain the concept of Information Architecture (IA) and describe two research methods used to improve it.", rubric: ["IA is the structural design of shared information environments (organizing, labeling).", "Method 1: Card Sorting (helps understand users' mental models for categorization).", "Method 2: Tree Testing (evaluates the findability of topics within a proposed structure)."] },
+            { q: "Describe the 'POUR' principles of the WCAG and provide one practical example for each.", rubric: ["Perceivable: Providing alt text for images.", "Operable: Ensuring all navigation can be accessed via keyboard.", "Understandable: Using clear language and consistent navigation.", "Robust: Ensuring compatibility with screen readers via valid HTML markup."] },
+            { q: "What is a 'Dark Pattern' in web design? Describe two specific types of dark patterns and the ethical/legal implications.", rubric: ["Dark patterns are UI tricks designed to make users do things they didn't intend to do (e.g., spending more money or sharing data).", "Type 1: Roach Motel (easy to sign up, hard to cancel).", "Type 2: Confirmshaming (guilt-tripping the user into opting in).", "Implications: Violates FTC guidelines, GDPR consent rules, and destroys user trust."] },
+            { q: "Explain the Critical Rendering Path. What steps does the browser take to turn HTML, CSS, and JS into pixels on the screen?", rubric: ["1. Build DOM (Document Object Model) from HTML.", "2. Build CSSOM (CSS Object Model) from CSS.", "3. Combine them to create the Render Tree.", "4. Layout/Reflow (calculate positions and dimensions).", "5. Paint (fill in pixels).", "6. Composite (draw layers to screen)."] },
+            { q: "Compare and contrast LocalStorage, SessionStorage, and Cookies. When would you use each?", rubric: ["Cookies: ~4KB, sent to server with HTTP requests. Used for authentication/session IDs.", "LocalStorage: ~5-10MB, persists permanently until cleared by user/code. Used for user preferences, themes.", "SessionStorage: ~5-10MB, cleared when the browser tab closes. Used for temporary form data or single-session states."] },
+            { q: "Describe the difference between CSS Flexbox and CSS Grid. When is it appropriate to use each?", rubric: ["Flexbox: 1-dimensional layout system (row OR column). Best for aligning items within a single axis, like navigation bars.", "Grid: 2-dimensional layout system (rows AND columns simultaneously). Best for overall page layouts and complex grid structures."] },
+            { q: "Explain the concept of 'Mobile-First' Responsive Design. How is it implemented using CSS Media Queries?", rubric: ["Mobile-first designs the smallest screen layout as the default base CSS.", "Media Queries: Uses `@media (min-width: ...)` to progressively add complexity and adjust layout as the screen gets wider.", "Benefits: Better performance on mobile devices (fewer overriding rules to process)."] },
+            { q: "What is a 'Closure' in JavaScript? Provide a conceptual example of why closures are useful.", rubric: ["A closure is the combination of a function bundled together with references to its surrounding state (lexical environment).", "It allows an inner function to access variables from an outer function even after the outer function has finished executing.", "Use case: Data privacy/encapsulation (creating private variables)."] },
+            { q: "Explain how asynchronous JavaScript works using the Event Loop, Call Stack, and Web APIs.", rubric: ["JavaScript is single-threaded (Call Stack).", "Async operations (like setTimeout or fetch) are handed off to Web APIs.", "Once complete, their callbacks are placed in the Task/Callback Queue.", "The Event Loop continuously checks if the Call Stack is empty; if so, it pushes the first item from the Queue onto the Stack."] },
+            { q: "What are Higher-Order Functions? Describe the difference between map(), filter(), and reduce().", rubric: ["HOFs are functions that take other functions as arguments or return them.", "map(): Returns a new array by transforming every element.", "filter(): Returns a new array containing only elements that pass a test condition.", "reduce(): Executes a reducer function on each element, resulting in a single output value."] },
+            { q: "Discuss the advantages of using Semantic HTML5 elements (like <nav>, <article>, <main>) over generic <div> tags.", rubric: ["Accessibility: Screen readers use semantics to navigate and announce content types.", "SEO: Search engines prioritize semantic content for context and ranking.", "Maintainability: Code is easier for other developers to read and structure."] }
+        ];
+
+        function renderEssays() {
+            const container = document.getElementById('essays-container');
+            essayData.forEach((es, i) => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-stone-200 rounded-2xl p-6 shadow-sm flex flex-col transition-all hover:shadow-md";
+                let rubricHtml = es.rubric.map(r => `<li class="mb-2">${r}</li>`).join('');
+                card.innerHTML = `
+                    <h3 class="text-xl font-bold text-stone-900 mb-3">Prompt ${i+1}:</h3>
+                    <p class="text-stone-800 text-lg mb-6 leading-relaxed">${es.q}</p>
+                    <button onclick="toggleCard('essay-ans-${i}', this, 'Rubric')" class="self-start bg-indigo-100 hover:bg-indigo-200 text-indigo-800 font-semibold px-6 py-2 rounded-lg transition-colors">Reveal Key Talking Points</button>
+                    <div id="essay-ans-${i}" class="hidden mt-4 p-5 bg-stone-50 border border-stone-200 rounded-xl text-stone-700 text-sm leading-relaxed">
+                        <ul class="list-disc pl-5">${rubricHtml}</ul>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function toggleCard(id, btn, label) {
+            const el = document.getElementById(id);
+            if(el.classList.contains('hidden')) {
+                el.classList.remove('hidden');
+                btn.textContent = `Hide ${label}`;
+            } else {
+                el.classList.add('hidden');
+                btn.textContent = `Reveal ${label}`;
+            }
+        }
+
+        // --- FULL 80 QUESTION BANK (45 MCQs, 35 MSQs) ---
+        const quizData = [
+            // Module 1: UXD (7 MCQs, 6 MSQs)
+            { q: "What is the primary goal of User Experience Design (UXD)?", type: "MCQ", opts: ["Making a product visually appealing", "Delivering meaningful, relevant experiences", "Writing backend code", "Increasing advertising clicks"], ans: 1, exp: "UXD focuses on the entire journey, aiming for meaningful and relevant user interactions." },
+            { q: "Which core UX component involves organizing, structuring, and labeling content?", type: "MCQ", opts: ["Interaction Design", "Usability Testing", "Information Architecture", "Visual Design"], ans: 2, exp: "Information Architecture (IA) creates the structural design of shared environments." },
+            { q: "According to Jakob Nielsen, testing with how many users reveals ~85% of usability issues?", type: "MCQ", opts: ["3", "5", "10", "50"], ans: 1, exp: "5 users is the optimal number for uncovering the majority of usability problems efficiently." },
+            { q: "What is the primary purpose of creating User Personas?", type: "MCQ", opts: ["To build database schemas", "To represent the target audience and build empathy", "To test website load times", "To replace real user testing"], ans: 1, exp: "Personas build empathy and keep the design team focused on specific user goals." },
+            { q: "Which of the following is NOT typically part of Interaction Design (IxD)?", type: "MCQ", opts: ["System feedback", "Transitions", "Color palettes", "User flows"], ans: 2, exp: "Color palettes belong primarily to Visual Design, not Interaction Design." },
+            { q: "What does 'You are not your user' mean in UX terminology?", type: "MCQ", opts: ["You should ignore user feedback", "Designers must rely on research, not personal assumptions", "Only developers understand users", "Users don't know what they want"], ans: 1, exp: "It is a reminder against the false consensus effect; designers must research actual users." },
+            { q: "Which UX research method involves asking users to group topics into categories?", type: "MCQ", opts: ["A/B Testing", "Card Sorting", "Eye Tracking", "Heuristic Evaluation"], ans: 1, exp: "Card sorting is a fundamental technique for developing Information Architecture." },
+            
+            { q: "Which of the following are components of the 5 elements of UX (Jesse James Garrett)?", type: "MSQ", opts: ["Strategy", "Scope", "Structure", "Syntax"], ans: [0, 1, 2], exp: "The elements are Strategy, Scope, Structure, Skeleton, and Surface." },
+            { q: "Which methods are considered qualitative research? (Select ALL)", type: "MSQ", opts: ["User Interviews", "Google Analytics", "Focus Groups", "A/B Testing"], ans: [0, 2], exp: "Interviews and focus groups are qualitative (why), while analytics and A/B testing are quantitative (what/how many)." },
+            { q: "Which of the following belong to Information Architecture? (Select ALL)", type: "MSQ", opts: ["Taxonomies", "Navigation Systems", "Color Theory", "Wireframes"], ans: [0, 1], exp: "IA involves organizing (taxonomies) and connecting (navigation) content." },
+            { q: "What are the common outputs of the UX 'Define' phase? (Select ALL)", type: "MSQ", opts: ["Problem Statements", "High-fidelity Prototypes", "User Journey Maps", "Production Code"], ans: [0, 2], exp: "The Define phase results in problem statements and journey maps to guide design." },
+            { q: "Which of these are recognized UX research biases? (Select ALL)", type: "MSQ", opts: ["Confirmation Bias", "Observer Effect", "Flexbox Bias", "Framing Effect"], ans: [0, 1, 3], exp: "Confirmation, Observer, and Framing are psychological biases affecting research." },
+            { q: "What does a good User Journey Map typically include? (Select ALL)", type: "MSQ", opts: ["User Emotions/Frustrations", "Touchpoints", "Backend Database Structure", "Timeline/Stages"], ans: [0, 1, 3], exp: "Journey maps track the user's emotional state across various touchpoints over time." },
+
+            // Module 2: UI (7 MCQs, 6 MSQs)
+            { q: "What differentiates UI from UX?", type: "MCQ", opts: ["UI is the visual layer; UX is the complete journey", "UX is visual; UI is backend", "They are exactly the same", "UI only applies to mobile apps"], ans: 0, exp: "UI defines how the product looks, while UX defines how it feels overall." },
+            { q: "Which UI principle ensures elements behave the same way across the application?", type: "MCQ", opts: ["Clarity", "Simplicity", "Consistency", "Feedback"], ans: 2, exp: "Consistency reduces the learning curve by keeping patterns uniform." },
+            { q: "What is 'Visual Hierarchy'?", type: "MCQ", opts: ["A list of font files", "Arranging elements to show their order of importance", "The company org chart", "A type of CSS grid"], ans: 1, exp: "Visual hierarchy guides the user's eye to the most important elements first." },
+            { q: "What is the WCAG AA minimum contrast ratio for standard text?", type: "MCQ", opts: ["2:1", "3:1", "4.5:1", "7:1"], ans: 2, exp: "WCAG AA requires a 4.5:1 ratio for normal text." },
+            { q: "Which of these is the best example of UI 'Feedback'?", type: "MCQ", opts: ["A static logo", "A button changing color when hovered", "A paragraph of text", "A hidden navigation menu"], ans: 1, exp: "Hover states visually confirm to the user that the element is interactive." },
+            { q: "What does 'a11y' stand for?", type: "MCQ", opts: ["Accessibility", "Availability", "Adaptability", "Accountability"], ans: 0, exp: "Accessibility (there are 11 letters between 'a' and 'y')." },
+            { q: "Which typographic choice generally hurts readability in long paragraphs?", type: "MCQ", opts: ["Left-aligned text", "High contrast", "All caps", "Sans-serif fonts"], ans: 2, exp: "All caps removes the distinct shapes of lowercase words, drastically slowing reading speed." },
+
+            { q: "Which of the following are primary principles of Effective UI? (Select ALL)", type: "MSQ", opts: ["Clarity", "Complexity", "Feedback", "Inconsistency"], ans: [0, 2], exp: "Clarity and Feedback are core principles; complexity and inconsistency are to be avoided." },
+            { q: "Which techniques are used to establish Visual Hierarchy? (Select ALL)", type: "MSQ", opts: ["Size", "Color/Contrast", "Alignment/Spacing", "Alphabetical sorting"], ans: [0, 1, 2], exp: "Size, contrast, and spacing draw attention, while alphabetical sorting is an IA tool." },
+            { q: "Which are valid CSS strategies for implementing dark mode UI? (Select ALL)", type: "MSQ", opts: ["CSS Variables (Custom Properties)", "@media (prefers-color-scheme)", "Deleting all background colors", "Using only black and white"], ans: [0, 1], exp: "Variables and prefers-color-scheme are standard ways to implement dark themes." },
+            { q: "Which of the following improve web accessibility for screen readers? (Select ALL)", type: "MSQ", opts: ["Alt attributes on images", "Semantic HTML tags", "Using <div> for buttons", "Aria-labels"], ans: [0, 1, 3], exp: "Semantic tags, alt text, and aria attributes provide context to assistive technologies." },
+            { q: "What are common UI design patterns for mobile navigation? (Select ALL)", type: "MSQ", opts: ["Hamburger Menu", "Bottom Tab Bar", "Mega Menu (Hover)", "Floating Action Button (FAB)"], ans: [0, 1, 3], exp: "Mega menus rely on hover, which does not exist on touch devices." },
+            { q: "Which font formats are standard for modern Web Typography? (Select ALL)", type: "MSQ", opts: ["WOFF2", "WOFF", "TTF", "DOCX"], ans: [0, 1, 2], exp: "WOFF and WOFF2 are optimized web font formats; TTF is supported. DOCX is a document." },
+
+            // Module 3: Usability (8 MCQs, 6 MSQs)
+            { q: "Which term describes 'how easily users can accomplish basic tasks the first time they see the design'?", type: "MCQ", opts: ["Learnability", "Efficiency", "Memorability", "Satisfaction"], ans: 0, exp: "Learnability is the ease with which new users can navigate the system." },
+            { q: "What is a 'Dark Pattern'?", type: "MCQ", opts: ["A dark mode theme", "A deceptive UI designed to trick users", "A broken CSS file", "An accessibility error"], ans: 1, exp: "Dark patterns manipulate users into actions like unwanted subscriptions." },
+            { q: "According to the POUR framework, content must be...", type: "MCQ", opts: ["Pretty, Organized, Usable, Reliable", "Perceivable, Operable, Understandable, Robust", "Programmed, Ordered, Updated, Ready", "Practical, Open, Universal, Responsive"], ans: 1, exp: "POUR is the foundation of the Web Content Accessibility Guidelines (WCAG)." },
+            { q: "What type of dark pattern hides extra fees until the final checkout step?", type: "MCQ", opts: ["Confirmshaming", "Roach Motel", "Hidden Costs", "Bait and Switch"], ans: 2, exp: "Hidden costs appear late in the funnel when the user is already committed." },
+            { q: "If users make frequent errors on a form, which usability heuristic is failing?", type: "MCQ", opts: ["Satisfaction", "Error Prevention / Recovery", "Learnability", "Memorability"], ans: 1, exp: "Good usability prevents errors or offers clear, constructive ways to recover from them." },
+            { q: "What is 'Confirmshaming'?", type: "MCQ", opts: ["Asking users to confirm their email twice", "Guilting users into opting in (e.g., 'No, I hate saving money')", "A two-factor authentication method", "A secure password policy"], ans: 1, exp: "Confirmshaming uses manipulative language to make opting out feel bad." },
+            { q: "Which ISO standard defines usability in terms of effectiveness, efficiency, and satisfaction?", type: "MCQ", opts: ["ISO 9001", "ISO 9241-11", "ISO 27001", "ISO 14001"], ans: 1, exp: "ISO 9241-11 defines the core parameters of usability." },
+            { q: "What is the primary purpose of a Heuristic Evaluation?", type: "MCQ", opts: ["To check server uptime", "To have experts evaluate UI against established usability principles", "To measure page load speed", "To test the database structure"], ans: 1, exp: "Heuristic evaluation relies on expert reviewers rather than actual users." },
+
+            { q: "Which of the following are part of Nielsen's 5 Usability Components? (Select ALL)", type: "MSQ", opts: ["Learnability", "Aesthetics", "Efficiency", "Errors"], ans: [0, 2, 3], exp: "The 5 components are Learnability, Efficiency, Memorability, Errors, and Satisfaction." },
+            { q: "Which of these qualify as Dark Patterns? (Select ALL)", type: "MSQ", opts: ["Disguised Ads", "Clear opt-out buttons", "Roach Motel", "Privacy Zuckering"], ans: [0, 2, 3], exp: "Disguised ads, hard cancellations (roach motel), and tricking into sharing data are dark patterns." },
+            { q: "How can developers fulfill the 'Operable' requirement in WCAG? (Select ALL)", type: "MSQ", opts: ["Ensuring full keyboard navigability", "Providing enough time to read/use content", "Using only red/green colors for status", "Avoiding elements that flash rapidly"], ans: [0, 1, 3], exp: "Color-only status violates the Perceivable/Understandable rules, not Operable." },
+            { q: "Which metrics measure Usability 'Efficiency'? (Select ALL)", type: "MSQ", opts: ["Time on task", "Number of clicks", "NPS Score", "Server ping time"], ans: [0, 1], exp: "Efficiency measures the speed and effort (clicks/time) required to complete a task." },
+            { q: "What are common ways to prevent user errors in forms? (Select ALL)", type: "MSQ", opts: ["Input masks (e.g., for phone numbers)", "Vague error messages", "Inline validation before submission", "Clear constraints (e.g., min-length passwords)"], ans: [0, 2, 3], exp: "Masks, inline validation, and constraints guide the user to correct input." },
+            { q: "Which statements about Usability Testing are true? (Select ALL)", type: "MSQ", opts: ["It requires hundreds of participants", "It can be moderated or unmoderated", "It involves observing real users performing tasks", "It is only done after launch"], ans: [1, 2], exp: "Testing is best done early and often, typically with around 5 users per cycle." },
+
+            // Module 4: Browser (8 MCQs, 6 MSQs)
+            { q: "Which browser engine is used by Apple Safari?", type: "MCQ", opts: ["Blink", "Gecko", "WebKit", "Trident"], ans: 2, exp: "Safari relies on the WebKit rendering engine." },
+            { q: "What is the primary function of the DOM?", type: "MCQ", opts: ["To style the webpage", "To represent the HTML document as a manipulatable tree structure", "To store user passwords", "To execute SQL queries"], ans: 1, exp: "The Document Object Model (DOM) is an API that represents HTML as a tree of objects." },
+            { q: "Which storage mechanism clears automatically when the browser tab is closed?", type: "MCQ", opts: ["Cookies", "localStorage", "sessionStorage", "IndexedDB"], ans: 2, exp: "sessionStorage is tied to the lifespan of the specific browser tab." },
+            { q: "What does CORS stand for?", type: "MCQ", opts: ["Cross-Origin Resource Sharing", "Cascading Object Render System", "Content Origination Routing System", "Cross-Operating Read System"], ans: 0, exp: "CORS is a security mechanism allowing controlled access to resources on different domains." },
+            { q: "During rendering, what step follows the creation of the Render Tree?", type: "MCQ", opts: ["Parsing HTML", "Layout (Reflow)", "Painting", "Network Request"], ans: 1, exp: "After the Render tree combines DOM and CSSOM, the browser calculates geometry during Layout." },
+            { q: "Which API is used to store key-value pairs persistently in the browser (~5-10MB limit)?", type: "MCQ", opts: ["sessionStorage", "Cookies", "localStorage", "WebSockets"], ans: 2, exp: "localStorage persists data even after the browser is closed and reopened." },
+            { q: "What is the 'Same-Origin Policy'?", type: "MCQ", opts: ["A rule forcing all websites to use the same fonts", "A security measure preventing scripts from reading data from another domain", "A CSS specificity rule", "A method for compressing images"], ans: 1, exp: "SOP prevents malicious scripts from accessing sensitive data across different origins." },
+            { q: "What is a major advantage of HTTP Cookies over localStorage?", type: "MCQ", opts: ["They hold more data", "They are sent automatically with every HTTP request", "They are easier to parse", "They never expire"], ans: 1, exp: "Cookies are automatically attached to headers, making them standard for session authentication." },
+
+            { q: "Which of the following are phases in the Browser Rendering Pipeline? (Select ALL)", type: "MSQ", opts: ["Build DOM", "Compile C++", "Layout/Reflow", "Paint"], ans: [0, 2, 3], exp: "Browsers parse HTML/CSS, calculate layout, and paint pixels. They do not compile C++." },
+            { q: "Which attributes make a resource cross-origin? Differences in: (Select ALL)", type: "MSQ", opts: ["Protocol (http vs https)", "Domain (example.com vs api.example.com)", "Port (80 vs 443)", "CSS File Name"], ans: [0, 1, 2], exp: "Origin is defined by the combination of Protocol, Domain, and Port." },
+            { q: "Which features apply to localStorage? (Select ALL)", type: "MSQ", opts: ["Sent with HTTP requests", "Persists after browser close", "Requires parsing to store objects (JSON.stringify)", "Limited to ~4KB"], ans: [1, 2], exp: "localStorage is client-side only, persists data, and stores strings (requiring JSON methods for objects)." },
+            { q: "Which browsers use the Blink engine? (Select ALL)", type: "MSQ", opts: ["Chrome", "Firefox", "Edge (Modern)", "Opera"], ans: [0, 2, 3], exp: "Google maintains Blink, which powers Chrome, Edge, and Opera. Firefox uses Gecko." },
+            { q: "Which actions trigger a Reflow (Layout) in the browser? (Select ALL)", type: "MSQ", opts: ["Resizing the window", "Changing an element's font-size", "Changing background-color", "Adding a DOM node"], ans: [0, 1, 3], exp: "Background color changes trigger a Repaint, but do not affect layout geometry (Reflow)." },
+            { q: "What are effective methods for optimizing the Critical Rendering Path? (Select ALL)", type: "MSQ", opts: ["Minifying CSS/JS", "Loading JS synchronously in the head", "Using the 'defer' attribute on scripts", "Compressing images"], ans: [0, 2, 3], exp: "Sync scripts in the head block parsing. Defer, minification, and compression optimize rendering." },
+
+            // Module 5: HTML/CSS (8 MCQs, 6 MSQs)
+            { q: "Why are Semantic HTML elements (like <nav>, <article>) preferred over generic <div> tags?", type: "MCQ", opts: ["They make the code execute faster", "They provide context for screen readers and search engines", "They automatically style the content", "They use less bandwidth"], ans: 1, exp: "Semantics convey meaning, heavily improving accessibility and SEO." },
+            { q: "In CSS Flexbox, which property aligns items along the MAIN axis?", type: "MCQ", opts: ["align-items", "justify-content", "flex-direction", "align-content"], ans: 1, exp: "justify-content handles the main axis, while align-items handles the cross axis." },
+            { q: "What does the 'fr' unit represent in CSS Grid?", type: "MCQ", opts: ["Frame Rate", "Fixed Ratio", "Fraction of available space", "Font Root"], ans: 2, exp: "'fr' distributes remaining available space proportionally among grid tracks." },
+            { q: "Which CSS concept determines which rule applies when multiple rules target the same element?", type: "MCQ", opts: ["Inheritance", "Specificity", "The Box Model", "Flexibility"], ans: 1, exp: "Specificity is the weight system calculating the relevance of CSS selectors." },
+            { q: "What is the primary methodology of Mobile-First responsive design?", type: "MCQ", opts: ["Designing for desktop, then scaling down", "Using inline styles", "Designing base styles for mobile, then using min-width media queries for larger screens", "Creating separate HTML files for mobile"], ans: 2, exp: "Mobile-first uses default CSS for mobile and enhances layout as viewport width increases." },
+            { q: "What does CSS 'box-sizing: border-box' do?", type: "MCQ", opts: ["Adds a border to every element", "Includes padding and border in the element's total width and height", "Removes the box model", "Makes boxes circular"], ans: 1, exp: "It prevents elements from growing larger than their defined width when padding/borders are added." },
+            { q: "Which HTML attribute associates a <label> with its corresponding <input>?", type: "MCQ", opts: ["name", "id", "for", "class"], ans: 2, exp: "The 'for' attribute on a label must match the 'id' of the input element." },
+            { q: "How do you declare a CSS Custom Property (variable) globally?", type: "MCQ", opts: ["$primary-color: blue;", "var --primary-color = blue;", ":root { --primary-color: blue; }", "global.primary-color = blue;"], ans: 2, exp: "CSS variables are defined using double dashes inside the :root pseudo-class." },
+
+            { q: "Which of the following are valid Semantic HTML5 elements? (Select ALL)", type: "MSQ", opts: ["<header>", "<span>", "<aside>", "<main>"], ans: [0, 2, 3], exp: "header, aside, and main are semantic. span is a generic inline container." },
+            { q: "Which of the following belong to the CSS Box Model? (Select ALL)", type: "MSQ", opts: ["Margin", "Padding", "Border", "Font-Family"], ans: [0, 1, 2], exp: "The Box Model consists of content, padding, border, and margin." },
+            { q: "Which selectors have higher specificity than a Class selector (.class)? (Select ALL)", type: "MSQ", opts: ["Element selector (div)", "ID selector (#id)", "Inline style (style='...')", "Universal selector (*)"], ans: [1, 2], exp: "Inline styles > IDs > Classes > Elements. Universal (*) has 0 specificity." },
+            { q: "Which properties are specific to CSS Grid (not Flexbox)? (Select ALL)", type: "MSQ", opts: ["grid-template-columns", "justify-content", "grid-area", "flex-wrap"], ans: [0, 2], exp: "Grid uses template-columns and grid-area. Flexbox uses justify-content and flex-wrap." },
+            { q: "Which pseudo-classes relate to user interaction states? (Select ALL)", type: "MSQ", opts: [":hover", ":focus", ":nth-child()", ":active"], ans: [0, 1, 3], exp: "Hover, focus, and active track mouse/keyboard interactions. nth-child is structural." },
+            { q: "What are best practices for accessible images? (Select ALL)", type: "MSQ", opts: ["Always include an alt attribute", "Leave alt empty (alt='') for decorative images", "Write 'image of' in the alt text", "Use SVGs without aria-labels"], ans: [0, 1], exp: "Alt is mandatory; empty alt hides decorative images from screen readers. Avoid 'image of' redundancy." },
+
+            // Module 6: JavaScript (7 MCQs, 5 MSQs)
+            { q: "What is a 'Closure' in JavaScript?", type: "MCQ", opts: ["A tag that ends an HTML element", "An inner function that has access to the outer function's variables", "A method to close the browser window", "A syntax error"], ans: 1, exp: "Closures preserve lexical scope, allowing functions to 'remember' their environment." },
+            { q: "Which variable declaration is block-scoped and CANNOT be reassigned?", type: "MCQ", opts: ["var", "let", "const", "global"], ans: 2, exp: "'const' creates a block-scoped constant reference." },
+            { q: "Which Higher-Order Function returns a new array with elements that pass a specific condition?", type: "MCQ", opts: ["map()", "filter()", "reduce()", "forEach()"], ans: 1, exp: "filter() iterates over an array and returns only items satisfying the callback's test." },
+            { q: "How does the JavaScript Event Loop handle asynchronous operations?", type: "MCQ", opts: ["It creates multiple threads", "It executes them immediately, pausing synchronous code", "It places callbacks in a queue and pushes them to the call stack when it's empty", "It ignores them"], ans: 2, exp: "JS is single-threaded; the Event loop coordinates the Call Stack and the Callback Queue." },
+            { q: "What does the 'async' keyword do when placed before a function?", type: "MCQ", opts: ["Makes the function run faster", "Ensures the function always returns a Promise", "Blocks the main thread", "Deletes local variables"], ans: 1, exp: "async functions implicitly wrap their return values in a Promise." },
+            { q: "What is the purpose of the Fetch API?", type: "MCQ", opts: ["To retrieve DOM elements", "To fetch data across the network asynchronously", "To install NPM packages", "To fetch CSS files locally"], ans: 1, exp: "Fetch provides a modern interface for making HTTP requests (AJAX)." },
+            { q: "Which ES6 feature unpacks values from arrays or properties from objects into distinct variables?", type: "MCQ", opts: ["Destructuring", "Spread syntax", "Arrow functions", "Template literals"], ans: 0, exp: "Destructuring assignment: const { name } = userObj;" },
+
+            { q: "Which statements about 'var', 'let', and 'const' are true? (Select ALL)", type: "MSQ", opts: ["'var' is function-scoped", "'let' is block-scoped", "'const' variables can be reassigned", "'var' is hoisted"], ans: [0, 1, 3], exp: "var is function-scoped/hoisted; let/const are block-scoped. const cannot be reassigned." },
+            { q: "Which of these are ES6+ features? (Select ALL)", type: "MSQ", opts: ["Arrow Functions (=>)", "Optional Chaining (?.)", "Promises", "var keyword"], ans: [0, 1, 2], exp: "Arrow functions, Optional chaining, and Promises are modern additions. var is legacy." },
+            { q: "Which methods are used to convert JSON data? (Select ALL)", type: "MSQ", opts: ["JSON.stringify()", "JSON.parse()", "JSON.convert()", "JSON.toObject()"], ans: [0, 1], exp: "parse() turns strings to objects; stringify() turns objects to strings." },
+            { q: "What is necessary for robust error handling in async/await functions? (Select ALL)", type: "MSQ", opts: ["try block", "catch block", "Checking response.ok for fetch()", "Using var"], ans: [0, 1, 2], exp: "Network errors require try/catch, but fetch doesn't throw on 404s, so response.ok must be checked." },
+            { q: "Which of the following are Higher-Order Functions? (Select ALL)", type: "MSQ", opts: ["Array.prototype.map", "Array.prototype.reduce", "setTimeout", "Math.random"], ans: [0, 1, 2], exp: "map, reduce, and setTimeout all accept callback functions as arguments." }
+        ];
+
+        let currentQ = 0;
+        let score = 0;
+
+        function loadQuizQuestion() {
+            const q = quizData[currentQ];
+            document.getElementById('quiz-progress').textContent = `Question ${currentQ + 1} of ${quizData.length}`;
+            document.getElementById('quiz-type-badge').textContent = q.type;
+            document.getElementById('quiz-question-text').textContent = q.q;
+            
+            const optsContainer = document.getElementById('quiz-options-container');
+            optsContainer.innerHTML = '';
+            
+            q.opts.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "quiz-opt w-full text-left p-4 rounded-xl border-2 border-stone-200 hover:border-indigo-400 hover:bg-indigo-50 font-medium text-stone-700 transition-all";
+                btn.innerHTML = `<span class="inline-block w-8 h-8 rounded-lg bg-stone-100 text-center leading-8 mr-3 font-bold text-stone-500">${String.fromCharCode(65 + idx)}</span> ${opt}`;
+                btn.onclick = () => selectOption(btn, idx, q.type);
+                optsContainer.appendChild(btn);
+            });
+
+            document.getElementById('quiz-feedback').classList.add('hidden');
+            document.getElementById('quiz-submit-btn').classList.remove('hidden');
+            document.getElementById('quiz-next-btn').classList.add('hidden');
+            
+            if(q.type === 'MCQ') {
+                document.getElementById('quiz-submit-btn').textContent = "Submit Answer";
+                document.getElementById('quiz-submit-btn').disabled = true;
+                document.getElementById('quiz-submit-btn').classList.add('opacity-50');
+            } else {
+                document.getElementById('quiz-submit-btn').textContent = "Submit Answers (Multiple)";
+                document.getElementById('quiz-submit-btn').disabled = false;
+                document.getElementById('quiz-submit-btn').classList.remove('opacity-50');
+            }
+        }
+
+        function selectOption(btn, idx, type) {
+            if (document.getElementById('quiz-next-btn').classList.contains('hidden') === false) return; 
+
+            if (type === 'MCQ') {
+                document.querySelectorAll('.quiz-opt').forEach(el => {
+                    el.classList.remove('border-indigo-600', 'bg-indigo-50', 'selected');
+                    el.children[0].classList.remove('bg-indigo-600', 'text-white');
+                    el.children[0].classList.add('bg-stone-100', 'text-stone-500');
+                });
+                btn.classList.add('border-indigo-600', 'bg-indigo-50', 'selected');
+                btn.dataset.idx = idx;
+                btn.children[0].classList.add('bg-indigo-600', 'text-white');
+                btn.children[0].classList.remove('bg-stone-100', 'text-stone-500');
+                
+                document.getElementById('quiz-submit-btn').disabled = false;
+                document.getElementById('quiz-submit-btn').classList.remove('opacity-50');
+            } else {
+                btn.classList.toggle('selected');
+                if(btn.classList.contains('selected')) {
+                    btn.classList.add('border-indigo-600', 'bg-indigo-50');
+                    btn.children[0].classList.add('bg-indigo-600', 'text-white');
+                    btn.children[0].classList.remove('bg-stone-100', 'text-stone-500');
+                } else {
+                    btn.classList.remove('border-indigo-600', 'bg-indigo-50');
+                    btn.children[0].classList.remove('bg-indigo-600', 'text-white');
+                    btn.children[0].classList.add('bg-stone-100', 'text-stone-500');
+                }
+            }
+        }
+
+        function submitQuizAnswer() {
+            const q = quizData[currentQ];
+            let isCorrect = false;
+            
+            if (q.type === 'MCQ') {
+                const selected = document.querySelector('.quiz-opt.selected');
+                if(!selected) return;
+                isCorrect = parseInt(selected.dataset.idx) === q.ans;
+                
+                document.querySelectorAll('.quiz-opt').forEach((el, idx) => {
+                    if (idx === q.ans) {
+                        el.classList.add('border-green-500', 'bg-green-50');
+                        el.children[0].classList.add('bg-green-500', 'text-white');
+                    } else if (el.classList.contains('selected') && idx !== q.ans) {
+                        el.classList.add('border-red-500', 'bg-red-50');
+                        el.children[0].classList.add('bg-red-500', 'text-white');
+                    }
+                });
+
+            } else {
+                const selectedNodes = document.querySelectorAll('.quiz-opt.selected');
+                const selectedIdxs = Array.from(selectedNodes).map(node => {
+                    return Array.from(node.parentNode.children).indexOf(node);
+                }).sort();
+                
+                isCorrect = JSON.stringify(selectedIdxs) === JSON.stringify(q.ans.sort());
+                
+                document.querySelectorAll('.quiz-opt').forEach((el, idx) => {
+                    if (q.ans.includes(idx)) {
+                        el.classList.add('border-green-500', 'bg-green-50');
+                        el.children[0].classList.add('bg-green-500', 'text-white');
+                    } else if (el.classList.contains('selected') && !q.ans.includes(idx)) {
+                        el.classList.add('border-red-500', 'bg-red-50');
+                        el.children[0].classList.add('bg-red-500', 'text-white');
+                    }
+                });
+            }
+
+            if (isCorrect) score++;
+            document.getElementById('quiz-score').textContent = score;
+
+            const feedback = document.getElementById('quiz-feedback');
+            feedback.classList.remove('hidden', 'bg-green-50', 'border-green-200', 'text-green-900', 'bg-red-50', 'border-red-200', 'text-red-900');
+            
+            if(isCorrect) {
+                feedback.classList.add('bg-green-50', 'border-green-200');
+                document.getElementById('quiz-feedback-icon').textContent = '✅';
+                document.getElementById('quiz-feedback-title').textContent = 'Correct!';
+                document.getElementById('quiz-feedback-title').classList.add('text-green-900');
+            } else {
+                feedback.classList.add('bg-red-50', 'border-red-200');
+                document.getElementById('quiz-feedback-icon').textContent = '❌';
+                document.getElementById('quiz-feedback-title').textContent = 'Incorrect';
+                document.getElementById('quiz-feedback-title').classList.add('text-red-900');
+            }
+            
+            document.getElementById('quiz-feedback-explanation').textContent = q.exp;
+            
+            document.getElementById('quiz-submit-btn').classList.add('hidden');
+            document.getElementById('quiz-next-btn').classList.remove('hidden');
+            
+            if(currentQ === quizData.length - 1) {
+                document.getElementById('quiz-next-btn').textContent = "Finish Review";
+            }
+        }
+
+        function nextQuizQuestion() {
+            if (currentQ < quizData.length - 1) {
+                currentQ++;
+                loadQuizQuestion();
+            } else {
+                const percentage = Math.round((score / quizData.length) * 100);
+                document.getElementById('quiz-options-container').innerHTML = `
+                    <div class="text-center py-10">
+                        <div class="text-6xl mb-4">${percentage >= 80 ? '🏆' : '📚'}</div>
+                        <h3 class="text-2xl font-bold text-stone-900 mb-2">Review Complete!</h3>
+                        <p class="text-lg text-stone-600">You scored ${score} out of ${quizData.length} (${percentage}%).</p>
+                        <button onclick="currentQ=0; score=0; loadQuizQuestion();" class="mt-6 bg-indigo-600 text-white font-bold py-3 px-8 rounded-xl">Restart Check</button>
+                    </div>
+                `;
+                document.getElementById('quiz-feedback').classList.add('hidden');
+                document.getElementById('quiz-next-btn').classList.add('hidden');
+                document.getElementById('quiz-progress').textContent = "Final Results";
+            }
+        }
+
+        const glossaryData = [
+            { term: "a11y", def: "Accessibility (11 letters between 'a' and 'y')" },
+            { term: "ADA", def: "Americans with Disabilities Act" },
+            { term: "API", def: "Application Programming Interface" },
+            { term: "CORS", def: "Cross-Origin Resource Sharing" },
+            { term: "CSP", def: "Content Security Policy" },
+            { term: "CSSOM", def: "CSS Object Model" },
+            { term: "DOM", def: "Document Object Model" },
+            { term: "GDPR", def: "General Data Protection Regulation" },
+            { term: "HOF", def: "Higher-Order Function" },
+            { term: "IA", def: "Information Architecture" },
+            { term: "IxD", def: "Interaction Design" },
+            { term: "POUR", def: "Perceivable, Operable, Understandable, Robust" },
+            { term: "UXD", def: "User Experience Design" },
+            { term: "WCAG", def: "Web Content Accessibility Guidelines" },
+            { term: "XSS", def: "Cross-Site Scripting" }
+        ];
+
+        function renderGlossary() {
+            const tbody = document.getElementById('glossary-body');
+            tbody.innerHTML = '';
+            glossaryData.forEach(item => {
+                tbody.innerHTML += `
+                    <tr class="hover:bg-stone-50 transition-colors">
+                        <td class="px-6 py-4 font-mono font-bold text-indigo-700">${item.term}</td>
+                        <td class="px-6 py-4 text-stone-700">${item.def}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        function filterGlossary() {
+            const q = document.getElementById('glossary-search').value.toLowerCase();
+            const rows = document.getElementById('glossary-body').getElementsByTagName('tr');
+            for(let i=0; i<rows.length; i++) {
+                const text = rows[i].textContent.toLowerCase();
+                rows[i].style.display = text.includes(q) ? '' : 'none';
+            }
+        }
+
+        let chartsInitialized = false;
+        function initCharts() {
+            if(chartsInitialized) return;
+            
+            const ctxPlan = document.getElementById('planChart').getContext('2d');
+            new Chart(ctxPlan, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Review & Case Studies', 'MCQ / MSQ Practice', 'Essays & Weak Areas'],
+                    datasets: [{
+                        data: [60, 60, 60],
+                        backgroundColor: ['#4f46e5', '#818cf8', '#e0e7ff'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Segoe UI' }, color: '#444' } },
+                        tooltip: { callbacks: { label: function(c) { return ' ' + c.label + ': ' + c.raw + ' mins'; } } }
+                    },
+                    cutout: '70%'
+                }
+            });
+
+            const ctxTopic = document.getElementById('topicChart').getContext('2d');
+            new Chart(ctxTopic, {
+                type: 'bar',
+                data: {
+                    labels: ['UXD', 'UI', 'Usability', 'Browser', 'HTML/CSS', 'JS'],
+                    datasets: [{
+                        label: 'Case Study Occurrences',
+                        data: [2, 3, 4, 3, 3, 4],
+                        backgroundColor: '#6366f1',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { padding: 12 }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1, color: '#666' }, grid: { color: '#f5f5f4' } },
+                        x: { ticks: { color: '#666' }, grid: { display: false } }
+                    }
+                }
+            });
+            chartsInitialized = true;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCaseStudies();
+            renderEssays();
+            renderGlossary();
+            loadQuizQuestion();
+            nav('dashboard');
+            document.body.classList.remove('opacity-0');
+        });
+
+    </script>
+</body>
+</html>
+
+
+
