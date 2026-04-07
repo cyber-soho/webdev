@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Web Server: Behind the Curtain</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Chosen Palette: Warm Neutrals (Stone/Slate) with subtle Teal and Amber accents -->
+<!-- Application Structure Plan: A module-based interactive learning dashboard. The linear slide deck is transformed into a single-page scrolling curriculum. The sidebar allows quick navigation. Content is chunked into logical units: Core Concepts (Request/Response), The Protocol (HTTP), Serving Content & Engines (Static/Dynamic & Server Types), and The Back-End Pipeline (Routing/Middleware). This structure is chosen to support active learning, allowing students to explore the 'what' before diving into the 'how'. Interactive analogies (like the pizza order) are brought to life to solidify abstract networking concepts. -->
+<!-- Visualization & Content Choices: 
+1. Request/Response Cycle -> Goal: Illustrate flow -> Viz: Interactive HTML/CSS stepping simulation -> Library: Vanilla JS. 
+2. HTTP Status Codes -> Goal: Organize & Search -> Viz: Filterable data grid -> Library: Vanilla JS. 
+3. Web Server Comparison (Apache vs Nginx vs Node) -> Goal: Compare strengths -> Viz: Radar Chart (mapping qualitative text to 1-10 scores for comparison) -> Library: Chart.js (NO SVG used). 
+4. Middleware Pipeline -> Goal: Show sequence -> Viz: Interactive step-through flow -> Library: Vanilla JS & HTML flexbox. -->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+<style>
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fafaf9; color: #292524; }
+.chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+.hide { display: none !important; }
+.step-active { background-color: #0f766e; color: white; transform: scale(1.05); transition: all 0.3s ease; }
+.fade-in { animation: fadeIn 0.5s ease-in; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@media (max-width: 768px) { .chart-container { height: 280px; } }
+</style>
+</head>
+<body class="flex flex-col md:flex-row min-h-screen">
+
+<nav class="w-full md:w-64 bg-stone-900 text-stone-100 flex flex-col md:fixed h-auto md:h-screen shadow-lg z-50">
+    <div class="p-6">
+        <h1 class="text-2xl font-bold tracking-wider text-teal-400">&#128421; Web Servers</h1>
+        <p class="text-xs text-stone-400 mt-2 uppercase tracking-widest">Back-End Dev 101</p>
+    </div>
+    <ul class="flex-grow flex flex-row md:flex-col overflow-x-auto md:overflow-hidden p-4 space-x-2 md:space-x-0 md:space-y-2">
+        <li><a href="#intro" class="block px-4 py-2 rounded hover:bg-stone-800 transition-colors whitespace-nowrap">&#128220; Introduction</a></li>
+        <li><a href="#http" class="block px-4 py-2 rounded hover:bg-stone-800 transition-colors whitespace-nowrap">&#128231; HTTP Protocol</a></li>
+        <li><a href="#servers" class="block px-4 py-2 rounded hover:bg-stone-800 transition-colors whitespace-nowrap">&#128187; Server Tech</a></li>
+        <li><a href="#pipeline" class="block px-4 py-2 rounded hover:bg-stone-800 transition-colors whitespace-nowrap">&#128736;&#65039; The Pipeline</a></li>
+    </ul>
+    <div class="p-4 text-xs text-stone-500 hidden md:block">
+        &copy; Cyber.SoHo Educational Hub
+    </div>
+</nav>
+
+<main class="flex-1 md:ml-64 p-6 md:p-12 overflow-y-auto w-full">
+    
+    <header class="mb-12 border-b border-stone-200 pb-8">
+        <h1 class="text-4xl md:text-5xl font-extrabold text-stone-800 mb-4">Your First Steps Behind the Curtain</h1>
+        <p class="text-lg text-stone-600 max-w-3xl">A comprehensive, interactive guide to understanding Web Servers, the HTTP protocol, and the foundational architecture of back-end web development.</p>
+    </header>
+
+    <section id="intro" class="mb-20 scroll-mt-24">
+        <h2 class="text-3xl font-bold text-teal-800 mb-4 border-l-4 border-teal-600 pl-4">1. Core Concepts: The Request/Response Cycle</h2>
+        <p class="text-stone-700 mb-6 text-lg leading-relaxed">
+            This section explores the fundamental nature of web servers. A web server is simply a programme (or the machine running it) that listens for incoming requests and responds with the correct content. All web communication relies on a strict two-step dance: the Request and the Response. Interact with the analogy below to see this in action.
+        </p>
+
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+            <h3 class="text-xl font-semibold mb-4 text-stone-800">&#127829; The Pizza Analogy Explorer</h3>
+            <p class="text-stone-600 mb-6">Click the "Send Request" button to trace the lifecycle of a web request compared to ordering a pizza.</p>
+            
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-8 relative">
+                <div id="step-1" class="flex-1 text-center p-4 bg-stone-100 rounded-lg border-2 border-transparent">
+                    <div class="text-4xl mb-2">&#128100;</div>
+                    <div class="font-bold text-stone-700">1. Browser (You)</div>
+                    <div class="text-sm text-stone-500 mt-2 pizza-text hide">Orders the pizza (HTTP Request)</div>
+                </div>
+                <div class="text-2xl text-stone-400 md:rotate-0 rotate-90">&#10145;&#65039;</div>
+                <div id="step-2" class="flex-1 text-center p-4 bg-stone-100 rounded-lg border-2 border-transparent">
+                    <div class="text-4xl mb-2">&#128104;&#8205;&#127859;</div>
+                    <div class="font-bold text-stone-700">2. Server (Chef)</div>
+                    <div class="text-sm text-stone-500 mt-2 pizza-text hide">Cooks the pizza (Processes Request)</div>
+                </div>
+                <div class="text-2xl text-stone-400 md:rotate-0 rotate-90">&#10145;&#65039;</div>
+                <div id="step-3" class="flex-1 text-center p-4 bg-stone-100 rounded-lg border-2 border-transparent">
+                    <div class="text-4xl mb-2">&#128663;</div>
+                    <div class="font-bold text-stone-700">3. Response (Delivery)</div>
+                    <div class="text-sm text-stone-500 mt-2 pizza-text hide">Delivers food (HTTP Response)</div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <button id="btn-simulate" class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-8 rounded-full shadow-md transition-transform transform hover:scale-105 focus:outline-none">
+                    Send Request
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <section id="http" class="mb-20 scroll-mt-24">
+        <h2 class="text-3xl font-bold text-teal-800 mb-4 border-l-4 border-teal-600 pl-4">2. The HTTP Protocol</h2>
+        <p class="text-stone-700 mb-6 text-lg leading-relaxed">
+            Here we dive into HyperText Transfer Protocol (HTTP), the text-based language of the web. You will learn about the standard "verbs" (methods) used to tell the server what to do, and the status codes the server uses to report back on the outcome of those actions.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <h3 class="text-xl font-semibold mb-4 border-b pb-2">&#128450;&#65039; HTTP Verbs (Methods)</h3>
+                <ul class="space-y-4">
+                    <li class="flex items-start">
+                        <span class="bg-green-100 text-green-800 font-mono px-2 py-1 rounded text-sm mr-3 mt-1 w-16 text-center">GET</span>
+                        <div><strong>"Give me this"</strong><br><span class="text-sm text-stone-500">Analogy: Can I see the menu?</span></div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-blue-100 text-blue-800 font-mono px-2 py-1 rounded text-sm mr-3 mt-1 w-16 text-center">POST</span>
+                        <div><strong>"Store this new data"</strong><br><span class="text-sm text-stone-500">Analogy: Place a new order</span></div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-amber-100 text-amber-800 font-mono px-2 py-1 rounded text-sm mr-3 mt-1 w-16 text-center">PUT</span>
+                        <div><strong>"Replace this entirely"</strong><br><span class="text-sm text-stone-500">Analogy: Change my whole order</span></div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-purple-100 text-purple-800 font-mono px-2 py-1 rounded text-sm mr-3 mt-1 w-16 text-center">PATCH</span>
+                        <div><strong>"Update part of this"</strong><br><span class="text-sm text-stone-500">Analogy: Add jalapeños</span></div>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="bg-red-100 text-red-800 font-mono px-2 py-1 rounded text-sm mr-3 mt-1 w-16 text-center">DELETE</span>
+                        <div><strong>"Remove this"</strong><br><span class="text-sm text-stone-500">Analogy: Cancel my order</span></div>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200 flex flex-col h-full">
+                <h3 class="text-xl font-semibold mb-4 border-b pb-2">&#128678; Status Code Explorer</h3>
+                <input type="text" id="status-search" placeholder="Type a code (e.g., 404) or meaning..." class="w-full p-3 mb-4 border border-stone-300 rounded focus:outline-none focus:ring-2 focus:ring-teal-500">
+                
+                <div class="overflow-y-auto flex-grow" style="max-height: 250px;">
+                    <table class="w-full text-left border-collapse">
+                        <tbody id="status-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-xs text-stone-500 pt-2 border-t text-center">
+                    2xx = Good | 3xx = Redirect | 4xx = Client Fault | 5xx = Server Fault
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="servers" class="mb-20 scroll-mt-24">
+        <h2 class="text-3xl font-bold text-teal-800 mb-4 border-l-4 border-teal-600 pl-4">3. Content & Server Technologies</h2>
+        <p class="text-stone-700 mb-6 text-lg leading-relaxed">
+            Websites serve two types of content: Static (files sent as-is) and Dynamic (files generated on-the-fly). To handle the massive scale of the modern web, different server software engines have been developed. Below, explore the differences between the "Big Three" servers: Apache, Nginx, and Node.js.
+        </p>
+
+        <div class="mb-8 flex flex-col md:flex-row gap-4">
+            <button id="btn-static" class="flex-1 bg-stone-200 hover:bg-stone-300 text-stone-800 py-4 px-6 rounded-lg font-bold transition-colors">
+                &#128193; View Static Content Concept
+            </button>
+            <button id="btn-dynamic" class="flex-1 bg-stone-200 hover:bg-stone-300 text-stone-800 py-4 px-6 rounded-lg font-bold transition-colors">
+                &#127912; View Dynamic Content Concept
+            </button>
+        </div>
+
+        <div id="content-display" class="bg-stone-800 text-green-400 font-mono p-6 rounded-lg mb-8 shadow-inner min-h-[150px] flex items-center justify-center">
+            <span class="text-stone-400 italic">Select a content type above to see how the server handles it.</span>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+            <h3 class="text-xl font-semibold mb-2 text-center">&#128202; The Big Three Web Servers Comparison</h3>
+            <p class="text-stone-500 text-sm text-center mb-6">Relative mapping of architectural traits based on historical context and design.</p>
+            <div class="chart-container">
+                <canvas id="serverChart"></canvas>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 text-sm">
+                <div class="p-3 bg-red-50 border border-red-100 rounded">
+                    <strong>Apache (1995)</strong><br>Process-per-request. Reliable general-purpose workhorse. <em>Analogy: Sit-down steakhouse.</em>
+                </div>
+                <div class="p-3 bg-green-50 border border-green-100 rounded">
+                    <strong>Nginx (2004)</strong><br>Event-driven. Solved C10K problem. Great reverse proxy. <em>Analogy: Conveyor-belt sushi.</em>
+                </div>
+                <div class="p-3 bg-yellow-50 border border-yellow-100 rounded">
+                    <strong>Node.js (2009)</strong><br>JS runtime. Event-driven, non-blocking. Real-time apps. <em>Analogy: Custom food truck.</em>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="pipeline" class="mb-20 scroll-mt-24">
+        <h2 class="text-3xl font-bold text-teal-800 mb-4 border-l-4 border-teal-600 pl-4">4. Under the Hood: The Pipeline</h2>
+        <p class="text-stone-700 mb-6 text-lg leading-relaxed">
+            How does an application actually process a request? It relies on Networking (IPs and Ports to find the app), Routing (directing traffic based on the URL path), and Middleware (a pipeline of functions the request passes through before reaching the final handler).
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-stone-900 text-stone-100 p-6 rounded-xl shadow-sm">
+                <h3 class="text-xl font-semibold mb-4 text-teal-400">&#128296; Building the Minimal Server</h3>
+                <p class="text-sm text-stone-400 mb-4">Core pattern in Node.js (10 lines):</p>
+                <pre class="bg-black p-4 rounded text-sm overflow-x-auto text-green-300"><code>require('http');
+
+http.createServer((req, res) => {
+    res.statusCode = 200;
+    res.end('Hello, World!');
+}).listen(3000);</code></pre>
+                <div class="mt-4 text-sm">
+                    <strong>IP = Building</strong> (e.g., 127.0.0.1)<br>
+                    <strong>Port = Apartment</strong> (e.g., :3000)
+                </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                <h3 class="text-xl font-semibold mb-4 border-b pb-2">&#128644; Routing Logic</h3>
+                <div class="space-y-3 font-mono text-sm">
+                    <div class="p-2 bg-stone-100 rounded flex justify-between">
+                        <span>url === '/'</span> <span class="text-teal-600 font-bold">&#10142; Home Page</span>
+                    </div>
+                    <div class="p-2 bg-stone-100 rounded flex justify-between">
+                        <span>url === '/about'</span> <span class="text-teal-600 font-bold">&#10142; About Page</span>
+                    </div>
+                    <div class="p-2 bg-stone-100 rounded flex justify-between">
+                        <span>url === '/api/data'</span> <span class="text-blue-600 font-bold">&#10142; JSON Data</span>
+                    </div>
+                    <div class="p-2 bg-red-50 rounded flex justify-between border border-red-200">
+                        <span>else</span> <span class="text-red-600 font-bold">&#10142; 404 Not Found</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+            <h3 class="text-xl font-semibold mb-2 text-center">&#128682; The Middleware Pipeline</h3>
+            <p class="text-center text-stone-500 text-sm mb-6">Functions that sit between the request and the route handler. If any fails, the request stops. Click a stage to learn more.</p>
+
+            <div class="flex flex-col md:flex-row items-stretch justify-center gap-2 mb-6">
+                <div class="bg-stone-800 text-white p-3 rounded text-center flex items-center justify-center font-bold">Request</div>
+                <div class="text-stone-400 flex items-center justify-center md:rotate-0 rotate-90">&#10145;&#65039;</div>
+                <button onclick="showMiddleware('logger')" class="middleware-btn bg-blue-100 hover:bg-blue-200 border-2 border-blue-300 text-blue-800 p-3 rounded text-center flex-1 transition-colors">Logger</button>
+                <div class="text-stone-400 flex items-center justify-center md:rotate-0 rotate-90">&#10145;&#65039;</div>
+                <button onclick="showMiddleware('auth')" class="middleware-btn bg-amber-100 hover:bg-amber-200 border-2 border-amber-300 text-amber-800 p-3 rounded text-center flex-1 transition-colors">Auth</button>
+                <div class="text-stone-400 flex items-center justify-center md:rotate-0 rotate-90">&#10145;&#65039;</div>
+                <button onclick="showMiddleware('parser')" class="middleware-btn bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 text-purple-800 p-3 rounded text-center flex-1 transition-colors">Parser</button>
+                <div class="text-stone-400 flex items-center justify-center md:rotate-0 rotate-90">&#10145;&#65039;</div>
+                <div class="bg-teal-600 text-white p-3 rounded text-center flex items-center justify-center font-bold">Route Handler</div>
+                <div class="text-stone-400 flex items-center justify-center md:rotate-0 rotate-90">&#10145;&#65039;</div>
+                <div class="bg-stone-800 text-white p-3 rounded text-center flex items-center justify-center font-bold">Response</div>
+            </div>
+
+            <div id="middleware-desc" class="p-4 bg-stone-50 border border-stone-200 rounded min-h-[100px] flex items-center justify-center text-stone-600 italic">
+                Select a middleware block above to see its airport analogy.
+            </div>
+        </div>
+
+    </section>
+
+</main>
+
+<script>
+    const statusCodes = [
+        { code: "200", name: "OK", meaning: "Success", type: "text-green-700 bg-green-50" },
+        { code: "201", name: "Created", meaning: "New resource stored", type: "text-green-700 bg-green-50" },
+        { code: "301", name: "Moved Permanently", meaning: "URL changed", type: "text-blue-700 bg-blue-50" },
+        { code: "400", name: "Bad Request", meaning: "Client sent invalid data", type: "text-amber-700 bg-amber-50" },
+        { code: "401", name: "Unauthorised", meaning: "Login required", type: "text-amber-700 bg-amber-50" },
+        { code: "403", name: "Forbidden", meaning: "Logged in but not allowed", type: "text-amber-700 bg-amber-50" },
+        { code: "404", name: "Not Found", meaning: "Resource does not exist", type: "text-red-700 bg-red-50" },
+        { code: "500", name: "Internal Server Error", meaning: "Server crashed", type: "text-red-700 bg-red-50" }
+    ];
+
+    function renderStatusTable(filterText = "") {
+        const tbody = document.getElementById('status-table-body');
+        tbody.innerHTML = '';
+        const lowerFilter = filterText.toLowerCase();
+        
+        statusCodes.forEach(sc => {
+            if (sc.code.includes(lowerFilter) || sc.name.toLowerCase().includes(lowerFilter) || sc.meaning.toLowerCase().includes(lowerFilter)) {
+                const tr = document.createElement('tr');
+                tr.className = `border-b border-stone-100 ${sc.type}`;
+                tr.innerHTML = `
+                    <td class="p-3 font-bold w-24">${sc.code}</td>
+                    <td class="p-3 font-semibold">${sc.name}</td>
+                    <td class="p-3 hidden sm:table-cell">${sc.meaning}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+    }
+
+    document.getElementById('status-search').addEventListener('input', (e) => {
+        renderStatusTable(e.target.value);
+    });
+    renderStatusTable();
+
+    let simStep = 0;
+    const btnSimulate = document.getElementById('btn-simulate');
+    const steps = [document.getElementById('step-1'), document.getElementById('step-2'), document.getElementById('step-3')];
+    const texts = document.querySelectorAll('.pizza-text');
+
+    btnSimulate.addEventListener('click', () => {
+        btnSimulate.disabled = true;
+        btnSimulate.innerText = "Processing...";
+        
+        steps.forEach(s => s.classList.remove('step-active', 'border-teal-500'));
+        texts.forEach(t => t.classList.add('hide'));
+
+        setTimeout(() => { activateStep(0); }, 500);
+        setTimeout(() => { activateStep(1); }, 2000);
+        setTimeout(() => { activateStep(2); }, 3500);
+        setTimeout(() => { 
+            btnSimulate.disabled = false; 
+            btnSimulate.innerText = "Restart Cycle"; 
+        }, 5000);
+    });
+
+    function activateStep(index) {
+        steps.forEach(s => s.classList.remove('step-active', 'border-teal-500'));
+        texts.forEach(t => t.classList.add('hide'));
+        
+        steps[index].classList.add('step-active', 'border-teal-500');
+        texts[index].classList.remove('hide');
+        texts[index].classList.add('fade-in');
+    }
+
+    const contentDisplay = document.getElementById('content-display');
+    const btnStatic = document.getElementById('btn-static');
+    const btnDynamic = document.getElementById('btn-dynamic');
+
+    btnStatic.addEventListener('click', () => {
+        btnStatic.classList.add('bg-stone-300', 'border-b-4', 'border-stone-500');
+        btnDynamic.classList.remove('bg-stone-300', 'border-b-4', 'border-teal-500');
+        contentDisplay.innerHTML = `<div class="fade-in w-full text-left">
+            <span class="text-stone-400">// Server acting as a File Clerk</span><br>
+            <span class="text-blue-300">SERVER:</span> Found "about.html" on disk.<br>
+            <span class="text-blue-300">SERVER:</span> Serving exact file content.<br>
+            <span class="text-stone-400">Result: Fast, minimal load, exact same page for everyone.</span>
+        </div>`;
+    });
+
+    btnDynamic.addEventListener('click', () => {
+        btnDynamic.classList.add('bg-stone-300', 'border-b-4', 'border-teal-500');
+        btnStatic.classList.remove('bg-stone-300', 'border-b-4', 'border-stone-500');
+        
+        const timestamp = new Date().toLocaleTimeString();
+        contentDisplay.innerHTML = `<div class="fade-in w-full text-left">
+            <span class="text-stone-400">// Server acting as a Personal Stylist</span><br>
+            <span class="text-amber-300">SERVER:</span> Running Node.js logic...<br>
+            <span class="text-amber-300">SERVER:</span> Checking Database for user profile...<br>
+            <span class="text-amber-300">SERVER:</span> Generating HTML dynamically at ${timestamp}...<br>
+            <span class="text-stone-400">Result: Slower, heavier load, completely personalized response.</span>
+        </div>`;
+    });
+
+    const ctx = document.getElementById('serverChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Age / Legacy', 'Concurrency', 'Static Speed', 'Flexibility (App Logic)', 'Event-Driven'],
+            datasets: [
+                {
+                    label: 'Apache',
+                    data: [10, 4, 6, 8, 2],
+                    backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                    borderColor: '#ef4444',
+                    pointBackgroundColor: '#ef4444'
+                },
+                {
+                    label: 'Nginx',
+                    data: [7, 10, 10, 5, 9],
+                    backgroundColor: 'rgba(34, 197, 94, 0.2)',
+                    borderColor: '#22c55e',
+                    pointBackgroundColor: '#22c55e'
+                },
+                {
+                    label: 'Node.js',
+                    data: [4, 9, 5, 10, 10],
+                    backgroundColor: 'rgba(234, 179, 8, 0.2)',
+                    borderColor: '#eab308',
+                    pointBackgroundColor: '#eab308'
+                }
+            ]
+        },
+        options: {
+            maintainAspectRatio: false,
+            scales: {
+                r: {
+                    angleLines: { color: 'rgba(0, 0, 0, 0.1)' },
+                    grid: { color: 'rgba(0, 0, 0, 0.1)' },
+                    pointLabels: { font: { size: 12 }, color: '#444' },
+                    ticks: { display: false, min: 0, max: 10 }
+                }
+            },
+            plugins: {
+                legend: { position: 'bottom' },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ' Rating: ' + context.raw + '/10';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const mwData = {
+        'logger': { title: "Logger", desc: "Records every request that comes in.", analogy: "Passport scan records at the airport." },
+        'auth': { title: "Authentication/Authorisation", desc: "Checks identity (who are you?) and permissions (are you allowed?).", analogy: "Passport control and Boarding pass scan." },
+        'parser': { title: "Body Parser & Validation", desc: "Reads request body data and checks data correctness.", analogy: "Baggage scanner and Metal detector." }
+    };
+
+    function showMiddleware(type) {
+        const descBox = document.getElementById('middleware-desc');
+        const data = mwData[type];
+        descBox.innerHTML = `
+            <div class="fade-in text-center">
+                <strong class="text-stone-800 text-lg block mb-1">${data.title}</strong>
+                <span class="block text-stone-700 mb-2">${data.desc}</span>
+                <span class="block text-teal-700 bg-teal-50 px-3 py-1 rounded inline-block text-sm"><strong>Analogy:</strong> ${data.analogy}</span>
+            </div>
+        `;
+    }
+</script>
+</body>
+</html>
+
+
+

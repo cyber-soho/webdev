@@ -88,9 +88,23 @@
     </nav>
 
     <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto relative w-full p-4 md:p-8" id="main-content">
-        <!-- Content injected here via JS -->
-    </main>
+    <div class="flex-1 overflow-y-auto relative w-full flex flex-col">
+        <main class="flex-1 p-4 md:p-8" id="main-content">
+            <!-- Content injected here via JS -->
+        </main>
+        
+        <!-- Footer -->
+        <footer class="bg-stone-900 text-stone-400 py-6 mt-8">
+            <div class="container mx-auto text-center text-sm">
+                <p style="display:flex; justify-content:center; align-items:center; gap:8px; margin:0;">
+                    <img src="cyber_soho.png"
+                         alt="Cyber Soho"
+                         style="height:32px;">
+                    <span>Educational Hub &copy; 2026 | Schiller International University</span>
+                </p>
+            </div>
+        </footer>
+    </div>
 
     <!-- Javascript Logic -->
     <script>
@@ -188,7 +202,46 @@
                     ], 
                     type: "Exam" 
                 },
-                { id: 3, title: "Back-End Development", content: ["The Web Server", "Node.js", "Express", "Databases: SQL and NoSQL (MongoDB)"], type: "Lecture" },
+                { 
+                    id: 3, 
+                    title: "Back-End Development", 
+                    content: [
+                        `The Web Server
+                         <hr class="my-2 border-stone-200" />
+                         <ul class="ml-4 mt-2 space-y-1 text-teal-600 font-medium list-none">
+                            <li><a href="09.01. the web server.html" target="_blank" class="hover:underline">📂 Lecture Access</a></li>
+                            <li><a href="09.01. The Web Server.pdf" target="_blank" class="hover:underline">📄 Presentation Access</a></li>
+                            <li><a href="09.03. tests.html" target="_blank" class="hover:underline">📇 Flashcards and 📝 Quiz</a></li>
+                            <li><a href="09.02. links.html" target="_blank" class="hover:underline">🔗 Extra Access</a></li>
+                            <li><a href="09.04. project 8-to-10.html" target="_blank" class="hover:underline">🛠️ Lab Exercises</a></li>
+                         </ul>`,
+                        `Node.js: Advanced Concepts
+                         <hr class="my-2 border-stone-200" />
+                         <ul class="ml-4 mt-2 space-y-1 text-teal-600 font-medium list-none">
+                            <li><a href="#" target="_blank" class="hover:underline">📂 Lecture Access</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">📄 Presentation Access</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">📇 Flashcards and 📝 Quiz</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">🔗 Extra Access</a></li>
+                         </ul>`,
+                        `Express
+                         <hr class="my-2 border-stone-200" />
+                         <ul class="ml-4 mt-2 space-y-1 text-teal-600 font-medium list-none">
+                            <li><a href="#" target="_blank" class="hover:underline">📂 Lecture Access</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">📄 Presentation Access</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">📇 Flashcards and 📝 Quiz</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">🔗 Extra Access</a></li>
+                         </ul>`,
+                        `Databases: SQL and NoSQL (MongoDB)
+                         <hr class="my-2 border-stone-200" />
+                         <ul class="ml-4 mt-2 space-y-1 text-teal-600 font-medium list-none">
+                            <li><a href="#" target="_blank" class="hover:underline">📂 Lecture Access</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">📄 Presentation Access</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">📇 Flashcards and 📝 Quiz</a></li>
+                            <li><a href="#" target="_blank" class="hover:underline">🔗 Extra Access</a></li>
+                         </ul>`
+                    ], 
+                    type: "Lecture" 
+                },
                 { id: 4, title: "Application Types & Architectures", content: ["Mobile Applications", "Web Application Architectures"], type: "Lecture" },
                 { id: 5, title: "Security & Testing", content: ["Web Application Security Basics", "Web and Mobile Applications Testing"], type: "Lecture" },
                 { id: "Final", title: "Final Assessment", content: ["Comprehensive Exam covering all LOs", "Problem set, short answers, quizzes, case studies"], type: "Exam" }

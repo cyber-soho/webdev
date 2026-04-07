@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Server Study Portal</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Flashcard Flip Animations */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .flip-card-inner { transition: transform 0.6s; }
+        .flipped .flip-card-inner { transform: rotateY(180deg); }
+        
+        /* Custom Scrollbar for a cleaner look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen">
+
+    <div class="max-w-6xl mx-auto p-4 md:p-8">
+        <header class="mb-8 text-center">
+            <h1 class="text-4xl font-bold text-slate-900 mb-2">Web Server Study Portal</h1>
+            <p class="text-slate-600">Master the core concepts of back-end architecture.</p>
+        </header>
+
+        <div class="flex border-b border-slate-200 mb-8 justify-center">
+            <button id="tab-btn-flashcards" class="tab-btn active px-6 py-3 text-lg font-medium text-blue-600 border-b-2 border-blue-600 focus:outline-none transition-colors" onclick="switchTab('flashcards')">
+                Flashcards (25)
+            </button>
+            <button id="tab-btn-quiz" class="tab-btn px-6 py-3 text-lg font-medium text-slate-500 border-b-2 border-transparent hover:text-blue-600 hover:border-blue-300 focus:outline-none transition-colors" onclick="switchTab('quiz')">
+                Knowledge Quiz (10)
+            </button>
+        </div>
+
+        <div id="tab-flashcards" class="tab-content block">
+            <div class="text-center mb-6">
+                <p class="text-slate-600">Click any card to flip it and reveal the answer.</p>
+            </div>
+            <div id="flashcards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                </div>
+        </div>
+
+        <div id="tab-quiz" class="tab-content hidden max-w-4xl mx-auto">
+            <div class="text-center mb-6">
+                <p class="text-slate-600">Select an answer for each question to see the rationale.</p>
+            </div>
+            <div id="quiz-container" class="space-y-8">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA ---
+        const flashcardsData = [
+            { front: "Web Server", back: "A programme, or the machine running it, that listens for incoming HTTP requests and responds with the correct content." },
+            { front: "The Request-Response Cycle", back: "The fundamental two-step communication of the web: a browser sends an HTTP Request, and the server returns an HTTP Response." },
+            { front: "HTTP (HyperText Transfer Protocol)", back: "A text-based protocol that defines how messages travel and are formatted on the Web." },
+            { front: "Components of an HTTP Request", back: "Method (what to do), Path (which resource), and Headers (extra metadata)." },
+            { front: "Components of an HTTP Response", back: "Status code (outcome summary), Headers (metadata), and Body (the actual content)." },
+            { front: "HTTP GET Method", back: "An HTTP verb used to request or retrieve a specific resource from the server." },
+            { front: "HTTP POST Method", back: "An HTTP verb used to submit new data to be stored or processed by the server." },
+            { front: "HTTP PUT Method", back: "An HTTP verb used to replace a resource entirely." },
+            { front: "HTTP PATCH Method", back: "An HTTP verb used to partially update or modify an existing resource." },
+            { front: "HTTP DELETE Method", back: "An HTTP verb used to remove a specific resource from the server." },
+            { front: "HTTP 200 Status Code", back: "OK. Indicates that the request was successful." },
+            { front: "HTTP 301 Status Code", back: "Moved Permanently. Indicates the requested URL has changed." },
+            { front: "HTTP 400 Status Code", back: "Bad Request. Indicates the client sent invalid data." },
+            { front: "HTTP 404 Status Code", back: "Not Found. Indicates the requested resource does not exist on the server." },
+            { front: "HTTP 500 Status Code", back: "Internal Server Error. Indicates the server crashed or encountered an unexpected condition." },
+            { front: "Status Code Categories (2xx, 3xx, 4xx, 5xx)", back: "2xx represents success, 3xx represents redirects, 4xx represents client faults, and 5xx represents server faults." },
+            { front: "Static Content", back: "Files that already exist on disk (like HTML, CSS, images) and are served exactly as-is." },
+            { front: "Dynamic Content", back: "Content generated on the fly for every request, usually involving code execution and databases." },
+            { front: "Apache HTTP Server", back: "A reliable, general-purpose web server created in 1995 that typically uses a process-per-request architecture." },
+            { front: "Nginx", back: "An event-driven, asynchronous web server designed for speed and scale, often used as a reverse proxy." },
+            { front: "Node.js Web Server", back: "An event-driven, non-blocking JavaScript runtime perfect for highly flexible, real-time applications." },
+            { front: "IP Address vs. Port", back: "An IP address identifies the machine on a network (the building), while a Port identifies the specific service running on that machine (the apartment)." },
+            { front: "Routing", back: "The mechanism that decides which specific code or page runs based on the requested URL path and HTTP method." },
+            { front: "API Route", back: "A server route designed to return machine-readable data (like JSON) for applications, rather than human-readable HTML pages." },
+            { front: "Middleware", back: "Functions that sit in a pipeline between the incoming request and the final route handler, used for tasks like logging, authentication, and validation." }
+        ];
+
+        const quizData = [
+            {
+                q: "Which of the following analogies best describes the software aspect of a web server?",
+                options: [
+                    { text: "The restaurant building", isCorrect: false, rationale: "The physical building represents the hardware (the computer), not the software programme." },
+                    { text: "The head chef reading orders", isCorrect: true, rationale: "Just like a chef reading orders and cooking, the server software understands HTTP requests and prepares the correct response." },
+                    { text: "A customer reading a menu", isCorrect: false, rationale: "The customer represents the client (the web browser) sending the request, not the server." },
+                    { text: "The delivery driver", isCorrect: false, rationale: "The delivery driver represents the network transmitting the response back to the client." }
+                ]
+            },
+            {
+                q: "You need to create a feature that allows users to completely replace their profile information with a new set of data. Which HTTP method is most appropriate?",
+                options: [
+                    { text: "POST", isCorrect: false, rationale: "POST is typically used to store brand new data, not to completely replace existing data." },
+                    { text: "PUT", isCorrect: true, rationale: "The PUT method is specifically designed to replace a resource entirely with a new payload." },
+                    { text: "PATCH", isCorrect: false, rationale: "PATCH is used for partial updates, not full replacements." },
+                    { text: "GET", isCorrect: false, rationale: "GET is strictly for retrieving data, not modifying or replacing it." }
+                ]
+            },
+            {
+                q: "A user tries to access an administrative dashboard but hasn't logged into the system yet. Which HTTP status code should the server return?",
+                options: [
+                    { text: "400 Bad Request", isCorrect: false, rationale: "400 indicates malformed data, not missing login." },
+                    { text: "401 Unauthorised", isCorrect: true, rationale: "401 specifically indicates that the user must log in to access the requested resource." },
+                    { text: "403 Forbidden", isCorrect: false, rationale: "403 implies the user is logged in, but lacks permission." },
+                    { text: "404 Not Found", isCorrect: false, rationale: "404 means the resource itself does not exist." }
+                ]
+            },
+            {
+                q: "Which of the following scenarios is the best example of serving dynamic content?",
+                options: [
+                    { text: "Sending a company's logo image.", isCorrect: false, rationale: "An image is a static file that doesn't change per request." },
+                    { text: "Delivering a CSS file.", isCorrect: false, rationale: "CSS files are static assets served exactly as saved." },
+                    { text: "Generating an Instagram Explore feed.", isCorrect: true, rationale: "This requires querying a database and running code on the fly to create a highly personalized response." },
+                    { text: "Serving a generic 'Contact Us' HTML page.", isCorrect: false, rationale: "If the HTML file does not change based on user input, it is static." }
+                ]
+            },
+            {
+                q: "A company expects massive spikes in traffic (10,000+ connections) and needs a server that acts primarily as a reverse proxy. Which server software is best suited?",
+                options: [
+                    { text: "Apache", isCorrect: false, rationale: "Apache uses a process-per-request model which can become heavy under extreme simultaneous loads." },
+                    { text: "Nginx", isCorrect: true, rationale: "Nginx is built on an event-driven architecture specifically designed for high concurrency and reverse proxying." },
+                    { text: "Node.js", isCorrect: false, rationale: "Node.js is typically used as an application server to run JavaScript code, not primarily as a reverse proxy." },
+                    { text: "MySQL", isCorrect: false, rationale: "MySQL is a database management system, not a web server." }
+                ]
+            },
+            {
+                q: "If an IP address acts like the street address of a building, what does the port number represent?",
+                options: [
+                    { text: "The zip code of the network.", isCorrect: false, rationale: "Zip codes represent wider routing, not a specific service on a machine." },
+                    { text: "The name of the tenant.", isCorrect: false, rationale: "Ports are numerical identifiers, not names." },
+                    { text: "The apartment number.", isCorrect: true, rationale: "The port number distinguishes between different services (apartments) running on the exact same machine (building)." },
+                    { text: "The city of the server.", isCorrect: false, rationale: "Geographical location is handled by IP routing." }
+                ]
+            },
+            {
+                q: "While developing a Node.js application, which port number is conventionally used for running the local development server?",
+                options: [
+                    { text: "80", isCorrect: false, rationale: "Port 80 is for production HTTP traffic." },
+                    { text: "443", isCorrect: false, rationale: "Port 443 is for production HTTPS traffic." },
+                    { text: "3000", isCorrect: true, rationale: "Port 3000 is the standard convention used by developers to run Node.js locally." },
+                    { text: "3306", isCorrect: false, rationale: "Port 3306 is for MySQL databases." }
+                ]
+            },
+            {
+                q: "What are the two core pieces of information a router evaluates to decide which code should execute?",
+                options: [
+                    { text: "The URL path and the HTTP method.", isCorrect: true, rationale: "A route is strictly defined by combining the path (e.g., '/about') and the method (e.g., 'GET')." },
+                    { text: "The IP address and the port number.", isCorrect: false, rationale: "IP and port determine how the request reaches the server, not which internal code runs." },
+                    { text: "The status code and the response headers.", isCorrect: false, rationale: "These are parts of the server's response, not the incoming request." },
+                    { text: "The server software and the database type.", isCorrect: false, rationale: "Routing functions independently of the underlying server software or database." }
+                ]
+            },
+            {
+                q: "In a typical middleware pipeline, what happens if the 'Authentication' middleware function fails to verify a user's identity?",
+                options: [
+                    { text: "The request skips the rest of the pipeline and jumps to the route handler.", isCorrect: false, rationale: "If a check fails, it will not proceed to the handler." },
+                    { text: "The request loops back to the logger middleware.", isCorrect: false, rationale: "Middleware pipelines are linear and do not loop backward." },
+                    { text: "The server crashes and returns a 500 error.", isCorrect: false, rationale: "Failing authentication is a routine 401 client error, not a 500 crash." },
+                    { text: "The request is blocked and ended early.", isCorrect: true, rationale: "If a middleware step fails, it prevents the request from continuing and returns an error response immediately." }
+                ]
+            },
+            {
+                q: "Based on best practices, which of the following middleware sequences is ordered correctly from first to last?",
+                options: [
+                    { text: "Logger -> Auth -> Parser -> Handler", isCorrect: true, rationale: "This correctly logs all traffic, then verifies identity, parses the data safely, and finally runs the route logic." },
+                    { text: "Auth -> Logger -> Handler -> Parser", isCorrect: false, rationale: "If Auth is first, rejected requests won't be logged." },
+                    { text: "Handler -> Auth -> Logger -> Parser", isCorrect: false, rationale: "Running the handler before authentication poses a massive security risk." },
+                    { text: "Parser -> Handler -> Auth -> Logger", isCorrect: false, rationale: "Authentication and logging must happen before the handler executes." }
+                ]
+            }
+        ];
+
+        // --- TAB LOGIC ---
+        function switchTab(tabId) {
+            // Update Buttons
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('text-blue-600', 'border-blue-600');
+                btn.classList.add('text-slate-500', 'border-transparent');
+            });
+            const activeBtn = document.getElementById(`tab-btn-${tabId}`);
+            activeBtn.classList.remove('text-slate-500', 'border-transparent');
+            activeBtn.classList.add('text-blue-600', 'border-blue-600');
+
+            // Update Content Views
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.add('hidden');
+                content.classList.remove('block');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('block');
+        }
+
+        // --- RENDER FLASHCARDS ---
+        function renderFlashcards() {
+            const container = document.getElementById('flashcards-container');
+            flashcardsData.forEach((card, index) => {
+                const cardHtml = `
+                    <div class="h-64 w-full perspective-1000 cursor-pointer" onclick="this.classList.toggle('flipped')">
+                        <div class="flip-card-inner w-full h-full relative transform-style-3d">
+                            <div class="absolute w-full h-full bg-white border border-slate-200 rounded-xl shadow-sm flex items-center justify-center p-6 text-center backface-hidden">
+                                <span class="text-xs absolute top-4 left-4 text-slate-400 font-bold">#${index + 1}</span>
+                                <h3 class="text-xl font-semibold text-slate-800">${card.front}</h3>
+                            </div>
+                            <div class="absolute w-full h-full bg-blue-600 rounded-xl shadow-md flex items-center justify-center p-6 text-center backface-hidden rotate-y-180">
+                                <p class="text-lg text-white font-medium">${card.back}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            });
+        }
+
+        // --- RENDER QUIZ ---
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            quizData.forEach((qData, qIndex) => {
+                let optionsHtml = '';
+                
+                qData.options.forEach((opt, oIndex) => {
+                    const isCorrectAttr = opt.isCorrect ? 'true' : 'false';
+                    // Escape single quotes in rationale for HTML attribute
+                    const safeRationale = opt.rationale.replace(/'/g, "&#39;"); 
+                    
+                    optionsHtml += `
+                        <div class="quiz-option p-4 border border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors" 
+                             data-correct="${isCorrectAttr}" 
+                             data-rationale='${safeRationale}'
+                             onclick="handleQuizAnswer(this, ${qIndex})">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 mt-0.5">
+                                    <div class="w-5 h-5 rounded-full border-2 border-slate-300 option-indicator flex items-center justify-center text-xs text-white"></div>
+                                </div>
+                                <div class="ml-3 text-slate-700">${opt.text}</div>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                const questionHtml = `
+                    <div class="bg-white p-6 md:p-8 rounded-xl border border-slate-200 shadow-sm" id="question-card-${qIndex}">
+                        <h3 class="text-lg font-semibold text-slate-800 mb-4"><span class="text-blue-600 mr-2">Q${qIndex + 1}.</span>${qData.q}</h3>
+                        <div class="space-y-3 options-container">
+                            ${optionsHtml}
+                        </div>
+                        <div class="rationale-box hidden mt-4 p-4 rounded-lg text-sm font-medium"></div>
+                    </div>
+                `;
+                container.innerHTML += questionHtml;
+            });
+        }
+
+        // --- QUIZ LOGIC ---
+        window.handleQuizAnswer = function(selectedElement, questionIndex) {
+            const questionCard = document.getElementById(`question-card-${questionIndex}`);
+            const optionsContainer = questionCard.querySelector('.options-container');
+            const rationaleBox = questionCard.querySelector('.rationale-box');
+            
+            // If already answered, do nothing
+            if (optionsContainer.classList.contains('answered')) return;
+            optionsContainer.classList.add('answered');
+
+            const isCorrect = selectedElement.getAttribute('data-correct') === 'true';
+            const rationale = selectedElement.getAttribute('data-rationale');
+
+            // Style all options
+            const allOptions = optionsContainer.querySelectorAll('.quiz-option');
+            allOptions.forEach(opt => {
+                opt.classList.remove('hover:bg-slate-50', 'cursor-pointer');
+                opt.classList.add('opacity-50', 'cursor-not-allowed');
+                // Highlight the correct one regardless of choice
+                if(opt.getAttribute('data-correct') === 'true') {
+                    opt.classList.remove('opacity-50', 'border-slate-200');
+                    opt.classList.add('border-green-500', 'bg-green-50');
+                    opt.querySelector('.option-indicator').classList.replace('border-slate-300', 'border-green-500');
+                    opt.querySelector('.option-indicator').classList.add('bg-green-500');
+                    opt.querySelector('.option-indicator').innerHTML = '✓';
+                }
+            });
+
+            // Specific styling for the selected element
+            selectedElement.classList.remove('opacity-50');
+            if (!isCorrect) {
+                selectedElement.classList.remove('border-slate-200');
+                selectedElement.classList.add('border-red-500', 'bg-red-50');
+                selectedElement.querySelector('.option-indicator').classList.replace('border-slate-300', 'border-red-500');
+                selectedElement.querySelector('.option-indicator').classList.add('bg-red-500');
+                selectedElement.querySelector('.option-indicator').innerHTML = '✕';
+            }
+
+            // Show rationale
+            rationaleBox.classList.remove('hidden');
+            rationaleBox.innerHTML = rationale;
+            if (isCorrect) {
+                rationaleBox.classList.add('bg-green-100', 'text-green-800');
+            } else {
+                rationaleBox.classList.add('bg-red-100', 'text-red-800');
+            }
+        };
+
+        // Initialize App
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFlashcards();
+            renderQuiz();
+        });
+    </script>
+</body>
+</html>
