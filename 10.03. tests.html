@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Center: Back-End Development</title>
+    <style>
+        :root {
+            --bg-color: #fafaf9;
+            --text-main: #292524;
+            --text-muted: #78716c;
+            --primary: #be185d;
+            --primary-hover: #9d174d;
+            --primary-light: #fce7f3;
+            --border-color: #e7e5e4;
+            --card-bg: #ffffff;
+            --correct-bg: #dcfce7;
+            --correct-border: #16a34a;
+            --incorrect-bg: #fee2e2;
+            --incorrect-border: #dc2626;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+        }
+
+        /* Tabs */
+        .tab-header {
+            display: flex;
+            background-color: var(--card-bg);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 16px;
+            text-align: center;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .tab-button:hover {
+            color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 30px;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Flashcards */
+        .flashcard-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .flashcard-scene {
+            width: 100%;
+            max-width: 600px;
+            height: 350px;
+            perspective: 1000px;
+            margin-bottom: 20px;
+        }
+
+        .flashcard {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            cursor: pointer;
+        }
+
+        .flashcard.is-flipped {
+            transform: rotateY(180deg);
+        }
+
+        .flashcard-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            box-sizing: border-box;
+            border-radius: 16px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            font-size: 20px;
+        }
+
+        .flashcard-front {
+            font-weight: bold;
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .flashcard-back {
+            transform: rotateY(180deg);
+            background-color: #f5f5f4;
+            color: var(--text-main);
+            font-size: 18px;
+        }
+
+        .controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background-color: var(--border-color);
+            color: var(--text-main);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #d6d3d1;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--primary-hover);
+        }
+
+        #card-counter {
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        /* Quiz */
+        .question-block {
+            margin-bottom: 40px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .question-block:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .hint {
+            font-size: 14px;
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 20px;
+            background: #f5f5f4;
+            padding: 10px 15px;
+            border-radius: 8px;
+            border-left: 4px solid #a8a29e;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            text-align: left;
+            padding: 15px;
+            border: 2px solid var(--border-color);
+            background: var(--card-bg);
+            border-radius: 8px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-main);
+        }
+
+        .option-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            background-color: var(--primary-light);
+        }
+
+        .option-btn:disabled {
+            cursor: default;
+        }
+
+        .option-btn.correct {
+            background-color: var(--correct-bg);
+            border-color: var(--correct-border);
+            color: #166534;
+        }
+
+        .option-btn.incorrect {
+            background-color: var(--incorrect-bg);
+            border-color: var(--incorrect-border);
+            color: #991b1b;
+            opacity: 0.7;
+        }
+
+        .rationale {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 14px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .rationale.show-correct {
+            display: block;
+            background-color: var(--correct-bg);
+            border: 1px solid var(--correct-border);
+            color: #166534;
+        }
+
+        .rationale.show-incorrect {
+            display: block;
+            background-color: var(--incorrect-bg);
+            border: 1px solid var(--incorrect-border);
+            color: #991b1b;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="tab-header">
+        <button class="tab-button active" onclick="openTab(event, 'tab-flashcards')">Flashcards</button>
+        <button class="tab-button" onclick="openTab(event, 'tab-quiz')">Practice Quiz</button>
+    </div>
+
+    <div id="tab-flashcards" class="tab-content active">
+        <div class="flashcard-container">
+            <div class="flashcard-scene" onclick="flipCard()">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-face flashcard-front" id="card-front"></div>
+                    <div class="flashcard-face flashcard-back" id="card-back"></div>
+                </div>
+            </div>
+            <div class="controls">
+                <button class="btn" onclick="prevCard()">Previous</button>
+                <span id="card-counter">1 / 25</span>
+                <button class="btn btn-primary" onclick="nextCard()">Next Card</button>
+            </div>
+            <p style="margin-top: 20px; font-size: 13px; color: var(--text-muted);">Click the card to flip between term and definition.</p>
+        </div>
+    </div>
+
+    <div id="tab-quiz" class="tab-content">
+        <div id="quiz-container">
+            </div>
+    </div>
+</div>
+
+<script>
+    // Tab Switching Logic
+    function openTab(evt, tabName) {
+        const tabContents = document.getElementsByClassName("tab-content");
+        for (let i = 0; i < tabContents.length; i++) {
+            tabContents[i].classList.remove("active");
+        }
+        const tabButtons = document.getElementsByClassName("tab-button");
+        for (let i = 0; i < tabButtons.length; i++) {
+            tabButtons[i].classList.remove("active");
+        }
+        document.getElementById(tabName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+    }
+
+    // --- Flashcards Data & Logic ---
+    const flashcards = [
+        { front: "Front-End", back: "The part of the application that users see and interact with (e.g., HTML, CSS, JavaScript, Vue). Often referred to as the 'face'." },
+        { front: "Back-End", back: "The server-side logic, databases, and APIs that power an application. Often referred to as the 'brain'." },
+        { front: "HTTP (HyperText Transfer Protocol)", back: "The communication protocol used for the request and response cycle between the client and server." },
+        { front: "Advantage of Full-Stack JavaScript", back: "Allows developers to use one language everywhere, resulting in shared codebases and faster development cycles." },
+        { front: "Node.js", back: "A runtime environment built on Chrome's V8 engine that executes JavaScript outside the browser." },
+        { front: "V8 Engine", back: "Google Chrome's C++ component that compiles JavaScript into machine code, giving Node.js its speed and system access capabilities." },
+        { front: "NPM (Node Package Manager)", back: "The default package manager for Node.js and the largest online software registry for reusable code packages." },
+        { front: "npm init -y", back: "The terminal command used to initialize a new Node.js project and automatically generate a package.json file." },
+        { front: "Traditional Server Blocking", back: "An architecture where the server handles one request at a time, forcing other tasks to wait until it completes (blocking I/O)." },
+        { front: "Node.js Event Loop", back: "A non-blocking, event-driven mechanism that delegates slow tasks and uses callbacks to handle thousands of simultaneous connections on a single thread." },
+        { front: "Express", back: "A minimal, unopinionated web framework for Node.js that handles routing, middleware, and HTTP requests easily." },
+        { front: "Routing in Express", back: "The process of determining what code should execute when a specific URL and HTTP method are requested by a client." },
+        { front: "HTTP GET Method", back: "A standard HTTP method used specifically to retrieve data from a server." },
+        { front: "HTTP POST Method", back: "A standard HTTP method used specifically to create new data on a server." },
+        { front: "Middleware in Express", back: "Functions that execute during the request-response cycle to inspect, modify, reject, or pass along requests (like airport security checkpoints)." },
+        { front: "The next() Function", back: "An Express function called to pass control to the next middleware in the pipeline; forgetting it causes the request to hang." },
+        { front: "REST (Representational State Transfer)", back: "An architectural style for designing networked applications that uses standard HTTP methods to operate on resources identified by URLs." },
+        { front: "JSON (JavaScript Object Notation)", back: "The standard data format typically used for server responses and data exchange in modern RESTful web applications." },
+        { front: "Vue.js", back: "A progressive JavaScript framework created by Evan You for building user interfaces and single-page applications." },
+        { front: "Vue Components", back: "Self-contained, reusable UI building blocks written as Single-File Components (SFCs) containing HTML, JS, and CSS." },
+        { front: "Reactivity in Vue", back: "A system where the UI automatically diffs the Virtual DOM and efficiently re-renders only the affected physical DOM elements when data changes." },
+        { front: "v-model Directive", back: "A Vue directive that establishes a two-way data binding between a form input and a JavaScript variable." },
+        { front: "v-if Directive", back: "A Vue directive used for conditional rendering, which physically adds or removes elements from the DOM based on a condition." },
+        { front: "v-for Directive", back: "A Vue directive used to loop through arrays and render dynamic lists in the user interface." },
+        { front: "Single-Page Application (SPA)", back: "A web application that dynamically rewrites the current web page with new data from the server, instead of loading entire new pages." }
+    ];
+
+    let currentCardIndex = 0;
+    const cardElement = document.getElementById("flashcard");
+    const frontElement = document.getElementById("card-front");
+    const backElement = document.getElementById("card-back");
+    const counterElement = document.getElementById("card-counter");
+
+    function updateCard() {
+        cardElement.classList.remove("is-flipped");
+        // Use timeout to allow flip animation to reset before changing text
+        setTimeout(() => {
+            frontElement.textContent = flashcards[currentCardIndex].front;
+            backElement.textContent = flashcards[currentCardIndex].back;
+            counterElement.textContent = `${currentCardIndex + 1} / ${flashcards.length}`;
+        }, 150);
+    }
+
+    function flipCard() {
+        cardElement.classList.toggle("is-flipped");
+    }
+
+    function nextCard() {
+        currentCardIndex = (currentCardIndex + 1) % flashcards.length;
+        updateCard();
+    }
+
+    function prevCard() {
+        currentCardIndex = (currentCardIndex - 1 + flashcards.length) % flashcards.length;
+        updateCard();
+    }
+
+    // --- Quiz Data & Logic ---
+    const quizData = [
+        {
+            question: "Imagine a Node.js server receives a request requiring it to read a massive 5GB video file from the database, immediately followed by 100 requests for a simple text-based homepage. Based on Node's Event Loop, how does it handle this sequence?",
+            hint: "Think about the coffee shop analogy where the barista starts a complex drink but doesn't wait for it to finish before taking the next order.",
+            options: [
+                { text: "It delegates the 5GB file read to the background and immediately starts serving the 100 text homepages.", rationale: "The non-blocking architecture delegates slow I/O operations and uses callbacks, freeing the single thread to immediately process subsequent fast requests.", isCorrect: true },
+                { text: "It processes the 5GB file first, making the 100 homepage requests wait in a queue until the file is fully read.", rationale: "Waiting for a slow file operation to finish before accepting new requests describes a traditional blocking server model, which Node.js was specifically designed to avoid.", isCorrect: false },
+                { text: "It opens 101 separate processing threads simultaneously to handle all requests at the exact same time.", rationale: "Node.js utilizes a single thread to handle connections rather than spawning a new thread for every incoming request.", isCorrect: false },
+                { text: "It rejects the 100 homepage requests because the server's single thread is entirely occupied with the video file.", rationale: "The Event Loop prevents the server from locking up or rejecting requests by offloading heavy tasks rather than letting them block the main thread.", isCorrect: false }
+            ]
+        },
+        {
+            question: "Your development team is migrating from a legacy system using a PHP back-end and a plain JavaScript front-end to a modern web stack. What is the primary architectural advantage of choosing Node.js for the new back-end?",
+            hint: "Consider the cognitive load and codebase management when developers switch between writing server logic and user interfaces.",
+            options: [
+                { text: "Node.js automatically converts older PHP server code into modern JavaScript during runtime.", rationale: "Runtimes execute code written in their specific language, requiring manual rewriting or migration of legacy codebases from other languages.", isCorrect: false },
+                { text: "It forces the team to learn a completely new, specialized server-side language distinct from browser scripts.", rationale: "The core appeal of this stack is utilizing the exact same language developers already know from front-end work.", isCorrect: false },
+                { text: "Developers can use a single language across the entire application, eliminating translation overhead and allowing for shared codebases.", rationale: "Unifying the stack under one language streamlines development cycles, allowing the same team to easily work on both the client and server sides.", isCorrect: true },
+                { text: "Node.js includes a built-in browser engine that eliminates the need to build a separate front-end client entirely.", rationale: "A distinct client interface is still required for user interaction, maintaining the separation between the face (front-end) and the brain (back-end).", isCorrect: false }
+            ]
+        },
+        {
+            question: "You are building an Express server for a library application and need to create an endpoint that allows administrators to permanently remove a book from the database using its unique ID. Which Express routing method should you implement?",
+            hint: "Look at the standard REST HTTP methods and match the action of 'removing' data to its corresponding Express syntax.",
+            options: [
+                { text: "app.remove('/books/:id', handler)", rationale: "Express relies on standard HTTP verbs for routing, and this option uses a custom verb that does not exist in the REST protocol.", isCorrect: false },
+                { text: "app.delete('/books/:id', handler)", rationale: "This syntax maps the specific HTTP method designated for data removal to the appropriate URL resource path.", isCorrect: true },
+                { text: "app.post('/books/remove', handler)", rationale: "While technically possible to route, using a creation-focused HTTP method for a destructive action violates RESTful architectural principles.", isCorrect: false },
+                { text: "app.get('/books/:id/delete', handler)", rationale: "The retrieval method should only be used to fetch data safely, never to execute actions that alter or destroy server resources.", isCorrect: false }
+            ]
+        },
+        {
+            question: "In an Express application, you have set up a middleware function to verify user authentication tokens before granting access to a dashboard. However, valid users report that the dashboard never loads and their browser just spins endlessly. What is the most likely cause?",
+            hint: "Remember the 'airport security' analogy and the specific mechanism required for luggage to move from one checkpoint to the next.",
+            options: [
+                { text: "The res.json() method was called twice inside the middleware, immediately crashing the pipeline.", rationale: "Sending multiple responses usually results in a specific server error visible in logs, rather than a silent, infinite hang on the client side.", isCorrect: false },
+                { text: "The middleware function was placed after the route handler in the application code structure.", rationale: "Placing the security check too late would result in users accessing the dashboard immediately without verification, rather than a hanging request.", isCorrect: false },
+                { text: "Node.js inherently blocks all HTTP requests that contain custom security headers.", rationale: "The framework is unopinionated and readily accepts custom headers, requiring developers to define exactly how those headers are processed.", isCorrect: false },
+                { text: "The authentication middleware is missing the next() function call, preventing control from passing to the route handler.", rationale: "Without explicitly signaling the pipeline to continue, the request remains trapped in the current middleware function indefinitely.", isCorrect: true }
+            ]
+        },
+        {
+            question: "You have a Vue application displaying a shopping cart total using the reactive variable 'cartTotal'. When a user clicks 'Add Item', a function updates the variable to 50. How does Vue update the browser screen?",
+            hint: "Think about how the framework avoids manually re-drawing the entire webpage when only one specific number changes.",
+            options: [
+                { text: "Vue automatically executes a hidden document.getElementById('total').innerText = 50 command behind the scenes.", rationale: "The framework entirely abstracts away manual DOM manipulation methods, relying instead on its reactive proxy system and declarative templates.", isCorrect: false },
+                { text: "Vue triggers a complete page refresh from the server to ensure the new data is reflected accurately across all components.", rationale: "Single-Page Applications maintain their state entirely in the browser, rewriting the current page dynamically without full network reloads.", isCorrect: false },
+                { text: "Vue compares the old and new state in its Virtual DOM, determines only the total text changed, and selectively updates that specific physical DOM element.", rationale: "The reactivity cycle efficiently diffs changes in memory before touching the actual browser DOM, ensuring high performance by only re-rendering what is strictly necessary.", isCorrect: true },
+                { text: "Vue requires the developer to manually trigger a re-render lifecycle hook after updating the variable to show the change.", rationale: "The system automatically detects data mutations and schedules updates autonomously, eliminating the need for manual UI refresh commands.", isCorrect: false }
+            ]
+        },
+        {
+            question: "You are building a user registration form in Vue. You want the user's typed input to instantly update a JavaScript variable called 'newUsername', and if your code changes 'newUsername', the input field should update too. Which directive achieves this?",
+            hint: "You need a directive that establishes a two-way connection between the template's HTML input and the component's state logic.",
+            options: [
+                { text: "v-bind:value=\"newUsername\"", rationale: "This establishes a one-way connection pushing data to the input field, but it will not automatically capture what the user types back into the variable.", isCorrect: false },
+                { text: "v-model=\"newUsername\"", rationale: "This specific directive creates a two-way data binding, seamlessly synchronizing the form input with the application's underlying data state.", isCorrect: true },
+                { text: "v-on:input=\"newUsername\"", rationale: "This listens for events but requires manual assignment to update the variable, lacking the automatic synchronization provided by two-way binding.", isCorrect: false },
+                { text: "v-if=\"newUsername\"", rationale: "This is a conditional rendering directive that would completely remove or add the input field from the page based on the variable's truthiness.", isCorrect: false }
+            ]
+        },
+        {
+            question: "You fetch an array of 20 product objects from your Express back-end and store it in a reactive Vue variable called 'inventory'. You want to render a separate list item for each product. Which Vue directive is appropriate?",
+            hint: "This directive works similarly to standard JavaScript iteration syntax but is applied directly inside the HTML template.",
+            options: [
+                { text: "v-loop=\"inventory\"", rationale: "This utilizes an imaginary syntax that does not exist within the framework's official template documentation.", isCorrect: false },
+                { text: "v-if=\"inventory.length > 0\"", rationale: "This would merely check if the array exists and render the block once, rather than iterating through the individual items inside the array.", isCorrect: false },
+                { text: "v-for=\"product in inventory\"", rationale: "This directive loops through an array, cloning the HTML element it is attached to for every item present in the data structure.", isCorrect: true },
+                { text: "v-bind:list=\"inventory\"", rationale: "This passes the entire array as a single HTML attribute to an element, failing to create individual elements for each product.", isCorrect: false }
+            ]
+        },
+        {
+            question: "A junior developer asks why you need to install Node.js on a server instead of just running JavaScript files directly through the operating system's default terminal. What is the fundamental role of the V8 Engine inside Node.js that makes this possible?",
+            hint: "Computers only understand raw machine instructions, so a specific component is needed to translate the high-level JavaScript text.",
+            options: [
+                { text: "It automatically converts back-end JavaScript into front-end HTML and CSS before sending it to the browser.", rationale: "The engine focuses strictly on execution performance, leaving the task of generating client-side markup entirely to the developer's logic.", isCorrect: false },
+                { text: "It compiles human-readable JavaScript code down into machine code that the server's processor can execute.", rationale: "The C++ engine extracts the browser's ability to translate high-level code into low-level instructions, giving scripts system-level access.", isCorrect: true },
+                { text: "It acts as a lightweight database to store and retrieve JSON objects requested by the client application.", rationale: "The runtime environment facilitates connections to external databases, but the engine itself is purely for code compilation and execution.", isCorrect: false },
+                { text: "It provides a massive online library of 2.1 million free code packages for developers to download and use.", rationale: "The package ecosystem is managed by NPM, a completely separate tool from the core C++ compilation engine.", isCorrect: false }
+            ]
+        },
+        {
+            question: "You are designing a REST API for a blog. A client needs to partially update an existing article's title without overwriting its content or author data. Which HTTP method represents this specific action according to REST principles?",
+            hint: "Look for the HTTP method specifically designated for making partial modifications to an existing resource, rather than full replacements.",
+            options: [
+                { text: "PUT", rationale: "This method traditionally expects the client to send a complete representation of the resource, completely overwriting the existing data.", isCorrect: false },
+                { text: "POST", rationale: "This method is intended for generating entirely new resources on the server, not modifying ones that already exist.", isCorrect: false },
+                { text: "PATCH", rationale: "This method is semantically designed to apply targeted, partial modifications to a specific resource without affecting its other existing fields.", isCorrect: true },
+                { text: "GET", rationale: "This method is strictly for safe data retrieval and should never be used in requests that mutate or update server state.", isCorrect: false }
+            ]
+        },
+        {
+            question: "You just cloned a Node.js project repository from GitHub. The project has a package.json file listing 15 required dependencies, but the actual code for those packages is not on your machine. What is your immediate next step?",
+            hint: "You need a terminal command that reads the project's 'ID card' and automatically downloads all the missing pieces required to run it.",
+            options: [
+                { text: "Run 'npm init -y' in the terminal to generate a fresh package.json file that matches your local environment.", rationale: "Initializing a project overwrites or creates a blank configuration, completely ignoring the specific list of dependencies the original developer required.", isCorrect: false },
+                { text: "Manually visit the official website and download each of the 15 packages one by one as zip files.", rationale: "This defeats the entire purpose of the package manager, which exists specifically to automate the resolution and downloading of dependencies.", isCorrect: false },
+                { text: "Run 'npm start' immediately, as Node.js automatically fetches missing packages over the network during runtime.", rationale: "The runtime environment cannot execute without its dependencies physically present on the disk, requiring a separate installation step before starting.", isCorrect: false },
+                { text: "Run 'npm install' in the terminal to download all dependencies listed in the package.json file into a node_modules folder.", rationale: "This command acts as a setup routine, reading the configuration file and pulling all necessary external code from the registry to your local machine.", isCorrect: true }
+            ]
+        }
+    ];
+
+    const quizContainer = document.getElementById('quiz-container');
+
+    function renderQuiz() {
+        quizData.forEach((q, qIndex) => {
+            const questionDiv = document.createElement('div');
+            questionDiv.className = 'question-block';
+            
+            // Randomize options
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+
+            let optionsHtml = '';
+            shuffledOptions.forEach((opt, oIndex) => {
+                optionsHtml += `
+                    <button class="option-btn" id="btn-${qIndex}-${oIndex}" onclick="checkAnswer(${qIndex}, ${oIndex}, ${opt.isCorrect})">
+                        ${opt.text}
+                    </button>
+                    <div id="rationale-${qIndex}-${oIndex}" class="rationale">
+                        <strong>${opt.isCorrect ? 'Correct!' : 'Incorrect.'}</strong> ${opt.rationale}
+                    </div>
+                `;
+            });
+
+            questionDiv.innerHTML = `
+                <div class="question-text">${qIndex + 1}. ${q.question}</div>
+                <div class="hint"><strong>Hint:</strong> ${q.hint}</div>
+                <div class="options-grid" id="grid-${qIndex}">
+                    ${optionsHtml}
+                </div>
+            `;
+            quizContainer.appendChild(questionDiv);
+
+            // Store shuffled options back into the data structure so the onclick handler can access them
+            q.shuffledOptions = shuffledOptions;
+        });
+    }
+
+    function checkAnswer(qIndex, oIndex, isCorrect) {
+        const grid = document.getElementById(`grid-${qIndex}`);
+        const buttons = grid.querySelectorAll('.option-btn');
+        const rationales = grid.querySelectorAll('.rationale');
+
+        // Disable all buttons in this question and reset styles
+        buttons.forEach((btn, i) => {
+            btn.disabled = true;
+            btn.classList.remove('correct', 'incorrect');
+            rationales[i].classList.remove('show-correct', 'show-incorrect');
+        });
+
+        // Highlight selected
+        const selectedBtn = document.getElementById(`btn-${qIndex}-${oIndex}`);
+        const selectedRationale = document.getElementById(`rationale-${qIndex}-${oIndex}`);
+        
+        if (isCorrect) {
+            selectedBtn.classList.add('correct');
+            selectedRationale.classList.add('show-correct');
+        } else {
+            selectedBtn.classList.add('incorrect');
+            selectedRationale.classList.add('show-incorrect');
+            
+            // Automatically highlight the correct answer as well
+            quizData[qIndex].shuffledOptions.forEach((opt, i) => {
+                if (opt.isCorrect) {
+                    const correctBtn = document.getElementById(`btn-${qIndex}-${i}`);
+                    const correctRationale = document.getElementById(`rationale-${qIndex}-${i}`);
+                    correctBtn.classList.add('correct');
+                    correctRationale.classList.add('show-correct');
+                }
+            });
+        }
+    }
+
+    // Initialize Content
+    updateCard();
+    renderQuiz();
+</script>
+</body>
+</html>
+
+
+

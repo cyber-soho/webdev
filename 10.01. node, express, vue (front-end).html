@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Full-Stack JavaScript Hub | Cyber.SoHo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 350px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        .nav-active {
+            background-color: #fce7f3;
+            color: #be185d;
+            font-weight: 600;
+            border-right: 4px solid #be185d;
+        }
+        .sim-node { transition: all 0.3s; }
+        .sim-active { transform: scale(1.05); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); border-color: #be185d; background-color: #fdf2f8; }
+        .sim-success { background-color: #dcfce7; border-color: #16a34a; color: #166534; }
+    </style>
+    <!-- Chosen Palette: Warm Neutrals with Rose/Pink Accents (stone-50 background, stone-800 text, pink-700/rose-600 accents for engagement and energy) -->
+    <!-- Application Structure Plan: The SPA is designed as a dynamic, modular learning dashboard. Instead of a linear slide progression, it uses a sidebar navigation system allowing users to jump between core concepts (Overview, Node.js, Express, Vue.js, Glossary). This non-linear architecture respects the user's pace and intent, grouping related technical concepts into dedicated, interactive workspaces. This improves usability by reducing cognitive load and making complex architectural concepts (like Client-Server and Middleware) explorable through interactive simulations and visual data rather than static text walls. -->
+    <!-- Visualization & Content Choices: 
+         1. Architecture Concept -> HTML CSS Grid Layout -> Interactive hover states to show relationships -> Justification: Replaces static tables with a spatial representation of the Client-Server model. Library: Tailwind/HTML.
+         2. Node.js Event Loop -> Bar Chart -> Compares blocking vs non-blocking request handling over time -> Justification: Visually proves the efficiency of Node's single-thread model over traditional servers. Library: Chart.js Canvas.
+         3. Express Middleware -> Interactive Pipeline Simulator -> Sequential JS highlighting of HTML blocks -> Justification: Translates the abstract "Airport Security" analogy into a tangible, observable process. Library: Vanilla JS + Tailwind.
+         4. Vue vs React vs Angular -> Radar Chart -> Multivariate comparison (Learning Curve, Reactivity, etc.) -> Justification: Quickly communicates the "sweet spot" of Vue compared to competitors based on slide data. Library: Chart.js Canvas. 
+         Confirming NO SVG/Mermaid used. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+</head>
+<body class="bg-stone-50 text-stone-800 font-sans antialiased overflow-x-hidden flex flex-col md:flex-row min-h-screen">
+
+    <aside class="w-full md:w-64 bg-white border-b md:border-r border-stone-200 flex-shrink-0 sticky top-0 z-10 md:h-screen md:overflow-y-auto shadow-sm">
+        <div class="p-6 border-b border-stone-100">
+            <h1 class="text-xl font-bold text-stone-900 leading-tight">Cyber.SoHo</h1>
+            <p class="text-xs text-stone-500 mt-1 font-medium tracking-wide uppercase">Educational Hub</p>
+        </div>
+        <nav class="flex flex-row md:flex-col p-4 gap-2 overflow-x-auto md:overflow-visible" id="main-nav">
+            <button data-target="section-overview" class="nav-btn text-left px-4 py-3 rounded-md text-sm transition-colors nav-active whitespace-nowrap md:whitespace-normal">1. The Big Picture</button>
+            <button data-target="section-node" class="nav-btn text-left px-4 py-3 rounded-md text-sm text-stone-600 hover:bg-stone-100 transition-colors whitespace-nowrap md:whitespace-normal">2. Node.js Runtime</button>
+            <button data-target="section-express" class="nav-btn text-left px-4 py-3 rounded-md text-sm text-stone-600 hover:bg-stone-100 transition-colors whitespace-nowrap md:whitespace-normal">3. Express Framework</button>
+            <button data-target="section-vue" class="nav-btn text-left px-4 py-3 rounded-md text-sm text-stone-600 hover:bg-stone-100 transition-colors whitespace-nowrap md:whitespace-normal">4. Vue.js Front-End</button>
+            <button data-target="section-glossary" class="nav-btn text-left px-4 py-3 rounded-md text-sm text-stone-600 hover:bg-stone-100 transition-colors whitespace-nowrap md:whitespace-normal">5. Glossary & Links</button>
+        </nav>
+        <div class="hidden md:block p-6 mt-auto">
+            <p class="text-xs text-stone-400 italic leading-relaxed">"From the Industry to the Classroom — Building the IT's Future, Today and Together!"</p>
+        </div>
+    </aside>
+
+    <main class="flex-grow p-6 md:p-12 overflow-y-auto">
+        <div class="max-w-5xl mx-auto">
+
+            <section id="section-overview" class="content-section block">
+                <header class="mb-10">
+                    <span class="text-pink-600 font-semibold text-sm tracking-widest uppercase mb-2 block">Week 10 Introduction</span>
+                    <h2 class="text-4xl font-bold text-stone-900 mb-4">Crossing The Line to Back-End</h2>
+                    <p class="text-lg text-stone-600 leading-relaxed">Welcome to the transition from building what users see (the face) to constructing the logic, data, and systems they don't see (the brain). This section explores the fundamental architecture that powers the modern web and why Full-Stack JavaScript has become the industry standard.</p>
+                </header>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-100 mb-10">
+                    <h3 class="text-xl font-bold mb-6">The Client-Server Architecture</h3>
+                    <p class="text-stone-600 mb-8">Interact with the components below to understand how the front-end and back-end communicate in a full-stack environment.</p>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                        <div class="p-6 bg-stone-50 rounded-xl border-2 border-transparent hover:border-pink-300 transition-colors group cursor-pointer">
+                            <div class="text-3xl mb-3">💻</div>
+                            <h4 class="font-bold text-stone-800 mb-2">Front-End (Client)</h4>
+                            <p class="text-sm text-stone-500 mb-4">The Dining Room. What users interact with.</p>
+                            <div class="flex flex-wrap justify-center gap-2">
+                                <span class="px-2 py-1 bg-stone-200 text-stone-700 text-xs rounded">HTML/CSS</span>
+                                <span class="px-2 py-1 bg-stone-200 text-stone-700 text-xs rounded">Vue.js</span>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col justify-center items-center py-4">
+                            <div class="text-xs font-bold text-stone-400 uppercase tracking-widest mb-2">HTTP Protocol</div>
+                            <div class="flex w-full items-center">
+                                <div class="h-1 bg-gradient-to-r from-stone-200 via-pink-400 to-stone-200 w-full rounded-full animate-pulse"></div>
+                            </div>
+                            <div class="text-xs font-bold text-stone-400 uppercase tracking-widest mt-2">JSON Data</div>
+                        </div>
+
+                        <div class="p-6 bg-stone-50 rounded-xl border-2 border-transparent hover:border-pink-300 transition-colors group cursor-pointer">
+                            <div class="text-3xl mb-3">⚙️</div>
+                            <h4 class="font-bold text-stone-800 mb-2">Back-End (Server)</h4>
+                            <p class="text-sm text-stone-500 mb-4">The Kitchen. Logic, data, and authentication.</p>
+                            <div class="flex flex-wrap justify-center gap-2">
+                                <span class="px-2 py-1 bg-stone-200 text-stone-700 text-xs rounded">Node.js</span>
+                                <span class="px-2 py-1 bg-stone-200 text-stone-700 text-xs rounded">Express</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-100">
+                        <h3 class="text-xl font-bold mb-4">Before Node.js (Pre-2009)</h3>
+                        <ul class="space-y-3 text-stone-600">
+                            <li class="flex items-start"><span class="mr-2 text-pink-500 font-bold">×</span> Front-end team used JavaScript.</li>
+                            <li class="flex items-start"><span class="mr-2 text-pink-500 font-bold">×</span> Back-end team used Java, PHP, Python, or Ruby.</li>
+                            <li class="flex items-start"><span class="mr-2 text-pink-500 font-bold">×</span> Resulted in two languages and high translation overhead.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-pink-50 p-8 rounded-2xl shadow-sm border border-pink-100">
+                        <h3 class="text-xl font-bold text-pink-900 mb-4">The Full-Stack JS Era</h3>
+                        <ul class="space-y-3 text-pink-800">
+                            <li class="flex items-start"><span class="mr-2 text-pink-600 font-bold">✓</span> One language (JavaScript) everywhere.</li>
+                            <li class="flex items-start"><span class="mr-2 text-pink-600 font-bold">✓</span> Shared codebases and faster development cycles.</li>
+                            <li class="flex items-start"><span class="mr-2 text-pink-600 font-bold">✓</span> Used by Netflix, LinkedIn, PayPal, NASA, and Uber.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-node" class="content-section hidden">
+                <header class="mb-10">
+                    <span class="text-emerald-600 font-semibold text-sm tracking-widest uppercase mb-2 block">Lesson 1</span>
+                    <h2 class="text-4xl font-bold text-stone-900 mb-4">Node.js: The Runtime</h2>
+                    <p class="text-lg text-stone-600 leading-relaxed">Node.js is not a programming language or a framework; it is a runtime environment. By extracting the V8 engine from Google Chrome, Ryan Dahl allowed JavaScript to run on servers, access databases, and read local files.</p>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4">The Event Loop Secret</h3>
+                        <p class="text-stone-600 mb-6">Traditional servers handle one request at a time (blocking). Node uses a non-blocking, event-driven architecture. It acts like an efficient barista who takes an order, starts the machine, immediately takes the next order, and serves drinks as they finish.</p>
+                        
+                        <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+                            <div class="p-4 bg-stone-100 font-mono text-sm font-bold text-stone-500 border-b border-stone-200">Terminal Command</div>
+                            <div class="p-6 bg-stone-900 text-stone-300 font-mono text-sm space-y-2">
+                                <p><span class="text-pink-400">user@server:~$</span> node --version</p>
+                                <p class="text-emerald-400">v22.x.x</p>
+                                <p class="mt-4"><span class="text-pink-400">user@server:~$</span> npm init -y</p>
+                                <p class="text-stone-500">// Creates package.json</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 flex flex-col justify-center">
+                        <h4 class="text-center font-bold text-stone-800 mb-2">Throughput: Blocking vs Non-Blocking</h4>
+                        <p class="text-center text-xs text-stone-500 mb-6">Simulated concurrent requests handled over time.</p>
+                        <div class="chart-container">
+                            <canvas id="eventLoopChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-emerald-50 p-8 rounded-2xl border border-emerald-100">
+                    <h3 class="text-xl font-bold text-emerald-900 mb-2">Key Takeaway</h3>
+                    <p class="text-emerald-800">Node.js handles thousands of simultaneous connections with a single thread using its non-blocking Event Loop, making it ideal for real-time, data-intensive web applications.</p>
+                </div>
+            </section>
+
+            <section id="section-express" class="content-section hidden">
+                <header class="mb-10">
+                    <span class="text-blue-600 font-semibold text-sm tracking-widest uppercase mb-2 block">Lesson 2</span>
+                    <h2 class="text-4xl font-bold text-stone-900 mb-4">Express: The Framework</h2>
+                    <p class="text-lg text-stone-600 leading-relaxed">If Node.js is the engine, Express is the dashboard and steering wheel. It is a minimal, unopinionated web framework that provides powerful tools for routing and handling HTTP requests effortlessly.</p>
+                </header>
+
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-stone-100 mb-10">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-bold">The Middleware Pipeline Simulator</h3>
+                        <button id="run-sim-btn" class="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-bold hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">Send Request</button>
+                    </div>
+                    <p class="text-stone-600 mb-8">Middleware functions are like airport security checkpoints. A request passes through each one sequentially. The <code class="bg-stone-100 text-pink-600 px-1 rounded text-sm">next()</code> function passes control down the line.</p>
+                    
+                    <div class="flex flex-col md:flex-row gap-4 items-stretch justify-center relative">
+                        <div class="absolute top-1/2 left-0 w-full h-1 bg-stone-200 -translate-y-1/2 hidden md:block z-0"></div>
+                        
+                        <div id="sim-req" class="sim-node z-10 flex-1 bg-white border-2 border-stone-200 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">📱</div>
+                            <div class="font-bold text-sm">Client Request</div>
+                            <div class="text-xs text-stone-500 mt-1">GET /data</div>
+                        </div>
+                        
+                        <div id="sim-mid1" class="sim-node z-10 flex-1 bg-white border-2 border-stone-200 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">📝</div>
+                            <div class="font-bold text-sm">app.use(logger)</div>
+                            <div class="text-xs text-stone-500 mt-1">Logs details & calls next()</div>
+                        </div>
+
+                        <div id="sim-mid2" class="sim-node z-10 flex-1 bg-white border-2 border-stone-200 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">🔐</div>
+                            <div class="font-bold text-sm">app.use(auth)</div>
+                            <div class="text-xs text-stone-500 mt-1">Checks token & calls next()</div>
+                        </div>
+
+                        <div id="sim-route" class="sim-node z-10 flex-1 bg-white border-2 border-stone-200 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">🛣️</div>
+                            <div class="font-bold text-sm">app.get('/data')</div>
+                            <div class="text-xs text-stone-500 mt-1">Fetches DB, calls res.json()</div>
+                        </div>
+
+                        <div id="sim-res" class="sim-node z-10 flex-1 bg-white border-2 border-stone-200 rounded-lg p-4 text-center">
+                            <div class="text-2xl mb-1">✅</div>
+                            <div class="font-bold text-sm">Response</div>
+                            <div class="text-xs text-stone-500 mt-1">JSON sent to Client</div>
+                        </div>
+                    </div>
+                    <div id="sim-status" class="mt-8 text-center text-sm font-bold text-stone-400 h-6 transition-all duration-300">Waiting for request...</div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">RESTful Routing</h3>
+                        <div class="bg-white rounded-xl border border-stone-200 overflow-hidden">
+                            <table class="w-full text-sm text-left">
+                                <thead class="bg-stone-100 text-stone-700">
+                                    <tr>
+                                        <th class="px-4 py-3 font-semibold">Method</th>
+                                        <th class="px-4 py-3 font-semibold">Express Syntax</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-stone-100">
+                                    <tr><td class="px-4 py-3 font-bold text-blue-600">GET</td><td class="px-4 py-3 font-mono text-stone-600">app.get('/users')</td></tr>
+                                    <tr><td class="px-4 py-3 font-bold text-green-600">POST</td><td class="px-4 py-3 font-mono text-stone-600">app.post('/users')</td></tr>
+                                    <tr><td class="px-4 py-3 font-bold text-yellow-600">PUT</td><td class="px-4 py-3 font-mono text-stone-600">app.put('/users/:id')</td></tr>
+                                    <tr><td class="px-4 py-3 font-bold text-red-600">DELETE</td><td class="px-4 py-3 font-mono text-stone-600">app.delete('/users/:id')</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold mb-4">Raw Node vs Express</h3>
+                        <p class="text-stone-600 mb-4">Express simplifies massive amounts of boilerplate code. Manual string matching and Buffer handling in pure Node.js becomes simple, declarative code like <code class="bg-stone-200 px-1 rounded">express.json()</code> and <code class="bg-stone-200 px-1 rounded">app.get()</code>.</p>
+                        <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 text-blue-900 text-sm">
+                            <strong>Key Takeaway:</strong> Express is unopinionated. Master middleware and routing, and you can build any REST architecture.
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-vue" class="content-section hidden">
+                <header class="mb-10">
+                    <span class="text-teal-600 font-semibold text-sm tracking-widest uppercase mb-2 block">Lesson 3</span>
+                    <h2 class="text-4xl font-bold text-stone-900 mb-4">Vue.js: The Front-End</h2>
+                    <p class="text-lg text-stone-600 leading-relaxed">Created by Evan You, Vue is a progressive JavaScript framework. It bridges the gap between the steep learning curve of Angular and the unopinionated library approach of React, offering a powerful reactivity system and Single-File Components.</p>
+                </header>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 mb-10">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100">
+                        <h4 class="text-center font-bold text-stone-800 mb-2">Framework Comparison Analysis</h4>
+                        <p class="text-center text-xs text-stone-500 mb-6">Mapping capabilities based on standard industry consensus.</p>
+                        <div class="chart-container">
+                            <canvas id="vueChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col justify-center space-y-8">
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Reactivity Cycle</h3>
+                            <p class="text-stone-600 mb-4">Vue eliminates manual DOM manipulation (<code class="text-sm bg-stone-200 px-1 rounded">document.getElementById</code>). You change data, Vue efficiently diffs the Virtual DOM, and updates only the necessary physical elements.</p>
+                            <div class="flex items-center space-x-2 text-sm font-bold text-stone-700">
+                                <span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-full">1. Data Mutates</span>
+                                <span>➔</span>
+                                <span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-full">2. Virtual DOM Diffs</span>
+                                <span>➔</span>
+                                <span class="bg-teal-100 text-teal-800 px-3 py-1 rounded-full">3. UI Re-renders</span>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Essential Directives</h3>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="bg-white border border-stone-200 p-3 rounded-lg">
+                                    <div class="font-mono text-pink-600 font-bold mb-1">v-model</div>
+                                    <div class="text-xs text-stone-600">Two-way data binding. Form inputs update state instantly.</div>
+                                </div>
+                                <div class="bg-white border border-stone-200 p-3 rounded-lg">
+                                    <div class="font-mono text-pink-600 font-bold mb-1">v-for</div>
+                                    <div class="text-xs text-stone-600">Loops through arrays to render lists dynamically.</div>
+                                </div>
+                                <div class="bg-white border border-stone-200 p-3 rounded-lg">
+                                    <div class="font-mono text-pink-600 font-bold mb-1">v-if</div>
+                                    <div class="text-xs text-stone-600">Conditional rendering. Removes elements from DOM.</div>
+                                </div>
+                                <div class="bg-white border border-stone-200 p-3 rounded-lg">
+                                    <div class="font-mono text-pink-600 font-bold mb-1">@click</div>
+                                    <div class="text-xs text-stone-600">Shorthand for v-on:click. Handles user events.</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="section-glossary" class="content-section hidden">
+                <header class="mb-10">
+                    <span class="text-stone-500 font-semibold text-sm tracking-widest uppercase mb-2 block">Reference</span>
+                    <h2 class="text-4xl font-bold text-stone-900 mb-4">Glossary & Connections</h2>
+                    <p class="text-lg text-stone-600 leading-relaxed">Search through the core terminology of Full-Stack JavaScript and find the vital links referenced in this week's deck.</p>
+                </header>
+
+                <div class="mb-8 relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-stone-400 text-lg">🔍</span>
+                    <input type="text" id="glossary-search" placeholder="Search abbreviations (e.g., API, REST, DOM)..." class="w-full pl-12 pr-4 py-4 rounded-xl border-2 border-stone-200 focus:border-pink-400 focus:ring-0 outline-none transition-colors text-lg">
+                </div>
+
+                <div id="glossary-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
+                </div>
+
+                <h3 class="text-2xl font-bold mb-6 border-t border-stone-200 pt-8">Essential Ecosystem Links</h3>
+                <div class="flex flex-wrap gap-4">
+                    <a href="https://nodejs.org/" target="_blank" class="px-5 py-3 bg-white border border-stone-200 hover:border-stone-400 rounded-lg text-stone-700 font-medium transition-colors">Node.js Runtime</a>
+                    <a href="https://expressjs.com/" target="_blank" class="px-5 py-3 bg-white border border-stone-200 hover:border-stone-400 rounded-lg text-stone-700 font-medium transition-colors">Express Docs</a>
+                    <a href="https://vuejs.org/" target="_blank" class="px-5 py-3 bg-white border border-stone-200 hover:border-stone-400 rounded-lg text-stone-700 font-medium transition-colors">Vue Framework</a>
+                    <a href="https://www.npmjs.com/" target="_blank" class="px-5 py-3 bg-white border border-stone-200 hover:border-stone-400 rounded-lg text-stone-700 font-medium transition-colors">NPM Registry</a>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <script>
+        const state = {
+            activeSection: 'section-overview',
+            chartsInitialized: {
+                node: false,
+                vue: false
+            },
+            glossary: [
+                { term: "API", def: "Application Programming Interface" },
+                { term: "CDN", def: "Content Delivery Network" },
+                { term: "CPU", def: "Central Processing Unit" },
+                { term: "CSS", def: "Cascading Style Sheets" },
+                { term: "DOM", def: "Document Object Model" },
+                { term: "HTML", def: "HyperText Markup Language" },
+                { term: "HTTP", def: "HyperText Transfer Protocol" },
+                { term: "I/O", def: "Input/Output" },
+                { term: "JSON", def: "JavaScript Object Notation" },
+                { term: "JS", def: "JavaScript" },
+                { term: "LTS", def: "Long-Term Support" },
+                { term: "NPM", def: "Node Package Manager" },
+                { term: "PHP", def: "PHP Hypertext Preprocessor" },
+                { term: "REST", def: "Representational State Transfer" },
+                { term: "SFC", def: "Single-File Component" },
+                { term: "SPA", def: "Single-Page Application" },
+                { term: "UI", def: "User Interface" },
+                { term: "URL", def: "Uniform Resource Locator" }
+            ]
+        };
+
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const sections = document.querySelectorAll('.content-section');
+
+        navButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const targetId = e.target.getAttribute('data-target');
+                
+                navButtons.forEach(b => {
+                    b.classList.remove('nav-active');
+                    b.classList.add('text-stone-600');
+                });
+                e.target.classList.add('nav-active');
+                e.target.classList.remove('text-stone-600');
+
+                sections.forEach(sec => sec.classList.add('hidden'));
+                document.getElementById(targetId).classList.remove('hidden');
+                
+                state.activeSection = targetId;
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                if (targetId === 'section-node' && !state.chartsInitialized.node) {
+                    initNodeChart();
+                    state.chartsInitialized.node = true;
+                }
+                if (targetId === 'section-vue' && !state.chartsInitialized.vue) {
+                    initVueChart();
+                    state.chartsInitialized.vue = true;
+                }
+            });
+        });
+
+        function initNodeChart() {
+            const ctx = document.getElementById('eventLoopChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['0s', '1s', '2s', '3s', '4s', '5s'],
+                    datasets: [
+                        {
+                            label: 'Blocking Server (Traditional)',
+                            data: [0, 10, 20, 30, 40, 50],
+                            borderColor: '#a8a29e',
+                            backgroundColor: 'rgba(168, 162, 158, 0.2)',
+                            tension: 0.1,
+                            fill: true
+                        },
+                        {
+                            label: 'Non-Blocking Server (Node.js)',
+                            data: [0, 50, 120, 250, 450, 800],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { family: 'sans-serif' } } },
+                        tooltip: { mode: 'index', intersect: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, title: { display: true, text: 'Requests Handled' } },
+                        x: { title: { display: true, text: 'Time Elapsed' } }
+                    }
+                }
+            });
+        }
+
+        function initVueChart() {
+            const ctx = document.getElementById('vueChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [
+                        ['Ease of', 'Learning'], 
+                        'Reactivity Speed', 
+                        ['Component', 'Flexibility'], 
+                        ['Ecosystem', 'Size'], 
+                        ['Two-Way', 'Binding']
+                    ],
+                    datasets: [
+                        {
+                            label: 'Vue.js',
+                            data: [90, 85, 90, 80, 95],
+                            backgroundColor: 'rgba(20, 184, 166, 0.2)',
+                            borderColor: '#14b8a6',
+                            pointBackgroundColor: '#14b8a6'
+                        },
+                        {
+                            label: 'React',
+                            data: [60, 90, 95, 100, 40],
+                            backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                            borderColor: '#3b82f6',
+                            pointBackgroundColor: '#3b82f6'
+                        },
+                        {
+                            label: 'Angular',
+                            data: [40, 80, 85, 90, 90],
+                            backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                            borderColor: '#ef4444',
+                            pointBackgroundColor: '#ef4444'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            min: 0,
+                            max: 100,
+                            ticks: { display: false }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom' }
+                    }
+                }
+            });
+        }
+
+        const simBtn = document.getElementById('run-sim-btn');
+        const nodes = ['sim-req', 'sim-mid1', 'sim-mid2', 'sim-route', 'sim-res'];
+        const statusText = document.getElementById('sim-status');
+        let isSimulating = false;
+
+        simBtn.addEventListener('click', () => {
+            if (isSimulating) return;
+            isSimulating = true;
+            simBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            nodes.forEach(id => {
+                const el = document.getElementById(id);
+                el.classList.remove('sim-active', 'sim-success');
+            });
+            
+            statusText.innerText = "Initiating HTTP Request...";
+            statusText.className = "mt-8 text-center text-sm font-bold text-stone-600 h-6 transition-all duration-300";
+
+            let step = 0;
+            
+            function nextStep() {
+                if (step > 0) {
+                    document.getElementById(nodes[step - 1]).classList.remove('sim-active');
+                    document.getElementById(nodes[step - 1]).classList.add('sim-success');
+                }
+                
+                if (step < nodes.length) {
+                    const el = document.getElementById(nodes[step]);
+                    el.classList.add('sim-active');
+                    
+                    const msgMap = [
+                        "Client sends GET request to server.",
+                        "Logger middleware intercepts: logging headers.",
+                        "Auth middleware intercepts: validating JWT token.",
+                        "Route Handler matching '/data'. Fetching from database.",
+                        "Response middleware packaging JSON and sending to client."
+                    ];
+                    statusText.innerText = msgMap[step];
+                    
+                    step++;
+                    setTimeout(nextStep, 1000);
+                } else {
+                    statusText.innerText = "Cycle Complete. Connection Closed.";
+                    statusText.classList.remove('text-stone-600');
+                    statusText.classList.add('text-green-600');
+                    isSimulating = false;
+                    simBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+            
+            setTimeout(nextStep, 300);
+        });
+
+        const searchInput = document.getElementById('glossary-search');
+        const glossaryGrid = document.getElementById('glossary-grid');
+
+        function renderGlossary(filter = "") {
+            glossaryGrid.innerHTML = "";
+            const filtered = state.glossary.filter(item => 
+                item.term.toLowerCase().includes(filter.toLowerCase()) || 
+                item.def.toLowerCase().includes(filter.toLowerCase())
+            );
+
+            if (filtered.length === 0) {
+                glossaryGrid.innerHTML = `<div class="col-span-full text-center py-8 text-stone-400">No matching terms found.</div>`;
+                return;
+            }
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-white p-5 rounded-xl border border-stone-200 hover:border-pink-300 transition-colors shadow-sm";
+                card.innerHTML = `
+                    <div class="font-bold text-lg text-pink-700 mb-1">${item.term}</div>
+                    <div class="text-sm text-stone-600">${item.def}</div>
+                `;
+                glossaryGrid.appendChild(card);
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            renderGlossary(e.target.value);
+        });
+
+        renderGlossary();
+    </script>
+</body>
+</html>
+
+
+
