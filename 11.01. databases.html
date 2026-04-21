@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Back-End Development: Databases & Data Structures</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Chosen Palette: Warm Neutrals with Earthy Accents (Stone, Teal, Amber, Rose) -->
+    <!-- Application Structure Plan: The SPA uses a modular dashboard layout, ideal for educational content. It breaks down the 'lessons' into thematic, navigable sections accessible via a sticky top menu. This allows users to consume the dense technical material non-linearly. Interactive elements like the comparative radar chart, the CAP theorem visualizer, and the 'Decision Tree' tool transform static text into active learning experiences, culminating in a practical tool that synthesizes the course's core objective: developing architectural judgment. -->
+    <!-- Visualization & Content Choices: 1. Radar Chart (Chart.js): Compares SQL, NoSQL, and Flat Files across architectural dimensions (Scalability, Rigidity, etc.) to visually summarize trade-offs. 2. Interactive Decision Tree (Vanilla JS + HTML): Translates the text-based 'Decision tree in one breath' into a functional diagnostic tool. 3. CSS/HTML CAP Theorem Diagram: Illustrates the trade-offs of NoSQL databases interactively without using SVGs. All choices rely on HTML/CSS/Canvas and Unicode icons to strictly adhere to the NO SVG/Mermaid rule while maximizing engagement. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #fafaf9; color: #292524; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 40vh;
+            max-height: 400px;
+            min-height: 300px;
+        }
+        .nav-link.active {
+            background-color: #0d9488;
+            color: white;
+            font-weight: 600;
+        }
+        .fade-in { animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden-section { display: none; }
+        .cap-circle {
+            width: 140px; height: 140px; border-radius: 50%; mix-blend-mode: multiply;
+            display: flex; align-items: center; justify-content: center; font-weight: bold; text-align: center;
+            transition: transform 0.3s ease; cursor: pointer; color: white; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+        .cap-circle:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body class="antialiased selection:bg-teal-200 selection:text-teal-900 flex flex-col min-h-screen">
+
+    <header class="bg-stone-900 text-stone-100 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center py-4">
+                <div class="mb-4 md:mb-0 text-center md:text-left">
+                    <h1 class="text-xl font-bold tracking-tight text-teal-400">Cyber.SoHo Educational Hub</h1>
+                    <p class="text-xs text-stone-400 uppercase tracking-wider mt-1">Week 10 · Back-End Architecture</p>
+                </div>
+                <nav class="flex flex-wrap justify-center gap-2" id="main-nav">
+                    <button data-target="intro" class="nav-link active px-3 py-1.5 rounded-full text-sm transition-colors hover:bg-stone-700">Overview</button>
+                    <button data-target="databases" class="nav-link px-3 py-1.5 rounded-full text-sm transition-colors hover:bg-stone-700">Databases</button>
+                    <button data-target="sql" class="nav-link px-3 py-1.5 rounded-full text-sm transition-colors hover:bg-stone-700">SQL</button>
+                    <button data-target="nosql" class="nav-link px-3 py-1.5 rounded-full text-sm transition-colors hover:bg-stone-700">NoSQL</button>
+                    <button data-target="bigdata" class="nav-link px-3 py-1.5 rounded-full text-sm transition-colors hover:bg-stone-700">Big Data</button>
+                    <button data-target="decision" class="nav-link px-3 py-1.5 rounded-full text-sm transition-colors bg-teal-800 hover:bg-teal-700 text-white shadow">Decision Tool</button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+        <section id="intro" class="fade-in space-y-12">
+            <div class="bg-stone-100 rounded-3xl p-8 md:p-12 text-center shadow-sm border border-stone-200">
+                <div class="text-6xl mb-6">📱 🪟 🏢</div>
+                <h2 class="text-4xl md:text-5xl font-bold text-stone-800 mb-6 tracking-tight">Your phone is a window, <br/><span class="text-teal-600">not a warehouse.</span></h2>
+                <p class="text-lg md:text-xl text-stone-600 max-w-3xl mx-auto leading-relaxed">
+                    The photos you scroll past and the messages you receive are not stored on your device. On the other side of that glass window sits a back-end: code that runs, and a database that remembers.
+                </p>
+                <div class="mt-10 flex justify-center gap-4">
+                    <button onclick="document.querySelector('[data-target=\'databases\']').click()" class="bg-teal-600 text-white px-8 py-3 rounded-xl font-semibold shadow-md hover:bg-teal-700 transition-transform hover:-translate-y-1">Explore the Warehouse</button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-3 text-amber-500">⏳</div>
+                    <h3 class="font-bold text-xl mb-2">History</h3>
+                    <p class="text-stone-600 text-sm">From 1950s magnetic tape to today's cloud-native and vector AI databases.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-3 text-teal-500">⚖️</div>
+                    <h3 class="font-bold text-xl mb-2">Trade-offs</h3>
+                    <p class="text-stone-600 text-sm">Understanding ACID vs BASE, and the CAP theorem that rules distributed systems.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-100 hover:shadow-md transition-shadow">
+                    <div class="text-3xl mb-3 text-rose-500">🧠</div>
+                    <h3 class="font-bold text-xl mb-2">Judgement</h3>
+                    <p class="text-stone-600 text-sm">The goal isn't memorizing names; it's developing the architectural judgement to pick the right tool.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="databases" class="hidden-section fade-in space-y-10">
+            <div>
+                <h2 class="text-3xl font-bold text-stone-800 mb-4 border-b-2 border-teal-500 inline-block pb-2">The Foundations of Memory</h2>
+                <p class="text-lg text-stone-600 mb-6 leading-relaxed">
+                    This section introduces the core concept of databases and their humble beginnings. A database is simply "a place that remembers at scale." We explore the four fundamental reasons applications rely on dedicated database management systems rather than simple spreadsheets or files.
+                </p>
+            </div>
+
+            <div class="bg-teal-50 p-6 md:p-8 rounded-2xl border border-teal-100">
+                <h3 class="text-xl font-bold text-teal-900 mb-6 text-center">The 4 Reasons We Use Databases</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-5 rounded-xl shadow-sm">
+                        <div class="text-2xl mb-2">💾</div>
+                        <h4 class="font-bold text-stone-800">Persistence</h4>
+                        <p class="text-sm text-stone-500 mt-2">Data survives power loss. It remains intact beyond the application's lifecycle.</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm">
+                        <div class="text-2xl mb-2">👥</div>
+                        <h4 class="font-bold text-stone-800">Concurrency</h4>
+                        <p class="text-sm text-stone-500 mt-2">Many users can read and write at the exact same time without data collisions.</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm">
+                        <div class="text-2xl mb-2">🛡️</div>
+                        <h4 class="font-bold text-stone-800">Integrity</h4>
+                        <p class="text-sm text-stone-500 mt-2">Strict rules are enforced. Invalid data or garbage is refused at the door.</p>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl shadow-sm">
+                        <div class="text-2xl mb-2">⚡</div>
+                        <h4 class="font-bold text-stone-800">Performance</h4>
+                        <p class="text-sm text-stone-500 mt-2">Indexes allow finding a single record among billions almost instantly.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4 flex items-center gap-2">📄 Flat Files: The Honest Ancestor</h3>
+                    <p class="text-stone-600 mb-4 text-sm leading-relaxed">
+                        CSV, TSV, and JSONL are plain text files, one record per line. They are the "Esperanto of data" - universally readable.
+                    </p>
+                    <div class="space-y-4">
+                        <div class="bg-emerald-50 border-l-4 border-emerald-500 p-3">
+                            <h4 class="text-sm font-bold text-emerald-800">✅ When to use (The Tool)</h4>
+                            <ul class="text-xs text-emerald-700 mt-1 list-disc list-inside">
+                                <li>Read-mostly configs (.env, .yaml)</li>
+                                <li>Data interchange (nightly CSV dumps)</li>
+                                <li>Fits in memory (tens of thousands rows)</li>
+                            </ul>
+                        </div>
+                        <div class="bg-rose-50 border-l-4 border-rose-500 p-3">
+                            <h4 class="text-sm font-bold text-rose-800">❌ When to avoid (The Trap)</h4>
+                            <ul class="text-xs text-rose-700 mt-1 list-disc list-inside">
+                                <li>Concurrent writes (causes corruption)</li>
+                                <li>Indexed lookups across millions of rows</li>
+                                <li>Need transactions or referential integrity</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-stone-900 text-stone-300 p-6 rounded-2xl shadow-sm">
+                    <h3 class="text-xl font-bold text-white mb-4">Timeline of Memory</h3>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex gap-4">
+                            <div class="font-mono text-teal-400 font-bold">1950s</div>
+                            <div>Magnetic tape (sequential only)</div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="font-mono text-teal-400 font-bold">1970s</div>
+                            <div>Codd publishes the Relational Model ("everything is a table")</div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="font-mono text-teal-400 font-bold">1980s</div>
+                            <div>SQL Standardised; Oracle, DB2 golden age</div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="font-mono text-teal-400 font-bold">1990s</div>
+                            <div>MySQL, PostgreSQL open source floodgates</div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="font-mono text-amber-400 font-bold">2000s</div>
+                            <div>The NoSQL wave for web-scale (MongoDB, Redis)</div>
+                        </div>
+                        <div class="flex gap-4">
+                            <div class="font-mono text-blue-400 font-bold">2020s</div>
+                            <div>Vector & AI-native databases (Pinecone, pgvector)</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sql" class="hidden-section fade-in space-y-10">
+            <div>
+                <h2 class="text-3xl font-bold text-stone-800 mb-4 border-b-2 border-teal-500 inline-block pb-2">SQL: The Fifty-Year-Old King</h2>
+                <p class="text-lg text-stone-600 mb-6 leading-relaxed">
+                    Structured Query Language is the undisputed industry standard. This section explores why declarative querying, strict relational models, and ACID transaction guarantees make SQL the default choice for the vast majority of software projects, from banking to e-commerce.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-8 items-center">
+                <div class="space-y-6">
+                    <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                        <h3 class="text-xl font-bold mb-3 text-stone-800">The Declarative Magic</h3>
+                        <p class="text-sm text-stone-600 mb-4">You tell the engine <strong>what</strong> you want, not <strong>how</strong> to get it. Decades of algorithmic optimization happen automatically.</p>
+                        <div class="bg-stone-900 p-4 rounded-lg font-mono text-sm text-emerald-400 overflow-x-auto">
+                            SELECT full_name<br>
+                            FROM Student<br>
+                            WHERE country = 'Spain';
+                        </div>
+                        <p class="text-xs text-stone-400 italic mt-2">You write 8 words. The engine handles the billions of rows.</p>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                        <h3 class="text-xl font-bold mb-4 text-stone-800">The ACID Contract</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="p-3 bg-stone-50 rounded border border-stone-100">
+                                <div class="font-bold text-teal-700">Atomicity</div>
+                                <div class="text-xs text-stone-600 mt-1">All or nothing. No half-finished transactions.</div>
+                            </div>
+                            <div class="p-3 bg-stone-50 rounded border border-stone-100">
+                                <div class="font-bold text-teal-700">Consistency</div>
+                                <div class="text-xs text-stone-600 mt-1">Data always moves from one valid state to another.</div>
+                            </div>
+                            <div class="p-3 bg-stone-50 rounded border border-stone-100">
+                                <div class="font-bold text-teal-700">Isolation</div>
+                                <div class="text-xs text-stone-600 mt-1">Concurrent transactions act as if they are alone.</div>
+                            </div>
+                            <div class="p-3 bg-stone-50 rounded border border-stone-100">
+                                <div class="font-bold text-teal-700">Durability</div>
+                                <div class="text-xs text-stone-600 mt-1">Once committed, it survives power loss.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm">
+                    <h3 class="text-xl font-bold text-stone-800 mb-2 text-center">Architecture Comparison</h3>
+                    <p class="text-xs text-center text-stone-500 mb-4">Visualizing the relative strengths of data storage models.</p>
+                    <div class="chart-container">
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-stone-100 p-6 rounded-2xl">
+                <h3 class="text-lg font-bold mb-4 text-center">The 5 Sub-Languages of SQL</h3>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-2 text-center">
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <div class="font-bold text-teal-700">DQL</div>
+                        <div class="text-xs">Query<br>(SELECT)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <div class="font-bold text-teal-700">DML</div>
+                        <div class="text-xs">Manipulate<br>(INSERT, UPDATE)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <div class="font-bold text-teal-700">DDL</div>
+                        <div class="text-xs">Define Shape<br>(CREATE, DROP)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <div class="font-bold text-teal-700">TCL</div>
+                        <div class="text-xs">Transactions<br>(COMMIT, ROLLBACK)</div>
+                    </div>
+                    <div class="bg-white p-3 rounded shadow-sm">
+                        <div class="font-bold text-teal-700">DCL</div>
+                        <div class="text-xs">Control<br>(GRANT, REVOKE)</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="nosql" class="hidden-section fade-in space-y-10">
+            <div>
+                <h2 class="text-3xl font-bold text-stone-800 mb-4 border-b-2 border-amber-500 inline-block pb-2">NoSQL: Scale, Schema, Speed</h2>
+                <p class="text-lg text-stone-600 mb-6 leading-relaxed">
+                    When massive internet companies hit the physical limits of single servers around 2005, NoSQL ("Not Only SQL") emerged. This section details how trading strict consistency for horizontal scalability birthed four specialized database families designed for specific data shapes.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-8">
+                <div class="lg:col-span-2 grid sm:grid-cols-2 gap-4">
+                    <div class="bg-white p-5 rounded-2xl border border-stone-200 hover:border-amber-400 transition-colors">
+                        <div class="text-2xl mb-2">📄</div>
+                        <h3 class="font-bold text-lg">Document Stores</h3>
+                        <p class="text-sm text-stone-600 mt-1">Self-describing JSON-like records. Schema-flexible.</p>
+                        <div class="mt-3 text-xs bg-stone-100 p-2 rounded"><strong>Use:</strong> CMS, Catalogs, Mobile apps<br><strong>Ex:</strong> MongoDB, Firestore</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-stone-200 hover:border-amber-400 transition-colors">
+                        <div class="text-2xl mb-2">🔑</div>
+                        <h3 class="font-bold text-lg">Key-Value Stores</h3>
+                        <p class="text-sm text-stone-600 mt-1">Simplest database. All operations O(1). In-memory speed.</p>
+                        <div class="mt-3 text-xs bg-stone-100 p-2 rounded"><strong>Use:</strong> Caching, Sessions, Counters<br><strong>Ex:</strong> Redis, DynamoDB</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-stone-200 hover:border-amber-400 transition-colors">
+                        <div class="text-2xl mb-2">📊</div>
+                        <h3 class="font-bold text-lg">Wide-Column Stores</h3>
+                        <p class="text-sm text-stone-600 mt-1">Millions of sparse columns per row. Scales across datacenters.</p>
+                        <div class="mt-3 text-xs bg-stone-100 p-2 rounded"><strong>Use:</strong> IoT, Logs, Time-series<br><strong>Ex:</strong> Cassandra, Bigtable</div>
+                    </div>
+                    <div class="bg-white p-5 rounded-2xl border border-stone-200 hover:border-amber-400 transition-colors">
+                        <div class="text-2xl mb-2">🕸️</div>
+                        <h3 class="font-bold text-lg">Graph Databases</h3>
+                        <p class="text-sm text-stone-600 mt-1">Nodes and edges are first-class citizens. Fast multi-hop traversal.</p>
+                        <div class="mt-3 text-xs bg-stone-100 p-2 rounded"><strong>Use:</strong> Social nets, Recommendations<br><strong>Ex:</strong> Neo4j, Neptune</div>
+                    </div>
+                </div>
+
+                <div class="bg-stone-900 rounded-2xl p-6 text-white flex flex-col items-center justify-center relative overflow-hidden shadow-lg">
+                    <h3 class="text-xl font-bold mb-2 z-10 text-center">The CAP Theorem</h3>
+                    <p class="text-xs text-stone-400 text-center mb-6 z-10">In distributed systems, you can only pick two.</p>
+                    
+                    <div class="relative w-64 h-64 z-10">
+                        <div class="cap-circle bg-rose-500 absolute top-0 left-1/2 transform -translate-x-1/2 opacity-90" onmouseover="showCapText('Consistency', 'Every read sees the latest write.')">C</div>
+                        <div class="cap-circle bg-amber-500 absolute bottom-0 left-0 opacity-90" onmouseover="showCapText('Availability', 'Every request gets a response (even if stale).')">A</div>
+                        <div class="cap-circle bg-teal-500 absolute bottom-0 right-0 opacity-90" onmouseover="showCapText('Partition', 'System works despite network drops. (A reality, not a choice).')">P</div>
+                        
+                        <div id="cap-display" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-stone-900 bg-opacity-90 p-2 rounded text-center w-40 pointer-events-none transition-opacity opacity-0 text-sm border border-stone-600">
+                            <strong id="cap-title" class="text-amber-400"></strong><br>
+                            <span id="cap-desc" class="text-xs text-stone-300"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4 z-10 text-center bg-stone-800 p-3 rounded w-full">
+                        <div class="text-sm font-bold text-amber-400">BASE (NoSQL's pitch)</div>
+                        <div class="text-xs text-stone-300 mt-1">Basically Available, Soft-state, Eventually consistent.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="bigdata" class="hidden-section fade-in space-y-10">
+            <div>
+                <h2 class="text-3xl font-bold text-stone-800 mb-4 border-b-2 border-indigo-500 inline-block pb-2">Hybrid Systems & Big Data</h2>
+                <p class="text-lg text-stone-600 mb-6 leading-relaxed">
+                    Modern applications rarely rely on a single database. This section looks at Polyglot Persistence (mixing tools like SQL, Redis, and Graph), and introduces the Big Data ecosystem designed to handle information that exceeds the capacity of traditional single-machine engines.
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8">
+                <div class="bg-indigo-50 p-6 rounded-2xl border border-indigo-100">
+                    <h3 class="text-xl font-bold text-indigo-900 mb-4 flex items-center gap-2">🧩 Polyglot Persistence</h3>
+                    <p class="text-sm text-indigo-800 mb-4">Using the best specialized tool for each distinct workload within a single application architecture (e.g., Spotify).</p>
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm text-sm">
+                            <span class="font-semibold">Users/Payments</span>
+                            <span class="text-teal-600 font-bold bg-teal-50 px-2 rounded border border-teal-200">PostgreSQL</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm text-sm">
+                            <span class="font-semibold">Sessions/Counters</span>
+                            <span class="text-rose-600 font-bold bg-rose-50 px-2 rounded border border-rose-200">Redis</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm text-sm">
+                            <span class="font-semibold">Music Search</span>
+                            <span class="text-amber-600 font-bold bg-amber-50 px-2 rounded border border-amber-200">Elasticsearch</span>
+                        </div>
+                        <div class="flex justify-between items-center bg-white p-2 rounded shadow-sm text-sm">
+                            <span class="font-semibold">Recommendations</span>
+                            <span class="text-purple-600 font-bold bg-purple-50 px-2 rounded border border-purple-200">Graph DB</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-stone-200">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4">The 5 V's of Big Data</h3>
+                    <div class="space-y-3">
+                        <div class="flex items-start gap-3">
+                            <div class="bg-indigo-100 text-indigo-800 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">1</div>
+                            <div><strong class="text-stone-800">Volume:</strong> <span class="text-sm text-stone-600">Terabytes to Exabytes of data.</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-indigo-100 text-indigo-800 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">2</div>
+                            <div><strong class="text-stone-800">Velocity:</strong> <span class="text-sm text-stone-600">Millions of continuous events per second.</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-indigo-100 text-indigo-800 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">3</div>
+                            <div><strong class="text-stone-800">Variety:</strong> <span class="text-sm text-stone-600">Unstructured text, JSON, media, graphs.</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-indigo-100 text-indigo-800 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">4</div>
+                            <div><strong class="text-stone-800">Veracity:</strong> <span class="text-sm text-stone-600">Reliability and trust in messy sources.</span></div>
+                        </div>
+                        <div class="flex items-start gap-3">
+                            <div class="bg-indigo-100 text-indigo-800 font-bold rounded-full w-6 h-6 flex items-center justify-center flex-shrink-0 mt-0.5">5</div>
+                            <div><strong class="text-stone-800">Value:</strong> <span class="text-sm text-stone-600">Turning raw bytes into business insight.</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-stone-900 text-white p-6 md:p-8 rounded-2xl overflow-x-auto shadow-lg">
+                <h3 class="text-xl font-bold mb-6 text-center text-indigo-300">The MapReduce Pattern</h3>
+                <div class="flex flex-col md:flex-row items-center justify-center gap-4 text-center min-w-max">
+                    <div class="bg-stone-800 p-4 rounded border border-stone-600 w-32">
+                        <div class="text-xs text-stone-400 mb-1">INPUT</div>
+                        <div class="font-bold">Raw Chunks</div>
+                    </div>
+                    <div class="text-indigo-400 font-bold text-xl">→</div>
+                    <div class="bg-indigo-900 p-4 rounded border border-indigo-500 w-32 shadow-[0_0_15px_rgba(79,70,229,0.5)]">
+                        <div class="text-xs text-indigo-300 mb-1">MAP</div>
+                        <div class="font-bold">Extract (K, V)</div>
+                    </div>
+                    <div class="text-indigo-400 font-bold text-xl">→</div>
+                    <div class="bg-stone-800 p-4 rounded border border-stone-600 w-32">
+                        <div class="text-xs text-stone-400 mb-1">SHUFFLE</div>
+                        <div class="font-bold">Sort by Key</div>
+                    </div>
+                    <div class="text-indigo-400 font-bold text-xl">→</div>
+                    <div class="bg-teal-900 p-4 rounded border border-teal-500 w-32 shadow-[0_0_15px_rgba(13,148,136,0.5)]">
+                        <div class="text-xs text-teal-300 mb-1">REDUCE</div>
+                        <div class="font-bold">Combine</div>
+                    </div>
+                    <div class="text-indigo-400 font-bold text-xl">→</div>
+                    <div class="bg-stone-800 p-4 rounded border border-stone-600 w-32">
+                        <div class="text-xs text-stone-400 mb-1">OUTPUT</div>
+                        <div class="font-bold">Results</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="decision" class="hidden-section fade-in space-y-8">
+            <div class="text-center max-w-2xl mx-auto">
+                <h2 class="text-3xl font-bold text-stone-800 mb-4">Architectural Judgement Tool</h2>
+                <p class="text-lg text-stone-600 mb-8">
+                    Your job isn't to memorize names; it's to develop judgement. Answer these simple questions about your data workload to determine the correct back-end storage architecture based on the course's final decision tree.
+                </p>
+            </div>
+
+            <div class="max-w-xl mx-auto bg-white rounded-2xl shadow-lg border border-stone-200 overflow-hidden">
+                <div class="bg-teal-700 text-white p-4">
+                    <h3 class="font-bold text-lg">System Requirements Analyzer</h3>
+                </div>
+                
+                <div id="quiz-container" class="p-8">
+                    <div id="question-text" class="text-xl text-stone-800 font-medium mb-8 text-center min-h-[60px]">
+                        Are multiple users or systems going to write/update data concurrently?
+                    </div>
+                    
+                    <div id="options-container" class="space-y-3">
+                        <button onclick="handleAnswer(false, 1)" class="w-full text-left px-6 py-4 rounded-xl border-2 border-stone-200 hover:border-teal-500 hover:bg-teal-50 transition-all font-medium text-stone-700">No, it's single-user or read-only configs.</button>
+                        <button onclick="handleAnswer(true, 1)" class="w-full text-left px-6 py-4 rounded-xl border-2 border-stone-200 hover:border-teal-500 hover:bg-teal-50 transition-all font-medium text-stone-700">Yes, many concurrent writes.</button>
+                    </div>
+
+                    <div id="result-container" class="hidden text-center fade-in">
+                        <div id="result-icon" class="text-6xl mb-4"></div>
+                        <h4 id="result-title" class="text-2xl font-bold text-stone-800 mb-2"></h4>
+                        <p id="result-desc" class="text-stone-600 mb-6"></p>
+                        <button onclick="resetQuiz()" class="text-teal-600 font-bold hover:underline px-4 py-2">Start Over 🔄</button>
+                    </div>
+                </div>
+                
+                <div class="bg-stone-50 p-4 border-t border-stone-200 text-xs text-stone-500 text-center">
+                    Based on the "Decision tree in one breath" curriculum standard.
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-8 text-center text-sm border-t border-stone-800 mt-auto">
+        <p class="mb-2 text-stone-300">From the Industry to the Classroom — Building the IT's Future, Today and Together!</p>
+        <p class="text-xs">Cyber.SoHo Educational Hub · Educational purposes only.</p>
+    </footer>
+
+    <script>
+        const navLinks = document.querySelectorAll('.nav-link');
+        const sections = document.querySelectorAll('section');
+        let radarChartInstance = null;
+
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                const targetId = link.getAttribute('data-target');
+                
+                navLinks.forEach(btn => btn.classList.remove('active', 'bg-teal-800', 'text-white'));
+                
+                if(targetId === 'decision') {
+                    link.classList.add('bg-teal-800', 'text-white');
+                } else {
+                    link.classList.add('active');
+                }
+
+                sections.forEach(sec => sec.classList.add('hidden-section'));
+                document.getElementById(targetId).classList.remove('hidden-section');
+
+                if (targetId === 'sql' && !radarChartInstance) {
+                    initRadarChart();
+                }
+                
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        function initRadarChart() {
+            const ctx = document.getElementById('radarChart').getContext('2d');
+            radarChartInstance = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Structural Strictness', 'Horizontal Scale', 'ACID Transactions', 'Relational Complexity', 'Schema Flexibility'],
+                    datasets: [
+                        {
+                            label: 'Relational SQL',
+                            data: [5, 2, 5, 5, 1],
+                            backgroundColor: 'rgba(13, 148, 136, 0.2)',
+                            borderColor: 'rgba(13, 148, 136, 1)',
+                            pointBackgroundColor: 'rgba(13, 148, 136, 1)',
+                        },
+                        {
+                            label: 'Document NoSQL',
+                            data: [1, 5, 2, 2, 5],
+                            backgroundColor: 'rgba(245, 158, 11, 0.2)',
+                            borderColor: 'rgba(245, 158, 11, 1)',
+                            pointBackgroundColor: 'rgba(245, 158, 11, 1)',
+                        },
+                        {
+                            label: 'Flat File (CSV)',
+                            data: [2, 1, 1, 1, 1],
+                            backgroundColor: 'rgba(244, 63, 94, 0.2)',
+                            borderColor: 'rgba(244, 63, 94, 1)',
+                            borderDash: [5, 5]
+                        }
+                    ]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    responsive: true,
+                    scales: {
+                        r: {
+                            angleLines: { color: 'rgba(0,0,0,0.1)' },
+                            grid: { color: 'rgba(0,0,0,0.1)' },
+                            pointLabels: { font: { family: 'Inter', size: 11 }, color: '#444' },
+                            ticks: { display: false, min: 0, max: 5 }
+                        }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { font: { family: 'Inter' } } },
+                        tooltip: { backgroundColor: 'rgba(28, 25, 23, 0.9)', titleFont: { family: 'Inter' }, bodyFont: { family: 'Inter' } }
+                    }
+                }
+            });
+        }
+
+        const capDisplay = document.getElementById('cap-display');
+        const capTitle = document.getElementById('cap-title');
+        const capDesc = document.getElementById('cap-desc');
+
+        window.showCapText = function(title, desc) {
+            capTitle.innerText = title;
+            capDesc.innerText = desc;
+            capDisplay.style.opacity = 1;
+        };
+
+        document.querySelector('.relative.w-64.h-64').addEventListener('mouseleave', () => {
+            capDisplay.style.opacity = 0;
+        });
+
+        const quizData = [
+            { id: 1, text: "Are multiple users or systems going to write/update data concurrently?", 
+              yesNext: 2, noRes: { title: "Flat File (CSV/JSONL)", icon: "📄", desc: "Perfect for read-mostly configurations, single-user scripts, or basic data interchange. Trap: Never use for concurrent writes."} },
+            
+            { id: 2, text: "Are you operating at global web-scale (petabytes/millions of ops) OR do you need an extremely flexible JSON-like schema?", 
+              yesNext: 3, noNext: 4 },
+              
+            { id: 3, text: "Is the data highly structured, and do you require perfect financial-grade safety (ACID) over extreme availability?", 
+              yesRes: { title: "SQL Database (PostgreSQL)", icon: "🛡️", desc: "Even at scale, if perfect consistency (CP) and strict relations are mandatory, you scale SQL vertically or use distributed SQL. Always default to SQL."}, 
+              noRes: { title: "NoSQL Database", icon: "🌐", desc: "Choose based on shape: Document (MongoDB) for CMS, Key-Value (Redis) for cache, Wide-Column (Cassandra) for IoT, Graph (Neo4j) for relationships. Favors BASE over ACID."} },
+              
+            { id: 4, text: "Are you ingesting massive amounts of raw, messy data for offline data scientists to analyze later?", 
+              yesRes: { title: "Data Lake & Big Data", icon: "🌊", desc: "Store raw files in S3/HDFS and use MapReduce/Spark. High volume, high variety, low cost per TB."}, 
+              noRes: { title: "SQL Database (PostgreSQL)", icon: "👑", desc: "The default choice. Structured, transactional, ensures integrity. Perfect for 95% of standard applications."} }
+        ];
+
+        function handleAnswer(isYes, currentQId) {
+            const q = quizData.find(x => x.id === currentQId);
+            const target = isYes ? (q.yesRes || q.yesNext) : (q.noRes || q.noNext);
+
+            if (typeof target === 'object') {
+                showResult(target);
+            } else {
+                renderQuestion(target);
+            }
+        }
+
+        function renderQuestion(qId) {
+            const q = quizData.find(x => x.id === qId);
+            const qText = document.getElementById('question-text');
+            const options = document.getElementById('options-container');
+            
+            qText.style.opacity = 0; options.style.opacity = 0;
+            
+            setTimeout(() => {
+                qText.innerText = q.text;
+                options.innerHTML = `
+                    <button onclick="handleAnswer(false, ${q.id})" class="w-full text-left px-6 py-4 rounded-xl border-2 border-stone-200 hover:border-teal-500 hover:bg-teal-50 transition-all font-medium text-stone-700">No</button>
+                    <button onclick="handleAnswer(true, ${q.id})" class="w-full text-left px-6 py-4 rounded-xl border-2 border-stone-200 hover:border-teal-500 hover:bg-teal-50 transition-all font-medium text-stone-700">Yes</button>
+                `;
+                qText.style.opacity = 1; options.style.opacity = 1;
+            }, 200);
+        }
+
+        function showResult(res) {
+            document.getElementById('question-text').classList.add('hidden');
+            document.getElementById('options-container').classList.add('hidden');
+            
+            document.getElementById('result-icon').innerText = res.icon;
+            document.getElementById('result-title').innerText = res.title;
+            document.getElementById('result-desc').innerText = res.desc;
+            
+            const resContainer = document.getElementById('result-container');
+            resContainer.classList.remove('hidden');
+        }
+
+        window.resetQuiz = function() {
+            document.getElementById('result-container').classList.add('hidden');
+            document.getElementById('question-text').classList.remove('hidden');
+            document.getElementById('options-container').classList.remove('hidden');
+            renderQuestion(1);
+        };
+    </script>
+</body>
+</html>
+
+
