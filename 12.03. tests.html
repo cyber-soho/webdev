@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Architectures: Study Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        teal: { 600: '#0d9488', 700: '#0f766e' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { background-color: #fafaf9; }
+        
+        /* Flashcard Flip Animation CSS */
+        .flashcard-container {
+            perspective: 1000px;
+            cursor: pointer;
+        }
+        .flashcard-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            min-height: 12rem;
+        }
+        .flashcard-container.flipped .flashcard-inner {
+            transform: rotateY(180deg);
+        }
+        .flashcard-front, .flashcard-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e7e5e4;
+        }
+        .flashcard-front {
+            background-color: white;
+            color: #1c1917;
+        }
+        .flashcard-back {
+            background-color: #0f766e;
+            color: white;
+            transform: rotateY(180deg);
+        }
+
+        /* Tab Transitions */
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="font-sans text-stone-900 min-h-screen flex flex-col">
+
+    <header class="bg-white shadow-sm sticky top-0 z-10">
+        <div class="max-w-5xl mx-auto px-4 py-6">
+            <h1 class="text-3xl font-bold text-stone-800 text-center mb-6">App Architectures Study Guide</h1>
+            <nav class="flex justify-center border-b border-stone-200">
+                <button onclick="switchTab('flashcards')" id="tab-btn-flashcards" class="px-6 py-3 text-lg font-semibold border-b-2 border-teal-600 text-teal-700 transition-colors">
+                    Flashcards (25)
+                </button>
+                <button onclick="switchTab('quiz')" id="tab-btn-quiz" class="px-6 py-3 text-lg font-semibold border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition-colors">
+                    Practice Quiz (10)
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="flex-grow max-w-5xl mx-auto px-4 py-8 w-full">
+        
+        <section id="tab-flashcards" class="tab-content active">
+            <div class="mb-6 text-center">
+                <p class="text-stone-600">Click on any card to flip it and reveal the answer.</p>
+            </div>
+            <div id="flashcards-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+        </section>
+
+        <section id="tab-quiz" class="tab-content">
+            <div class="mb-6 text-center">
+                <p class="text-stone-600">Test your knowledge. Select an answer to see the rationale.</p>
+            </div>
+            <div id="quiz-container" class="space-y-8">
+                </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- DATA: Flashcards (25 items) ---
+        const flashcardsData = [
+            { front: "Web App Architecture", back: "The blueprint describing how a web application's parts are arranged and how they communicate with each other." },
+            { front: "3 Universal Web App Components", back: "Client (Front-End), Server (Back-End), and Database." },
+            { front: "Client (Web Architecture)", back: "The Front-End; what the user directly sees and interacts with." },
+            { front: "Server (Web Architecture)", back: "The Back-End; the processing brain that handles business logic." },
+            { front: "1-Tier Architecture", back: "A system where all components (Client, Server, Database) live on a single machine." },
+            { front: "2-Tier Architecture", back: "A system where the Client connects directly to the Database." },
+            { front: "3-Tier Architecture", back: "A system arranged as Client → App Server → Database." },
+            { front: "Primary benefits of 3-Tier Architecture", back: "Enhanced security, better maintainability, and the ability to scale each tier independently." },
+            { front: "Monolithic Architecture", back: "An application built with one single codebase and a unified deployment." },
+            { front: "Ideal use cases for Monolithic Architecture", back: "Small teams, early-stage projects, or situations with tight deadlines." },
+            { front: "Microservices Architecture", back: "An application broken down into many small, independent services that communicate with each other." },
+            { front: "Primary drawbacks of Microservices", back: "Increased network complexity and harder debugging processes." },
+            { front: "Single-Page Application (SPA)", back: "A web app that downloads a JS bundle on initial load to provide very fast, seamless navigation without full page reloads." },
+            { front: "Multi-Page Application (MPA)", back: "A traditional web app that uses server-side rendering, resulting in full page reloads upon navigation." },
+            { front: "Main advantages of an MPA", back: "Fast initial load time and excellent SEO capabilities." },
+            { front: "Universal Rendering (JAMstack)", back: "Modern frameworks (like Next.js or Nuxt) that combine both Server-Side Rendering (SSR) and Client-Side Rendering (CSR)." },
+            { front: "Unique constraints of Mobile Design", back: "Limited battery life, touch-first UI, variable networks, hardware sensors, and two distinct ecosystems (iOS and Android)." },
+            { front: "Native Mobile Apps", back: "Apps built specifically for one operating system, offering top performance and full hardware access." },
+            { front: "Core languages for Native Apps", back: "Swift for iOS and Kotlin for Android." },
+            { front: "Hybrid Mobile Apps", back: "Web applications running inside a mobile WebView container, allowing for ~95% code reuse but slower performance." },
+            { front: "Cross-Platform Mobile Apps", back: "Apps built with frameworks like React Native or Flutter, offering ~85% code reuse with near-native speed." },
+            { front: "Mobile Web Apps", back: "Standard HTML/CSS/JS viewed in a mobile browser, offering quick reach but lacking offline support and home screen installation." },
+            { front: "Progressive Web Apps (PWAs)", back: "Websites that behave like native apps, capable of being installed to the home screen and working offline." },
+            { front: "Service Worker", back: "A JavaScript file running in the background of a PWA that handles caching and enables offline functionality." },
+            { front: "Web App Manifest", back: "A JSON file used in PWAs to describe the app's name, icons, and display colors." }
+        ];
+
+        // --- DATA: Quiz (10 items) ---
+        const quizData = [
+            {
+                qNum: 1,
+                question: "A company wants to separate their client application from their database for security reasons, so they introduce an intermediate application server. Which architecture are they implementing?",
+                hint: "Think about the total number of distinct layers handling the user interface, business logic, and data storage.",
+                options: [
+                    { text: "1-Tier Architecture", isCorrect: false, rationale: "A single-tier setup places the client, server, and database all on one machine, offering no separation." },
+                    { text: "2-Tier Architecture", isCorrect: false, rationale: "In this setup, the client connects directly to the database, which exposes database credentials and lacks an intermediate security layer." },
+                    { text: "3-Tier Architecture", isCorrect: true, rationale: "Adding an App Server between the Client and Database protects data, improves maintainability, and allows independent scaling of each layer." },
+                    { text: "N-Tier Architecture", isCorrect: false, rationale: "While it separates components, this implies many specialized layers distributed across a network, which goes beyond the simple addition of one intermediate app server." }
+                ]
+            },
+            {
+                qNum: 2,
+                question: "A small startup team is building their first product with a very tight deadline. Which backend architecture is generally recommended for this scenario?",
+                hint: "Consider the approach that involves a single codebase and deployment, minimizing initial operational overhead.",
+                options: [
+                    { text: "Microservices", isCorrect: false, rationale: "This approach introduces network complexity and requires mature DevOps, making it difficult for small teams under tight deadlines." },
+                    { text: "Monolithic Architecture", isCorrect: true, rationale: "Having one codebase and one deployment is simple to set up initially, making it ideal for small teams moving fast." },
+                    { text: "N-Tier Architecture", isCorrect: false, rationale: "This describes the physical separation of layers across networks rather than how the codebase itself is structured and deployed." },
+                    { text: "Universal Rendering", isCorrect: false, rationale: "This refers to a frontend rendering strategy (combining SSR and CSR), not a backend architectural pattern." }
+                ]
+            },
+            {
+                qNum: 3,
+                question: "Every web application fundamentally consists of three universal components. Which of the following is NOT one of those core components?",
+                hint: "Think about the foundational elements required to show a UI, process logic, and store data persistently.",
+                options: [
+                    { text: "Client", isCorrect: false, rationale: "The front-end is a mandatory component where the user views and interacts with the application." },
+                    { text: "Server", isCorrect: false, rationale: "The back-end processing brain is necessary to handle business logic and incoming requests." },
+                    { text: "Database", isCorrect: false, rationale: "A persistent storage layer is required for application data to live securely and be retrieved later." },
+                    { text: "Load Balancer", isCorrect: true, rationale: "While useful for distributing traffic in scalable systems, an application can function entirely without one." }
+                ]
+            },
+            {
+                qNum: 4,
+                question: "A news publishing website prioritizes excellent Search Engine Optimization (SEO) and extremely fast initial page loads. Which rendering strategy aligns best with these goals?",
+                hint: "This strategy involves the server returning a fully rendered HTML document on the very first request.",
+                options: [
+                    { text: "Multi-Page Application (MPA)", isCorrect: true, rationale: "Server-Side Rendering delivers fully formed HTML directly to the browser, providing a fast first paint and easily crawlable content for search engines." },
+                    { text: "Single-Page Application (SPA)", isCorrect: false, rationale: "This approach initially serves an empty HTML shell and relies on JavaScript to render content, making initial loads slower and SEO more challenging." },
+                    { text: "Client-Side Rendering (CSR)", isCorrect: false, rationale: "Relying entirely on the browser to fetch data and build the UI delays the first meaningful paint and complicates search engine indexing." },
+                    { text: "Progressive Web App (PWA)", isCorrect: false, rationale: "While it improves offline capabilities and mobile experience, it does not inherently dictate how the HTML is initially rendered for search engines." }
+                ]
+            },
+            {
+                qNum: 5,
+                question: "Which of the following represents a constraint unique to mobile application development that is not typically a primary concern for web applications?",
+                hint: "Mobile devices operate in dynamic physical environments and rely on finite, built-in resources.",
+                options: [
+                    { text: "Database schema design", isCorrect: false, rationale: "Structuring data efficiently is a fundamental requirement regardless of the platform being developed for." },
+                    { text: "Limited battery life", isCorrect: true, rationale: "Unlike desktop computers, mobile devices rely on finite power, requiring developers to optimize processing and background tasks to prevent rapid draining." },
+                    { text: "Server uptime", isCorrect: false, rationale: "Ensuring backend services remain available is a critical concern for any application that connects to the internet." },
+                    { text: "DNS resolution", isCorrect: false, rationale: "Translating domain names to IP addresses is a fundamental internet protocol step shared by both web and mobile clients." }
+                ]
+            },
+            {
+                qNum: 6,
+                question: "A gaming company is developing an Augmented Reality (AR) mobile game that requires maximum performance and direct, low-latency access to the device's camera and GPU. Which mobile architecture should they choose?",
+                hint: "This approach uses the operating system's preferred programming languages to compile directly for the specific hardware.",
+                options: [
+                    { text: "Hybrid", isCorrect: false, rationale: "Running a web app inside a WebView introduces a performance bottleneck and limits direct access to advanced hardware features." },
+                    { text: "Cross-Platform", isCorrect: false, rationale: "While offering near-native speed, bridging to native hardware components for intense tasks like AR can still introduce latency compared to direct OS integration." },
+                    { text: "Native", isCorrect: true, rationale: "Building specifically for iOS (Swift) or Android (Kotlin) provides the highest possible performance and unrestricted access to hardware sensors." },
+                    { text: "Progressive Web App (PWA)", isCorrect: false, rationale: "Browser-based apps have heavily restricted access to hardware features like advanced camera controls and GPUs due to security sandboxing." }
+                ]
+            },
+            {
+                qNum: 7,
+                question: "A modern startup wants to release their app on both iOS and Android simultaneously. They want near-native speed but need to share about 85% of their codebase. Which approach fits best?",
+                hint: "This approach uses tools like React Native or Flutter to compile a single codebase into separate mobile applications.",
+                options: [
+                    { text: "Native", isCorrect: false, rationale: "This requires maintaining two entirely separate codebases (Swift and Kotlin), resulting in 0% code reuse." },
+                    { text: "Cross-Platform", isCorrect: true, rationale: "Frameworks like React Native and Flutter allow teams to write one codebase that compiles to performant apps for multiple ecosystems." },
+                    { text: "Hybrid", isCorrect: false, rationale: "While offering high code reuse (95%), this approach relies on a WebView, which sacrifices the near-native speed the startup is looking for." },
+                    { text: "Mobile Web", isCorrect: false, rationale: "This creates a website accessible via a browser, failing to provide the requested near-native app experience and ecosystem integration." }
+                ]
+            },
+            {
+                qNum: 8,
+                question: "Which technology relies on a Web App Manifest and a Service Worker to provide an offline-capable, installable experience without requiring an App Store download?",
+                hint: "This architecture turns a standard website into a lightweight mobile experience.",
+                options: [
+                    { text: "Hybrid App", isCorrect: false, rationale: "These apps are typically packaged and distributed through traditional App Stores, even though they contain web technologies." },
+                    { text: "Cross-Platform App", isCorrect: false, rationale: "These are compiled into standalone application packages that still require distribution through iOS or Android app stores." },
+                    { text: "Progressive Web App (PWA)", isCorrect: true, rationale: "The combination of a JSON manifest for installation and a JS Service Worker for caching creates a lean, app-like experience directly from the browser." },
+                    { text: "Single-Page Application (SPA)", isCorrect: false, rationale: "While it provides a smooth navigation experience, it lacks the specific caching rules and installation manifest needed to function offline like a native app." }
+                ]
+            },
+            {
+                qNum: 9,
+                question: "What is one of the primary trade-offs or negative consequences of migrating an application from a Monolithic architecture to Microservices?",
+                hint: "Consider what happens when a single program running on one machine is split into dozens of pieces communicating over the internet.",
+                options: [
+                    { text: "Inability to scale components independently", isCorrect: false, rationale: "Splitting the application actually enables independent scaling, which is a major benefit rather than a drawback." },
+                    { text: "Network complexity and harder debugging", isCorrect: true, rationale: "Tracing errors across multiple independent services communicating over a network is significantly more difficult than debugging a single codebase." },
+                    { text: "Slower initial development time", isCorrect: false, rationale: "While true that setup takes longer, the primary long-term operational pain of this architecture is the complexity of distributed systems." },
+                    { text: "Forced to use a single programming language", isCorrect: false, rationale: "This architecture specifically allows different teams to use entirely different programming languages for their specific services." }
+                ]
+            },
+            {
+                qNum: 10,
+                question: "A team needs to quickly build an internal data-entry tool for their employees' phones. They want maximum code reuse from their existing website and do not need high performance. Which architecture fits best?",
+                hint: "This approach uses standard web technologies wrapped inside a native container to get the job done quickly.",
+                options: [
+                    { text: "Native", isCorrect: false, rationale: "Building from scratch in Swift and Kotlin offers zero code reuse and is far too slow for a quick internal prototype." },
+                    { text: "Cross-Platform", isCorrect: false, rationale: "While fast to develop, it still requires writing a new codebase in a specific framework (like Flutter) rather than maximizing reuse of an existing standard website." },
+                    { text: "Hybrid", isCorrect: true, rationale: "Using tools like Cordova or Ionic wraps an existing web app in a WebView, allowing ~95% code reuse for quick internal tools where speed isn't critical." },
+                    { text: "Mobile Web", isCorrect: false, rationale: "While highly reusable, this doesn't result in a standalone tool that sits alongside other applications on the employee's device." }
+                ]
+            }
+        ];
+
+        // --- RENDER LOGIC ---
+
+        function renderFlashcards() {
+            const container = document.getElementById('flashcards-grid');
+            let html = '';
+            
+            flashcardsData.forEach((card, index) => {
+                html += `
+                <div class="flashcard-container" onclick="this.classList.toggle('flipped')">
+                    <div class="flashcard-inner">
+                        <div class="flashcard-front">
+                            <h3 class="text-xl font-bold text-center">${card.front}</h3>
+                        </div>
+                        <div class="flashcard-back">
+                            <p class="text-lg text-center leading-relaxed">${card.back}</p>
+                        </div>
+                    </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            let html = '';
+
+            quizData.forEach((q, index) => {
+                // Shuffle options
+                const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+                
+                let optionsHtml = '';
+                shuffledOptions.forEach((opt, optIndex) => {
+                    // Escape rationale for HTML attribute
+                    const safeRationale = opt.rationale.replace(/'/g, "&apos;").replace(/"/g, "&quot;");
+                    optionsHtml += `
+                        <button onclick="handleAnswer(this, ${opt.isCorrect}, '${safeRationale}')" 
+                                data-correct="${opt.isCorrect}"
+                                class="quiz-option w-full text-left p-4 rounded-lg border-2 border-stone-200 hover:border-teal-500 hover:bg-teal-50 transition-all font-medium text-stone-700">
+                            ${opt.text}
+                        </button>
+                    `;
+                });
+
+                html += `
+                <div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 question-block">
+                    <div class="flex items-start mb-4">
+                        <span class="flex-shrink-0 bg-teal-600 text-white font-bold rounded-full w-8 h-8 flex items-center justify-center mr-3 mt-1">${q.qNum}</span>
+                        <h3 class="text-xl font-bold text-stone-900">${q.question}</h3>
+                    </div>
+                    
+                    <button onclick="this.nextElementSibling.classList.toggle('hidden'); this.classList.toggle('text-teal-700')" class="text-sm font-semibold text-stone-500 hover:text-stone-800 mb-4 flex items-center transition-colors">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        Show Hint
+                    </button>
+                    <div class="hidden bg-yellow-50 border border-yellow-200 text-yellow-800 p-3 rounded-lg mb-6 text-sm">
+                        ${q.hint}
+                    </div>
+
+                    <div class="space-y-3 options-container">
+                        ${optionsHtml}
+                    </div>
+                    
+                    <div class="rationale-container hidden mt-6 p-4 rounded-lg">
+                        </div>
+                </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // --- INTERACTION LOGIC ---
+
+        function switchTab(tabId) {
+            // Update buttons
+            document.getElementById('tab-btn-flashcards').className = 'px-6 py-3 text-lg font-semibold border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition-colors';
+            document.getElementById('tab-btn-quiz').className = 'px-6 py-3 text-lg font-semibold border-b-2 border-transparent text-stone-500 hover:text-stone-800 transition-colors';
+            
+            document.getElementById(`tab-btn-${tabId}`).className = 'px-6 py-3 text-lg font-semibold border-b-2 border-teal-600 text-teal-700 transition-colors';
+
+            // Update content visibility
+            document.getElementById('tab-flashcards').classList.remove('active');
+            document.getElementById('tab-quiz').classList.remove('active');
+            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+        }
+
+        function handleAnswer(buttonEl, isCorrect, rationale) {
+            const questionBlock = buttonEl.closest('.question-block');
+            const allOptions = questionBlock.querySelectorAll('.quiz-option');
+            const rationaleContainer = questionBlock.querySelector('.rationale-container');
+
+            // Disable all options once an answer is clicked
+            allOptions.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('hover:border-teal-500', 'hover:bg-teal-50', 'cursor-pointer');
+                btn.classList.add('opacity-70', 'cursor-not-allowed');
+                
+                // Highlight the correct answer regardless of what was clicked
+                if(btn.getAttribute('data-correct') === 'true') {
+                    btn.classList.remove('border-stone-200');
+                    btn.classList.add('border-green-500', 'bg-green-50');
+                }
+            });
+
+            // Highlight the clicked answer
+            buttonEl.classList.remove('opacity-70', 'bg-green-50');
+            buttonEl.classList.add('opacity-100');
+            
+            if (isCorrect) {
+                buttonEl.classList.add('bg-green-600', 'text-white', 'border-green-600');
+                rationaleContainer.innerHTML = `<span class="font-bold text-green-700 block mb-1">Correct!</span><span class="text-green-900">${rationale}</span>`;
+                rationaleContainer.className = "rationale-container mt-6 p-4 rounded-lg bg-green-100 border border-green-200 block fadeIn";
+            } else {
+                buttonEl.classList.add('bg-red-600', 'text-white', 'border-red-600');
+                rationaleContainer.innerHTML = `<span class="font-bold text-red-700 block mb-1">Incorrect.</span><span class="text-red-900">${rationale}</span>`;
+                rationaleContainer.className = "rationale-container mt-6 p-4 rounded-lg bg-red-50 border border-red-200 block fadeIn";
+            }
+        }
+
+        // Initialize Data
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFlashcards();
+            renderQuiz();
+        });
+
+    </script>
+</body>
+</html>
+
+
+

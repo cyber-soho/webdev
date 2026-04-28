@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Application Types & Architectures | Cyber.SoHo</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+tailwind.config = {
+theme: {
+extend: {
+colors: {
+stone: {
+50: '#fafaf9',
+100: '#f5f5f4',
+200: '#e7e5e4',
+800: '#292524',
+900: '#1c1917',
+},
+teal: {
+600: '#0d9488',
+700: '#0f766e',
+}
+},
+fontFamily: {
+sans: ['Inter', 'system-ui', 'sans-serif'],
+}
+}
+}
+}
+</script>
+<style>
+body { background-color: #fafaf9; color: #1c1917; }
+.chart-container { position: relative; width: 100%; max-width: 600px; margin-left: auto; margin-right: auto; height: 300px; max-height: 400px; }
+@media (min-width: 768px) { .chart-container { height: 350px; } }
+.nav-btn.active { border-bottom: 2px solid #0d9488; color: #0d9488; font-weight: 600; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.mobile-card.active { border-color: #0d9488; background-color: #f0fdfa; }
+.fade-in { animation: fadeIn 0.3s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body class="min-h-screen flex flex-col font-sans">
+
+<!-- Chosen Palette: Warm Neutrals with Teal Accents -->
+<!-- Application Structure Plan: The SPA uses a tabbed dashboard structure separating 'Web Applications' and 'Mobile Applications' to logically divide the two major domains of the report. A final 'Decision Matrix' tab synthesizes the trade-offs. Interactive elements like toggle tabs, clickable cards, and dynamic charts are used to avoid overwhelming the user with text, making the comparison of architectures (like Monolith vs Microservices or Native vs Hybrid) visual and explorable. -->
+<!-- Visualization & Content Choices: 
+1. 3 Universal Components -> Goal: Inform -> Styled HTML cards with Unicode -> Visual chunking of foundational knowledge.
+2. Monolith vs Microservices -> Goal: Compare -> Radar Chart (Chart.js) -> Shows trade-offs across multiple dimensions (simplicity, scaling, etc.) visually.
+3. Mobile App Types -> Goal: Organize & Inform -> Interactive clickable list updating a detail pane -> Allows user to explore 5 types without vertical scrolling fatigue.
+4. Mobile Decision Matrix -> Goal: Compare -> Bar Chart (Chart.js) -> Directly contrasts Speed vs Code Reuse for Native, Hybrid, and Cross-Platform. 
+Method: HTML/Tailwind/Canvas. 
+-->
+<!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+<header class="bg-white shadow-sm sticky top-0 z-10">
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+<div class="flex flex-col md:flex-row justify-between items-center gap-4">
+<div>
+<h1 class="text-2xl font-bold text-stone-900">App Architectures Guide</h1>
+<p class="text-sm text-stone-500">Cyber.SoHo Educational Hub</p>
+</div>
+<nav class="flex space-x-1 overflow-x-auto w-full md:w-auto">
+<button onclick="switchMainTab('web-view')" id="btn-web-view" class="nav-btn active px-4 py-2 text-stone-600 hover:text-teal-600 whitespace-nowrap transition-colors">Web Apps</button>
+<button onclick="switchMainTab('mobile-view')" id="btn-mobile-view" class="nav-btn px-4 py-2 text-stone-600 hover:text-teal-600 whitespace-nowrap transition-colors">Mobile Apps</button>
+<button onclick="switchMainTab('summary-view')" id="btn-summary-view" class="nav-btn px-4 py-2 text-stone-600 hover:text-teal-600 whitespace-nowrap transition-colors">Decision Matrix</button>
+</nav>
+</div>
+</div>
+</header>
+
+<main class="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
+
+<section id="web-view" class="tab-content active fade-in">
+<div class="mb-8">
+<h2 class="text-3xl font-bold mb-4">Web Application Architectures</h2>
+<p class="text-stone-600 text-lg">Explore the blueprints of web applications. This section breaks down the universal components every web app shares, how they are arranged into tiers, the architectural choice between unified and distributed systems, and the rendering strategies that impact user experience and performance.</p>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 mb-8">
+<h3 class="text-xl font-semibold mb-4 border-b pb-2">The 3 Universal Components</h3>
+<p class="text-stone-600 mb-6">Every web app, without exception, consists of these three parts. The architecture simply defines how they are arranged.</p>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-stone-50 p-6 rounded-lg text-center border border-stone-100">
+<div class="text-4xl mb-3">💻</div>
+<h4 class="font-bold text-lg">Client</h4>
+<p class="text-sm text-stone-600">The Front-End. What the user directly sees and interacts with.</p>
+</div>
+<div class="bg-stone-50 p-6 rounded-lg text-center border border-stone-100">
+<div class="text-4xl mb-3">⚙️</div>
+<h4 class="font-bold text-lg">Server</h4>
+<p class="text-sm text-stone-600">The Back-End. The processing brain containing business logic.</p>
+</div>
+<div class="bg-stone-50 p-6 rounded-lg text-center border border-stone-100">
+<div class="text-4xl mb-3">🗄️</div>
+<h4 class="font-bold text-lg">Database</h4>
+<p class="text-sm text-stone-600">The persistent storage where application data lives securely.</p>
+</div>
+</div>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-stone-200 overflow-hidden">
+<div class="flex border-b bg-stone-50 overflow-x-auto">
+<button onclick="switchWebSubTab('tiers')" id="btn-tiers" class="px-6 py-3 font-medium text-stone-600 hover:bg-stone-100 bg-white border-b-2 border-teal-600 text-teal-700 transition-colors">Tier-Based</button>
+<button onclick="switchWebSubTab('monolith')" id="btn-monolith" class="px-6 py-3 font-medium text-stone-600 hover:bg-stone-100 transition-colors">Monolith vs Microservices</button>
+<button onclick="switchWebSubTab('rendering')" id="btn-rendering" class="px-6 py-3 font-medium text-stone-600 hover:bg-stone-100 transition-colors">SPA vs MPA (Rendering)</button>
+</div>
+
+<div class="p-6">
+<div id="sub-tiers" class="fade-in block">
+<h3 class="text-xl font-semibold mb-4">Tier-Based Architectures</h3>
+<p class="mb-4 text-stone-600">Tiers define where the components live. <strong>3-tier is the modern default</strong> because adding an App Server in the middle protects data and unlocks independent scaling.</p>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-stone-50 border-b border-stone-200">
+<th class="p-3 font-semibold">Architecture</th>
+<th class="p-3 font-semibold">Where things live</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-stone-100"><td class="p-3 font-medium">1-Tier</td><td class="p-3 text-stone-600">All on one machine (Client, Server, DB together).</td></tr>
+<tr class="border-b border-stone-100"><td class="p-3 font-medium">2-Tier</td><td class="p-3 text-stone-600">Client connects directly to Database.</td></tr>
+<tr class="border-b border-stone-100 bg-teal-50"><td class="p-3 font-medium text-teal-800">3-Tier (Winner)</td><td class="p-3 text-teal-700">Client → App Server → Database. Security, maintainability, scalability.</td></tr>
+<tr><td class="p-3 font-medium">N-Tier</td><td class="p-3 text-stone-600">Many specialized layers distributed across networks.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<div id="sub-monolith" class="fade-in hidden">
+<h3 class="text-xl font-semibold mb-4">Monolith vs Microservices</h3>
+<p class="mb-6 text-stone-600">Start with a monolith. Move to microservices only when the pain of the monolith outweighs the complexity of microservices.</p>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+<div>
+<div class="mb-6">
+<h4 class="font-bold text-lg text-teal-700 mb-2">Monolithic</h4>
+<ul class="list-disc pl-5 text-stone-600 space-y-1">
+<li>One codebase, one deployment.</li>
+<li>✅ Simple at first. Good for small teams & tight deadlines.</li>
+<li>❌ Painful as it grows.</li>
+</ul>
+</div>
+<div>
+<h4 class="font-bold text-lg text-purple-700 mb-2">Microservices</h4>
+<ul class="list-disc pl-5 text-stone-600 space-y-1">
+<li>Many small, independent services.</li>
+<li>✅ Independent teams, languages, deployments. Good for scale.</li>
+<li>❌ Network complexity, harder debugging.</li>
+</ul>
+</div>
+</div>
+<div class="chart-container">
+<canvas id="architectureRadarChart"></canvas>
+</div>
+</div>
+</div>
+
+<div id="sub-rendering" class="fade-in hidden">
+<h3 class="text-xl font-semibold mb-4">Rendering & Navigation Paradigms</h3>
+<p class="mb-6 text-stone-600">Pick based on what your users care about most: immediate initial load and SEO (MPA), or seamless interactive navigation after load (SPA).</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="border border-stone-200 rounded-lg p-5 bg-stone-50 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-center mb-3">
+<h4 class="font-bold text-lg">MPA / SSR</h4>
+<span class="text-2xl">📄📄</span>
+</div>
+<p class="text-sm font-medium text-stone-500 mb-3">Multi-Page App / Server-Side Rendering</p>
+<ul class="space-y-2 text-sm text-stone-700">
+<li class="flex justify-between border-b pb-1"><span>First Load:</span> <span class="font-semibold text-green-600">Fast</span></li>
+<li class="flex justify-between border-b pb-1"><span>Navigation:</span> <span class="font-semibold text-red-500">Slow (full reload)</span></li>
+<li class="flex justify-between border-b pb-1"><span>SEO:</span> <span class="font-semibold text-green-600">Excellent</span></li>
+<li class="flex justify-between pb-1"><span>Examples:</span> <span>Wikipedia</span></li>
+</ul>
+</div>
+<div class="border border-stone-200 rounded-lg p-5 bg-stone-50 hover:shadow-md transition-shadow">
+<div class="flex justify-between items-center mb-3">
+<h4 class="font-bold text-lg">SPA / CSR</h4>
+<span class="text-2xl">⚡</span>
+</div>
+<p class="text-sm font-medium text-stone-500 mb-3">Single-Page App / Client-Side Rendering</p>
+<ul class="space-y-2 text-sm text-stone-700">
+<li class="flex justify-between border-b pb-1"><span>First Load:</span> <span class="font-semibold text-red-500">Slow (downloads JS)</span></li>
+<li class="flex justify-between border-b pb-1"><span>Navigation:</span> <span class="font-semibold text-green-600">Very Fast</span></li>
+<li class="flex justify-between border-b pb-1"><span>SEO:</span> <span class="font-semibold text-yellow-600">Tricky</span></li>
+<li class="flex justify-between pb-1"><span>Examples:</span> <span>Gmail, Trello</span></li>
+</ul>
+</div>
+</div>
+<div class="mt-4 p-4 bg-teal-50 text-teal-800 rounded-lg border border-teal-100 text-sm">
+<strong>Modern Hybrid:</strong> Frameworks like Next.js, Nuxt, and SvelteKit do both, known as <em>Universal Rendering</em> or JAMstack.
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="mobile-view" class="tab-content fade-in">
+<div class="mb-8">
+<h2 class="text-3xl font-bold mb-4">Mobile Applications</h2>
+<p class="text-stone-600 text-lg">Mobile is not "a smaller web." The constraints are completely different. Design with battery, touch, and offline capabilities in mind. Explore the five distinct paths to delivering a mobile experience.</p>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6 mb-8 flex flex-wrap gap-4 items-center justify-between">
+<div>
+<h3 class="font-semibold text-lg mb-2">Mobile Constraints</h3>
+<div class="flex flex-wrap gap-2">
+<span class="px-3 py-1 bg-stone-100 rounded-full text-sm">🔋 Limited Battery</span>
+<span class="px-3 py-1 bg-stone-100 rounded-full text-sm">👆 Touch-first UI</span>
+<span class="px-3 py-1 bg-stone-100 rounded-full text-sm">📶 Variable Network</span>
+<span class="px-3 py-1 bg-stone-100 rounded-full text-sm">🍎🤖 Two Ecosystems</span>
+<span class="px-3 py-1 bg-stone-100 rounded-full text-sm">📸 Hardware Sensors</span>
+</div>
+</div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="lg:col-span-1 space-y-3">
+<button onclick="updateMobileDetail('native', this)" class="mobile-card active w-full text-left p-4 rounded-lg border border-stone-200 hover:border-teal-500 transition-colors">
+<h4 class="font-bold text-lg">Native</h4>
+<p class="text-sm text-stone-500">Top performance, full hardware</p>
+</button>
+<button onclick="updateMobileDetail('cross', this)" class="mobile-card w-full text-left p-4 rounded-lg border border-stone-200 hover:border-teal-500 transition-colors">
+<h4 class="font-bold text-lg">Cross-Platform</h4>
+<p class="text-sm text-stone-500">Most modern startups</p>
+</button>
+<button onclick="updateMobileDetail('hybrid', this)" class="mobile-card w-full text-left p-4 rounded-lg border border-stone-200 hover:border-teal-500 transition-colors">
+<h4 class="font-bold text-lg">Hybrid</h4>
+<p class="text-sm text-stone-500">Internal tools, prototypes</p>
+</button>
+<button onclick="updateMobileDetail('pwa', this)" class="mobile-card w-full text-left p-4 rounded-lg border border-stone-200 hover:border-teal-500 transition-colors">
+<h4 class="font-bold text-lg">PWA</h4>
+<p class="text-sm text-stone-500">Lean, installable, offline web</p>
+</button>
+<button onclick="updateMobileDetail('web', this)" class="mobile-card w-full text-left p-4 rounded-lg border border-stone-200 hover:border-teal-500 transition-colors">
+<h4 class="font-bold text-lg">Mobile Web</h4>
+<p class="text-sm text-stone-500">Quick reach, no install</p>
+</button>
+</div>
+
+<div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-stone-200 p-6 lg:p-8 min-h-[400px] flex flex-col">
+<div id="mobile-detail-content" class="fade-in flex-grow">
+</div>
+<div id="mobile-chart-wrapper" class="mt-6 pt-6 border-t hidden">
+<h4 class="font-semibold mb-4 text-center text-stone-700">Performance vs Reuse Comparison</h4>
+<div class="chart-container">
+<canvas id="mobileBarChart"></canvas>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="summary-view" class="tab-content fade-in">
+<div class="mb-8">
+<h2 class="text-3xl font-bold mb-4">Architecture Decision Matrix</h2>
+<p class="text-stone-600 text-lg">Architecture is never about the "best" technology — it is about the trade-offs. The senior developer picks the right trade-off for the right project. Review the core concepts below.</p>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+<h3 class="text-xl font-semibold mb-4 flex items-center"><span class="mr-2 text-2xl">🌐</span> Web Rules</h3>
+<ul class="space-y-4">
+<li class="flex items-start">
+<span class="text-teal-600 font-bold mr-3 mt-1">01</span>
+<div>
+<p class="font-medium text-stone-900">Always 3 Components</p>
+<p class="text-sm text-stone-600">Client, Server, Database. Pick tier count based on security & scale.</p>
+</div>
+</li>
+<li class="flex items-start">
+<span class="text-teal-600 font-bold mr-3 mt-1">02</span>
+<div>
+<p class="font-medium text-stone-900">Team Size Dictates Structure</p>
+<p class="text-sm text-stone-600">Small team? Monolith. Large team needing isolated deployments? Microservices.</p>
+</div>
+</li>
+<li class="flex items-start">
+<span class="text-teal-600 font-bold mr-3 mt-1">03</span>
+<div>
+<p class="font-medium text-stone-900">UX vs SEO</p>
+<p class="text-sm text-stone-600">Pick SPA for interactive user experience post-load. Pick MPA for excellent first paint and SEO.</p>
+</div>
+</li>
+</ul>
+</div>
+
+<div class="bg-white rounded-xl shadow-sm border border-stone-200 p-6">
+<h3 class="text-xl font-semibold mb-4 flex items-center"><span class="mr-2 text-2xl">📱</span> Mobile Rules</h3>
+<ul class="space-y-4">
+<li class="flex items-start">
+<span class="text-teal-600 font-bold mr-3 mt-1">04</span>
+<div>
+<p class="font-medium text-stone-900">Performance Critical = Native</p>
+<p class="text-sm text-stone-600">Games, AR, heavy hardware access require Swift (iOS) or Kotlin (Android).</p>
+</div>
+</li>
+<li class="flex items-start">
+<span class="text-teal-600 font-bold mr-3 mt-1">05</span>
+<div>
+<p class="font-medium text-stone-900">Modern Startup Default = Cross-Platform</p>
+<p class="text-sm text-stone-600">React Native or Flutter. ~85% code reuse with near-native speed.</p>
+</div>
+</li>
+<li class="flex items-start">
+<span class="text-teal-600 font-bold mr-3 mt-1">06</span>
+<div>
+<p class="font-medium text-stone-900">Lightest Weight = PWA</p>
+<p class="text-sm text-stone-600">Manifest + Service Worker. Installable, offline capable, no app store friction.</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+</section>
+
+</main>
+
+<script>
+function switchMainTab(tabId) {
+document.querySelectorAll('.tab-content').forEach(el => {
+el.classList.remove('active');
+});
+document.querySelectorAll('.nav-btn').forEach(el => {
+el.classList.remove('active');
+});
+document.getElementById(tabId).classList.add('active');
+document.getElementById('btn-' + tabId).classList.add('active');
+
+if(tabId === 'web-view' && !window.radarChartInstance) {
+initRadarChart();
+}
+if(tabId === 'mobile-view' && window.mobileChartInstance) {
+window.mobileChartInstance.update();
+}
+}
+
+function switchWebSubTab(subId) {
+const sections = ['tiers', 'monolith', 'rendering'];
+sections.forEach(id => {
+document.getElementById('sub-' + id).classList.add('hidden');
+document.getElementById('sub-' + id).classList.remove('block');
+document.getElementById('btn-' + id).classList.remove('border-b-2', 'border-teal-600', 'text-teal-700', 'bg-white');
+document.getElementById('btn-' + id).classList.add('bg-stone-50');
+});
+
+document.getElementById('sub-' + subId).classList.remove('hidden');
+document.getElementById('sub-' + subId).classList.add('block');
+document.getElementById('btn-' + subId).classList.add('border-b-2', 'border-teal-600', 'text-teal-700', 'bg-white');
+document.getElementById('btn-' + subId).classList.remove('bg-stone-50');
+
+if (subId === 'monolith' && !window.radarChartInstance) {
+initRadarChart();
+}
+}
+
+const mobileData = {
+native: {
+title: 'Native Apps',
+tech: 'Swift (iOS) / Kotlin (Android)',
+pros: ['Maximum performance', 'Full hardware access', 'Most polished UX'],
+cons: ['Two codebases', 'Two teams', 'Twice the cost'],
+bestFor: 'Games, AR, performance-critical apps (WhatsApp, Instagram)',
+showChart: true
+},
+cross: {
+title: 'Cross-Platform',
+tech: 'React Native / Flutter',
+pros: ['One real codebase', '~85% code reuse', 'Near-native speed'],
+cons: ['Slightly larger app size', 'Complex custom native modules'],
+bestFor: 'Most modern production startups',
+showChart: true
+},
+hybrid: {
+title: 'Hybrid Apps',
+tech: 'Cordova / Ionic (Web app in WebView)',
+pros: ['~95% code reuse', 'Uses standard web tech', 'Fastest time-to-market'],
+cons: ['Slower performance', 'Clunky UX compared to native'],
+bestFor: 'Prototypes, internal business tools, quick wins',
+showChart: true
+},
+pwa: {
+title: 'Progressive Web Apps (PWAs)',
+tech: 'Web + Service Workers + Manifest',
+pros: ['No App Store required', 'Installable & offline capable', 'Very small size (e.g., Twitter Lite < 1MB)'],
+cons: ['Push notification limits (especially iOS)', 'Limited deep hardware access'],
+bestFor: 'Lean apps, low-bandwidth regions, bypassing app stores',
+showChart: false
+},
+web: {
+title: 'Mobile Web',
+tech: 'HTML / CSS / JS in browser',
+pros: ['Instant updates', 'Zero installation friction', 'Universal reach'],
+cons: ['No offline support', 'No push notifications', 'Cannot be installed to home screen'],
+bestFor: 'Informational sites, quick reach',
+showChart: false
+}
+};
+
+function updateMobileDetail(key, btnElement) {
+document.querySelectorAll('.mobile-card').forEach(el => {
+el.classList.remove('active');
+});
+btnElement.classList.add('active');
+
+const data = mobileData[key];
+const container = document.getElementById('mobile-detail-content');
+
+let prosHtml = data.pros.map(p => `<li class="flex items-start"><span class="text-green-500 mr-2">✓</span><span>${p}</span></li>`).join('');
+let consHtml = data.cons.map(c => `<li class="flex items-start"><span class="text-red-500 mr-2">✗</span><span>${c}</span></li>`).join('');
+
+container.innerHTML = `
+<div class="flex justify-between items-start mb-4">
+<h3 class="text-2xl font-bold text-stone-900">${data.title}</h3>
+<span class="px-3 py-1 bg-stone-100 text-stone-600 rounded text-sm font-mono">${data.tech}</span>
+</div>
+<p class="text-lg text-teal-700 font-medium border-l-4 border-teal-500 pl-4 py-1 bg-teal-50 rounded-r mb-6">
+Best for: ${data.bestFor}
+</p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div>
+<h4 class="font-semibold text-stone-800 mb-3 border-b pb-1">Advantages</h4>
+<ul class="space-y-2 text-sm text-stone-600">${prosHtml}</ul>
+</div>
+<div>
+<h4 class="font-semibold text-stone-800 mb-3 border-b pb-1">Disadvantages</h4>
+<ul class="space-y-2 text-sm text-stone-600">${consHtml}</ul>
+</div>
+</div>
+`;
+
+const chartWrapper = document.getElementById('mobile-chart-wrapper');
+if (data.showChart) {
+chartWrapper.classList.remove('hidden');
+if (!window.mobileChartInstance) {
+initMobileChart();
+}
+highlightMobileChart(key);
+} else {
+chartWrapper.classList.add('hidden');
+}
+}
+
+function initRadarChart() {
+const ctx = document.getElementById('architectureRadarChart').getContext('2d');
+window.radarChartInstance = new Chart(ctx, {
+type: 'radar',
+data: {
+labels: ['Setup Simplicity', 'Ease of Scaling', 'Independent Deployments', 'Debugging Ease'],
+datasets: [{
+label: 'Monolith',
+data: [9, 3, 2, 7],
+backgroundColor: 'rgba(13, 148, 136, 0.2)',
+borderColor: 'rgba(13, 148, 136, 1)',
+pointBackgroundColor: 'rgba(13, 148, 136, 1)',
+borderWidth: 2
+}, {
+label: 'Microservices',
+data: [3, 9, 9, 3],
+backgroundColor: 'rgba(126, 34, 206, 0.2)',
+borderColor: 'rgba(126, 34, 206, 1)',
+pointBackgroundColor: 'rgba(126, 34, 206, 1)',
+borderWidth: 2
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+scales: {
+r: {
+angleLines: { color: 'rgba(0,0,0,0.1)' },
+grid: { color: 'rgba(0,0,0,0.1)' },
+pointLabels: { font: { size: 12, family: 'Inter' }, color: '#444' },
+ticks: { display: false, min: 0, max: 10 }
+}
+},
+plugins: {
+legend: { position: 'bottom' },
+tooltip: {
+callbacks: {
+label: function(context) { return context.dataset.label + ': ' + context.raw + '/10'; }
+}
+}
+}
+}
+});
+}
+
+function initMobileChart() {
+const ctx = document.getElementById('mobileBarChart').getContext('2d');
+window.mobileChartInstance = new Chart(ctx, {
+type: 'bar',
+data: {
+labels: ['Native', 'Cross-Platform', 'Hybrid'],
+datasets: [
+{
+label: 'App Speed / Performance (%)',
+data: [100, 85, 40],
+backgroundColor: '#0d9488',
+borderRadius: 4
+},
+{
+label: 'Code Reuse (%)',
+data: [0, 85, 95],
+backgroundColor: '#d6d3d1',
+borderRadius: 4
+}
+]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+scales: {
+y: { beginAtZero: true, max: 100 }
+},
+plugins: {
+legend: { position: 'bottom' }
+}
+}
+});
+}
+
+function highlightMobileChart(key) {
+if(!window.mobileChartInstance) return;
+const activeIndex = key === 'native' ? 0 : key === 'cross' ? 1 : 2;
+const chart = window.mobileChartInstance;
+
+chart.data.datasets[0].backgroundColor = chart.data.labels.map((_, i) => i === activeIndex ? '#0f766e' : 'rgba(13, 148, 136, 0.3)');
+chart.data.datasets[1].backgroundColor = chart.data.labels.map((_, i) => i === activeIndex ? '#78716c' : 'rgba(214, 211, 209, 0.3)');
+chart.update();
+}
+
+window.onload = () => {
+updateMobileDetail('native', document.querySelector('.mobile-card'));
+};
+</script>
+</body>
+</html>
+
+
+
