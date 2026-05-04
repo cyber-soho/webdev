@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyber.SoHo Educational Hub - Security & Testing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Warm Neutrals with Muted Teal (Security) and Amber (Testing) accents -->
+    <!-- Application Structure Plan: The SPA uses a tabbed dashboard structure to separate the two main lessons (Security Basics and Testing Strategies) while keeping them under a unified umbrella. This prevents information overload and allows users to explore one domain deeply before switching to the other. Interactive elements like the Testing Pyramid and vulnerability accordions encourage active engagement rather than passive reading, aligning with the educational goal of the slide deck. -->
+    <!-- Visualization & Content Choices: 
+         1. Cost of Bugs (Goal: Change/Compare) -> Line Chart (Chart.js) on a logarithmic scale -> Shows exponential cost growth. Justification: Visualizing the 10x multiplier makes the concept immediately impactful. 
+         2. Testing Pyramid (Goal: Organize) -> Interactive HTML/CSS Stacked Divs -> Click to reveal details. Justification: Directly translates the core visual metaphor of the lecture into an explorable component. 
+         3. CIA Triad & Vulnerabilities (Goal: Inform) -> Interactive Cards/Accordions -> Click to expand. Justification: Chunks dense text into digestible pieces. Confirming NO SVG/Mermaid. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fafaf9; color: #1c1917; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 40vh; max-height: 400px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        .pyramid-layer { transition: all 0.2s; cursor: pointer; }
+        .pyramid-layer:hover { filter: brightness(0.95); transform: scale(1.02); }
+        .glass-panel { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.05); }
+    </style>
+</head>
+<body class="antialiased text-stone-800 bg-stone-50">
+
+    <nav class="sticky top-0 z-50 bg-white border-b border-stone-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <span class="text-2xl mr-2">🎓</span>
+                    <span class="font-bold text-xl tracking-tight text-stone-900">Cyber.SoHo Hub</span>
+                </div>
+                <div class="flex space-x-1 sm:space-x-4 items-center">
+                    <button onclick="switchTab('overview')" id="btn-overview" class="px-3 py-2 rounded-md text-sm font-medium bg-stone-100 text-stone-900 transition-colors">Overview</button>
+                    <button onclick="switchTab('security')" id="btn-security" class="px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-100 transition-colors">Security</button>
+                    <button onclick="switchTab('testing')" id="btn-testing" class="px-3 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-100 transition-colors">Testing</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="overview" class="tab-content active">
+            <div class="text-center max-w-3xl mx-auto mb-12 mt-8">
+                <h1 class="text-4xl md:text-5xl font-extrabold text-stone-900 mb-6 tracking-tight">Two Lessons, One Mindset</h1>
+                <p class="text-xl text-stone-600 leading-relaxed mb-8">
+                    Welcome to Week 13 of Web Applications Development. Today we explore Security and Testing. They might seem different, but they are the same skill seen from two angles: <strong>imagining how things go wrong before they do.</strong>
+                </p>
+                <div class="glass-panel p-6 rounded-2xl shadow-lg border-l-4 border-l-stone-800 text-left">
+                    <h3 class="text-lg font-bold mb-2 flex items-center"><span class="text-2xl mr-2">💡</span> The Key Takeaway</h3>
+                    <p class="italic text-stone-700 text-lg">"Every input is hostile until proven otherwise, and every assumption is wrong until a test confirms it."</p>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mt-12">
+                <div class="glass-panel p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer border-t-4 border-teal-600" onclick="switchTab('security')">
+                    <div class="text-4xl mb-4">🛡️</div>
+                    <h2 class="text-2xl font-bold text-stone-900 mb-3">Security Basics</h2>
+                    <p class="text-stone-600 mb-4">Security is what an attacker tries to break. Learn to write code that holds against hostile users.</p>
+                    <span class="text-teal-700 font-medium">Explore Security Module &rarr;</span>
+                </div>
+                <div class="glass-panel p-8 rounded-2xl shadow-sm hover:shadow-md transition-shadow cursor-pointer border-t-4 border-amber-600" onclick="switchTab('testing')">
+                    <div class="text-4xl mb-4">🧪</div>
+                    <h2 class="text-2xl font-bold text-stone-900 mb-3">Testing Strategies</h2>
+                    <p class="text-stone-600 mb-4">Testing is how we prove nothing is broken yet. Learn to build an automated safety net for your code.</p>
+                    <span class="text-amber-700 font-medium">Explore Testing Module &rarr;</span>
+                </div>
+            </div>
+
+            <div class="mt-16 glass-panel p-8 rounded-2xl text-center bg-stone-800 text-stone-100">
+                <h2 class="text-2xl font-bold mb-4">The Professional Habit (TDD for Security)</h2>
+                <div class="flex flex-col md:flex-row justify-center items-center space-y-4 md:space-y-0 md:space-x-8">
+                    <div class="flex flex-col items-center"><div class="w-10 h-10 rounded-full bg-stone-700 flex items-center justify-center font-bold mb-2">1</div><span>Write test to prove it works</span></div>
+                    <div class="hidden md:block text-stone-500 text-2xl">&rarr;</div>
+                    <div class="flex flex-col items-center"><div class="w-10 h-10 rounded-full bg-teal-800 flex items-center justify-center font-bold mb-2">2</div><span>Write test to prove it fails safely</span></div>
+                    <div class="hidden md:block text-stone-500 text-2xl">&rarr;</div>
+                    <div class="flex flex-col items-center"><div class="w-10 h-10 rounded-full bg-amber-700 flex items-center justify-center font-bold mb-2">3</div><span>Write production code</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section id="security" class="tab-content">
+            <div class="mb-10">
+                <h1 class="text-3xl font-bold text-stone-900 mb-4 border-b-2 border-teal-600 pb-2 inline-block">Web Application Security Basics</h1>
+                <p class="text-lg text-stone-600">This section covers the foundational concepts of web security. You will explore the CIA Triad, understand common vulnerabilities defined by the OWASP Top 10, and learn actionable defensive programming techniques to protect your applications.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mb-12">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-lg text-teal-800 mb-2">🔒 Confidentiality</h3>
+                    <p class="text-stone-600 text-sm">Only authorised people see the data.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-lg text-teal-800 mb-2">✨ Integrity</h3>
+                    <p class="text-stone-600 text-sm">Data is not changed without permission.</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-stone-200">
+                    <h3 class="font-bold text-lg text-teal-800 mb-2">⏱️ Availability</h3>
+                    <p class="text-stone-600 text-sm">The service stays up under load and attack.</p>
+                </div>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12 mb-12">
+                <div>
+                    <h2 class="text-2xl font-bold mb-6 text-stone-800 flex items-center"><span class="mr-2">🗺️</span> The Map of Bugs: OWASP Top 10</h2>
+                    <p class="text-stone-600 mb-4 text-sm">The OWASP Top 10 (2021) is the canonical list of the most common web-app vulnerability classes. It's not just a checklist; it's a map of where bugs hide.</p>
+                    <div class="bg-white border border-stone-200 rounded-xl overflow-hidden shadow-sm h-80 overflow-y-auto">
+                        <ul class="divide-y divide-stone-100">
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A01</span> — Broken Access Control</li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A02</span> — Cryptographic Failures</li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-teal-700 bg-teal-50 px-2 rounded">A03 — Injection (SQLi, XSS)</span></li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A04</span> — Insecure Design</li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A05</span> — Security Misconfiguration</li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A06</span> — Vulnerable & Outdated Components</li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-teal-700 bg-teal-50 px-2 rounded">A07 — Identification & Auth Failures</span></li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A08</span> — Software & Data Integrity Failures</li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A09</span> — Security Logging & Monitoring Failures</li>
+                            <li class="p-3 hover:bg-stone-50 cursor-default"><span class="font-bold text-stone-800">A10</span> — Server-Side Request Forgery (SSRF)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div>
+                    <h2 class="text-2xl font-bold mb-6 text-stone-800 flex items-center"><span class="mr-2">🔍</span> Deep Dive: Key Defences</h2>
+                    <div class="space-y-4">
+                        <div class="border border-stone-200 rounded-xl overflow-hidden bg-white">
+                            <button onclick="toggleAccordion('acc-sql')" class="w-full text-left p-4 font-bold bg-stone-50 hover:bg-stone-100 flex justify-between items-center text-stone-800">
+                                <span>SQL Injection (SQLi)</span>
+                                <span id="icon-acc-sql" class="text-xl">+</span>
+                            </button>
+                            <div id="acc-sql" class="hidden p-4 text-stone-600 text-sm border-t border-stone-100">
+                                <p class="mb-2"><strong>The Threat:</strong> Concatenating user input directly into DB queries. A payload like <code class="bg-stone-100 px-1 rounded text-red-600">' OR '1'='1</code> bypasses logic.</p>
+                                <p class="mb-2"><strong>The Defence: Parameterised Queries.</strong> Send the query and values separately. The database treats values as data, never code.</p>
+                                <div class="bg-stone-800 text-green-400 p-2 rounded font-mono text-xs mt-2">SELECT * FROM users WHERE username = ?</div>
+                            </div>
+                        </div>
+
+                        <div class="border border-stone-200 rounded-xl overflow-hidden bg-white">
+                            <button onclick="toggleAccordion('acc-xss')" class="w-full text-left p-4 font-bold bg-stone-50 hover:bg-stone-100 flex justify-between items-center text-stone-800">
+                                <span>Cross-Site Scripting (XSS)</span>
+                                <span id="icon-acc-xss" class="text-xl">+</span>
+                            </button>
+                            <div id="acc-xss" class="hidden p-4 text-stone-600 text-sm border-t border-stone-100">
+                                <p class="mb-2"><strong>The Threat:</strong> Rendering unescaped user input in HTML, allowing attackers to run JavaScript in visitors' browsers (Stored, Reflected, or DOM-based).</p>
+                                <p><strong>The Defence: Output Encoding.</strong> Convert special characters before inserting. Use safe framework primitives (e.g., <code class="bg-stone-100 px-1 rounded">{value}</code> in React). Never trust data on the way in; escape on the way out.</p>
+                            </div>
+                        </div>
+
+                        <div class="border border-stone-200 rounded-xl overflow-hidden bg-white">
+                            <button onclick="toggleAccordion('acc-auth')" class="w-full text-left p-4 font-bold bg-stone-50 hover:bg-stone-100 flex justify-between items-center text-stone-800">
+                                <span>Authentication & Sessions</span>
+                                <span id="icon-acc-auth" class="text-xl">+</span>
+                            </button>
+                            <div id="acc-auth" class="hidden p-4 text-stone-600 text-sm border-t border-stone-100">
+                                <p class="mb-2"><strong>Passwords:</strong> Never store plaintext, MD5, or SHA-1. Current standard is <strong>bcrypt / scrypt / argon2</strong> (deliberately slow hashes).</p>
+                                <p class="mb-2"><strong>Sessions:</strong> Use cryptographically random IDs. Store in cookies marked <code class="bg-stone-100 px-1 rounded">HttpOnly, Secure, SameSite=Lax</code>.</p>
+                                <p><strong>MFA:</strong> Combine something you know (password) with something you have (app code).</p>
+                            </div>
+                        </div>
+
+                        <div class="border border-stone-200 rounded-xl overflow-hidden bg-white">
+                            <button onclick="toggleAccordion('acc-https')" class="w-full text-left p-4 font-bold bg-stone-50 hover:bg-stone-100 flex justify-between items-center text-stone-800">
+                                <span>HTTPS and TLS</span>
+                                <span id="icon-acc-https" class="text-xl">+</span>
+                            </button>
+                            <div id="acc-https" class="hidden p-4 text-stone-600 text-sm border-t border-stone-100">
+                                <p class="mb-2"><strong>Guarantees:</strong> Encryption, Integrity, and Authentication.</p>
+                                <p><strong>Implementation:</strong> Free via Let's Encrypt. Force HTTP-to-HTTPS redirects. Use headers like <code class="bg-stone-100 px-1 rounded">Strict-Transport-Security</code> and <code class="bg-stone-100 px-1 rounded">Content-Security-Policy</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-teal-50 border border-teal-100 rounded-2xl p-8 shadow-sm">
+                <h3 class="text-2xl font-bold text-teal-900 mb-4 text-center">The 5 Rules of Web-App Security</h3>
+                <ol class="list-decimal list-inside space-y-3 text-teal-800 max-w-2xl mx-auto font-medium">
+                    <li><strong class="text-teal-950">Validate every input on the server.</strong> Client-side is a courtesy, not a defence.</li>
+                    <li><strong class="text-teal-950">Parameterise every query.</strong> No string concatenation, ever.</li>
+                    <li><strong class="text-teal-950">Escape every output.</strong> Especially HTML.</li>
+                    <li><strong class="text-teal-950">Hash every password with bcrypt.</strong> Hash. Never encrypt. Never store.</li>
+                    <li><strong class="text-teal-950">Wrap everything in HTTPS.</strong> Free, automatic, no excuses.</li>
+                </ol>
+            </div>
+        </section>
+
+        <section id="testing" class="tab-content">
+            <div class="mb-10">
+                <h1 class="text-3xl font-bold text-stone-900 mb-4 border-b-2 border-amber-600 pb-2 inline-block">Testing Strategies</h1>
+                <p class="text-lg text-stone-600">This section explores how to prove your application works reliably. You will interact with the testing pyramid, understand why testing early saves money, and compare the complexities of web versus mobile testing environments.</p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-12 mb-12">
+                <div class="glass-panel p-6 rounded-2xl shadow-sm">
+                    <h2 class="text-xl font-bold mb-2 text-stone-800">The Cost of Bugs Curve</h2>
+                    <p class="text-sm text-stone-600 mb-6">The cost of fixing a bug multiplies by roughly 10 at each stage of the development lifecycle. Tests pull bugs "leftward" on this curve.</p>
+                    <div class="chart-container">
+                        <canvas id="costChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-6 rounded-2xl shadow-sm flex flex-col">
+                    <h2 class="text-xl font-bold mb-2 text-stone-800">The Testing Pyramid</h2>
+                    <p class="text-sm text-stone-600 mb-6">Click a layer to view its execution profile. More tests at the bottom, fewer at the top. Inverting this creates flaky, slow suites.</p>
+                    
+                    <div class="flex-grow flex flex-col items-center justify-end w-full max-w-sm mx-auto space-y-1 mb-6 mt-4">
+                        <div onclick="showPyramidInfo('e2e')" class="pyramid-layer w-1/3 bg-red-100 border-2 border-red-300 text-red-800 font-bold p-3 text-center rounded-t-lg shadow-sm">E2E</div>
+                        <div onclick="showPyramidInfo('integration')" class="pyramid-layer w-2/3 bg-amber-100 border-2 border-amber-300 text-amber-800 font-bold p-4 text-center shadow-sm">Integration</div>
+                        <div onclick="showPyramidInfo('unit')" class="pyramid-layer w-full bg-green-100 border-2 border-green-300 text-green-800 font-bold p-5 text-center rounded-b-lg shadow-sm">Unit Tests</div>
+                    </div>
+
+                    <div id="pyramid-details" class="bg-stone-50 border border-stone-200 p-4 rounded-lg min-h-[120px] text-sm text-stone-700">
+                        <em>Select a layer of the pyramid above to see details about quantity, speed, and purpose.</em>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-8 mb-12">
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center"><span class="mr-2">🔬</span> Anatomy of a Good Test</h3>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm mb-4">
+                        <h4 class="font-bold text-amber-700 mb-2">The AAA Pattern</h4>
+                        <ul class="text-sm text-stone-600 space-y-2">
+                            <li><span class="font-bold text-stone-800">Arrange:</span> Set up inputs and the world state.</li>
+                            <li><span class="font-bold text-stone-800">Act:</span> Call the function exactly once.</li>
+                            <li><span class="font-bold text-stone-800">Assert:</span> Check outputs match expectations.</li>
+                        </ul>
+                    </div>
+                    <div class="bg-white p-5 rounded-xl border border-stone-200 shadow-sm">
+                        <h4 class="font-bold text-amber-700 mb-2">FIRST Principles</h4>
+                        <p class="text-sm text-stone-600 mb-2">Tests must be: <strong>Fast</strong>, <strong>Isolated</strong> (no dependencies), <strong>Repeatable</strong>, <strong>Self-validating</strong> (pass/fail), and <strong>Timely</strong> (written before/with code).</p>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="text-xl font-bold mb-4 flex items-center"><span class="mr-2">📱</span> Mobile vs Web Testing</h3>
+                    <div class="overflow-x-auto border border-stone-200 rounded-xl shadow-sm">
+                        <table class="w-full text-sm text-left">
+                            <thead class="text-xs text-stone-700 uppercase bg-stone-100">
+                                <tr>
+                                    <th class="px-4 py-3">Concern</th>
+                                    <th class="px-4 py-3">Web</th>
+                                    <th class="px-4 py-3">Mobile</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-stone-100 text-stone-600">
+                                <tr>
+                                    <td class="px-4 py-2 font-medium text-stone-800">Device Matrix</td>
+                                    <td class="px-4 py-2">Handful of browsers</td>
+                                    <td class="px-4 py-2 font-bold text-amber-700 bg-amber-50">Hundreds of models</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 font-medium text-stone-800">Network</td>
+                                    <td class="px-4 py-2">Generally fast</td>
+                                    <td class="px-4 py-2 bg-amber-50">WiFi/5G/Offline drops</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 font-medium text-stone-800">Interruptions</td>
+                                    <td class="px-4 py-2">Tab close = end</td>
+                                    <td class="px-4 py-2 bg-amber-50">Calls, alarms, battery</td>
+                                </tr>
+                                <tr>
+                                    <td class="px-4 py-2 font-medium text-stone-800">Permissions</td>
+                                    <td class="px-4 py-2">Browser-managed</td>
+                                    <td class="px-4 py-2 bg-amber-50">Per-app, granular</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-12">
+                <h3 class="text-xl font-bold mb-4 flex items-center"><span class="mr-2">⚙️</span> CI / CD Pipeline</h3>
+                <div class="flex flex-col md:flex-row justify-between items-stretch gap-2 text-sm text-center">
+                    <div class="bg-white border border-stone-200 p-3 rounded-lg flex-1 shadow-sm"><strong class="block mb-1 text-stone-800">1. Pre-commit</strong> Linters, fast unit tests<br><span class="text-xs text-stone-500">Every save</span></div>
+                    <div class="hidden md:flex items-center text-stone-400">&rarr;</div>
+                    <div class="bg-white border border-stone-200 p-3 rounded-lg flex-1 shadow-sm"><strong class="block mb-1 text-stone-800">2. CI on Push</strong> Full unit + integration<br><span class="text-xs text-stone-500">Every commit</span></div>
+                    <div class="hidden md:flex items-center text-stone-400">&rarr;</div>
+                    <div class="bg-white border border-stone-200 p-3 rounded-lg flex-1 shadow-sm"><strong class="block mb-1 text-stone-800">3. CI on PR</strong> Above + smoke E2E<br><span class="text-xs text-stone-500">Every PR</span></div>
+                    <div class="hidden md:flex items-center text-stone-400">&rarr;</div>
+                    <div class="bg-white border border-stone-200 p-3 rounded-lg flex-1 shadow-sm bg-stone-50"><strong class="block mb-1 text-stone-800">4. Nightly</strong> Full E2E + mobile farm<br><span class="text-xs text-stone-500">Once a day</span></div>
+                </div>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-100 rounded-2xl p-8 shadow-sm">
+                <h3 class="text-2xl font-bold text-amber-900 mb-4 text-center">The 5 Rules of Testing</h3>
+                <ol class="list-decimal list-inside space-y-3 text-amber-800 max-w-2xl mx-auto font-medium">
+                    <li><strong class="text-amber-950">Build a pyramid.</strong> Many unit, some integration, few E2E.</li>
+                    <li><strong class="text-amber-950">Keep tests FIRST.</strong> Fast, Isolated, Repeatable, Self-validating, Timely.</li>
+                    <li><strong class="text-amber-950">Use AAA.</strong> Arrange, Act, Assert. One assertion concept per test.</li>
+                    <li><strong class="text-amber-950">Select by data-testid.</strong> Never by CSS class. Stability over beauty.</li>
+                    <li><strong class="text-amber-950">Run them in CI.</strong> A test you run by hand is a test you forget to run.</li>
+                </ol>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-sm">
+            <p class="mb-2"><strong>Homework:</strong> Read OWASP Top 10 (2021). Add 5 unit tests to your project. Observe bcrypt slowness.</p>
+            <p>Cyber.SoHo Educational Hub &copy; 2026. From the Industry to the Classroom.</p>
+        </div>
+    </footer>
+
+    <script>
+        // --- Navigation Logic ---
+        function switchTab(tabId) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            // Show selected tab
+            document.getElementById(tabId).classList.add('active');
+
+            // Update button styles
+            const btns = ['overview', 'security', 'testing'];
+            btns.forEach(id => {
+                const btn = document.getElementById(`btn-${id}`);
+                if (id === tabId) {
+                    btn.classList.remove('text-stone-600', 'hover:bg-stone-100');
+                    btn.classList.add('bg-stone-100', 'text-stone-900');
+                } else {
+                    btn.classList.add('text-stone-600', 'hover:bg-stone-100');
+                    btn.classList.remove('bg-stone-100', 'text-stone-900');
+                }
+            });
+
+            // Initialize chart if testing tab is opened and chart doesn't exist
+            if (tabId === 'testing' && !window.costChartInstance) {
+                initChart();
+            }
+        }
+
+        // --- Security Accordion Logic ---
+        function toggleAccordion(id) {
+            const content = document.getElementById(id);
+            const icon = document.getElementById(`icon-${id}`);
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.textContent = '-';
+            } else {
+                content.classList.add('hidden');
+                icon.textContent = '+';
+            }
+        }
+
+        // --- Testing Pyramid Logic ---
+        const pyramidData = {
+            e2e: {
+                title: 'End-to-End (E2E)',
+                qty: 'Roughly 10',
+                speed: 'Seconds per test (Slow)',
+                desc: 'Exercises the entire system via real browser/device. Catches high-level flow issues. Keep count small due to flakiness and high maintenance cost.'
+            },
+            integration: {
+                title: 'Integration Tests',
+                qty: 'Tens to low hundreds',
+                speed: 'Fraction of a second (Medium)',
+                desc: 'Tests several units together with one real dependency (DB, framework). Catches wiring mistakes, schema drift, and validation gaps.'
+            },
+            unit: {
+                title: 'Unit Tests',
+                qty: 'Hundreds to thousands',
+                speed: 'Milliseconds (Fast, Cheap)',
+                desc: 'Tests one function or class in isolation (no DB/network). Foundation of the suite. Catch the majority of logic bugs.'
+            }
+        };
+
+        function showPyramidInfo(layer) {
+            const data = pyramidData[layer];
+            const container = document.getElementById('pyramid-details');
+            
+            // Visual feedback on click
+            container.style.opacity = 0;
+            setTimeout(() => {
+                container.innerHTML = `
+                    <h4 class="font-bold text-stone-900 text-base mb-1">${data.title}</h4>
+                    <div class="flex gap-4 mb-2 text-xs">
+                        <span class="bg-stone-200 px-2 py-1 rounded font-mono">Count: ${data.qty}</span>
+                        <span class="bg-stone-200 px-2 py-1 rounded font-mono">Speed: ${data.speed}</span>
+                    </div>
+                    <p>${data.desc}</p>
+                `;
+                container.style.transition = 'opacity 0.2s';
+                container.style.opacity = 1;
+            }, 150);
+        }
+
+        // --- Chart.js Logic ---
+        window.costChartInstance = null;
+        
+        function initChart() {
+            const ctx = document.getElementById('costChart').getContext('2d');
+            
+            Chart.defaults.font.family = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+            Chart.defaults.color = '#57534e'; // stone-500
+
+            window.costChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Dev', 'Code Review', 'CI', 'Staging', 'Production'],
+                    datasets: [{
+                        label: 'Relative Cost to Fix Bug',
+                        data: [1, 10, 100, 1000, 10000],
+                        borderColor: '#b45309', // amber-700
+                        backgroundColor: 'rgba(180, 83, 9, 0.1)',
+                        borderWidth: 3,
+                        pointBackgroundColor: '#b45309',
+                        pointRadius: 5,
+                        pointHoverRadius: 8,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `Cost Multiplier: ${context.parsed.y}x`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            type: 'logarithmic',
+                            title: { display: true, text: 'Cost Multiplier (Logarithmic)' },
+                            ticks: {
+                                callback: function(value, index, values) {
+                                    if (value === 1 || value === 10 || value === 100 || value === 1000 || value === 10000) {
+                                        return value + 'x';
+                                    }
+                                    return '';
+                                }
+                            }
+                        },
+                        x: {
+                            grid: { display: false }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+

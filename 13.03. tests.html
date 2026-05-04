@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Security & Testing - Study App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        
+        /* Tab Transitions */
+        .tab-content { display: none; animation: fadeIn 0.4s ease-in-out; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Flashcard 3D Flip Effects */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        .flashcard.flipped .transform-style-3d { transform: rotateY(180deg); }
+        
+        /* Custom Scrollbar for sleek look */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f5f5f4; }
+        ::-webkit-scrollbar-thumb { background: #d6d3d1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a8a29e; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-800 antialiased min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-stone-200 shadow-sm sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <span class="text-2xl">🧠</span>
+                    <h1 class="font-bold text-xl text-stone-900 tracking-tight">Study.Hub</h1>
+                </div>
+                <nav class="flex space-x-2">
+                    <button onclick="switchTab('flashcards')" id="btn-flashcards" class="px-4 py-2 rounded-md text-sm font-bold bg-teal-100 text-teal-900 transition-colors shadow-sm">
+                        Flashcards (25)
+                    </button>
+                    <button onclick="switchTab('quiz')" id="btn-quiz" class="px-4 py-2 rounded-md text-sm font-medium text-stone-600 hover:bg-stone-100 transition-colors">
+                        Practice Quiz (10)
+                    </button>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow w-full max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <section id="flashcards" class="tab-content active">
+            <div class="mb-8 text-center">
+                <h2 class="text-3xl font-extrabold text-stone-900 mb-3">Security & Testing Flashcards</h2>
+                <p class="text-stone-600">Click on any card to flip it and reveal the answer. Use these to memorize core concepts.</p>
+                <button onclick="flipAllCards()" class="mt-4 px-4 py-2 bg-stone-200 hover:bg-stone-300 text-stone-800 rounded text-sm font-medium transition-colors">Toggle Flip All Cards</button>
+            </div>
+            
+            <div id="flashcards-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+                </div>
+        </section>
+
+        <section id="quiz" class="tab-content">
+            <div class="mb-8 text-center border-b border-stone-200 pb-8">
+                <h2 class="text-3xl font-extrabold text-stone-900 mb-3">Mastery Assessment</h2>
+                <p class="text-stone-600">Test your knowledge on Web Application Security and Testing principles.</p>
+            </div>
+
+            <div id="quiz-container" class="space-y-10 max-w-3xl mx-auto">
+                </div>
+
+            <div class="max-w-3xl mx-auto mt-10 p-6 bg-white border border-stone-200 shadow-sm rounded-xl text-center">
+                <button id="submit-quiz-btn" onclick="gradeQuiz()" class="px-8 py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-lg shadow transition-colors text-lg">
+                    Submit Quiz & See Results
+                </button>
+                <div id="quiz-results" class="hidden mt-6">
+                    <h3 class="text-2xl font-bold text-stone-900 mb-2">Your Score: <span id="score-display" class="text-teal-600"></span></h3>
+                    <p class="text-stone-600">Review the feedback below each question to understand the rationales.</p>
+                    <button onclick="resetQuiz()" class="mt-4 px-4 py-2 bg-stone-100 hover:bg-stone-200 text-stone-800 rounded text-sm font-medium transition-colors">Retake Quiz</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-900 text-stone-400 py-6 mt-auto">
+        <div class="max-w-5xl mx-auto text-center text-sm">
+            <p>Cyber.SoHo Educational Hub &copy; 2026. Self-Study Application.</p>
+        </div>
+    </footer>
+
+    <script>
+        // ==========================================
+        // DATA: FLASHCARDS (25 items)
+        // ==========================================
+        const flashcardsData = [
+            { front: "The CIA Triad", back: "Confidentiality, Integrity, and Availability." },
+            { front: "Confidentiality (Security)", back: "Ensuring that only authorized people can see the data." },
+            { front: "Integrity (Security)", back: "Ensuring that data is not changed without permission." },
+            { front: "Availability (Security)", back: "Ensuring the service stays up under load and attack." },
+            { front: "OWASP Top 10", back: "The canonical list of the ten most common web application vulnerability classes." },
+            { front: "SQL Injection (SQLi)", back: "An attack where user input is concatenated directly into a database query string, allowing the attacker to execute malicious logic." },
+            { front: "Primary defense against SQL Injection", back: "Parameterised queries (or prepared statements), which send the query structure and user values separately to the database." },
+            { front: "Cross-Site Scripting (XSS)", back: "An attack where untrusted user input is rendered as part of an HTML page without escaping, allowing malicious JavaScript to run in the visitor's browser." },
+            { front: "Primary defense against XSS", back: "Output encoding (escaping special characters) at the exact moment the data is inserted into the HTML document." },
+            { front: "Current standard for hashing passwords", back: "Deliberately slow hashes with a tunable cost, such as bcrypt, scrypt, or argon2." },
+            { front: "Secure session cookie attributes", back: "HttpOnly, Secure, and SameSite=Lax." },
+            { front: "Three guarantees of TLS (HTTPS)", back: "Encryption, Integrity, and Authentication." },
+            { front: "The 5 rules of web-app security", back: "Validate every input, parameterise every query, escape every output, hash every password with bcrypt, and wrap everything in HTTPS." },
+            { front: "The cost-of-bugs curve", back: "The principle that the cost of fixing a bug multiplies by roughly ten at each subsequent stage of development (from dev to production)." },
+            { front: "The Testing Pyramid", back: "A testing strategy advocating for a large base of fast unit tests, some integration tests, and a small number of slow End-to-End (E2E) tests." },
+            { front: "Unit Test", back: "An automated test that exercises one function or class in complete isolation, running in milliseconds without a database or network." },
+            { front: "Integration Test", back: "An automated test that runs several units together alongside one real dependency, like a database or web framework." },
+            { front: "End-to-End (E2E) Test", back: "An automated test that drives a real browser or device to exercise the entire application stack from front to back." },
+            { front: "The AAA testing pattern", back: "Arrange (set up inputs/state), Act (call the function once), Assert (verify the outputs match expectations)." },
+            { front: "FIRST principles of testing", back: "Tests should be Fast, Isolated, Repeatable, Self-validating, and Timely." },
+            { front: "Recommended HTML attribute for E2E test selectors", back: "data-testid (it is stable across UI redesigns, unlike CSS classes)." },
+            { front: "Unique concerns in Mobile Application Testing", back: "Hundreds of device models, offline functionality, OS interruptions (calls/battery), and granular system permissions." },
+            { front: "Continuous Integration (CI)", back: "The practice of automatically running the test suite on every code push or commit to instantly detect regressions." },
+            { front: "Test-Driven Development (TDD) for Security", back: "Write a test proving the feature works, write a test proving it fails safely on hostile input, then write the production code." },
+            { front: "Core mindset of Security and Testing", back: "Every input is hostile until proven otherwise, and every assumption is wrong until a test confirms it." }
+        ];
+
+        // ==========================================
+        // DATA: QUIZ (10 items)
+        // ==========================================
+        const quizData = [
+            {
+                q: "Which concept from the CIA triad ensures that a web application stays up under heavy load or during an attack?",
+                options: [
+                    { text: "Confidentiality", rationale: "Confidentiality focuses on restricting data access to authorized individuals, not maintaining system uptime.", isCorrect: false },
+                    { text: "Integrity", rationale: "Integrity guarantees that data has not been tampered with or altered without permission, rather than dealing with system responsiveness.", isCorrect: false },
+                    { text: "Availability", rationale: "Availability specifically addresses keeping the service operational and accessible to users, even under duress.", isCorrect: true },
+                    { text: "Authentication", rationale: "Authentication verifies a user's identity, which is a separate concern from keeping servers online during high traffic.", isCorrect: false }
+                ]
+            },
+            {
+                q: "What is the most effective and recommended defense against SQL Injection (SQLi) attacks?",
+                options: [
+                    { text: "Client-side validation", rationale: "Client-side checks can be easily bypassed by an attacker modifying the request, making them unreliable for defense.", isCorrect: false },
+                    { text: "Output encoding", rationale: "Output encoding is used to prevent Cross-Site Scripting (XSS) when rendering HTML, not for securing database queries.", isCorrect: false },
+                    { text: "Parameterised queries", rationale: "Sending the query structure and user values separately ensures the database driver treats the input strictly as data, never as executable code.", isCorrect: true },
+                    { text: "Encrypting the database", rationale: "Encryption protects data at rest if the server is physically compromised, but it does not prevent malicious query execution.", isCorrect: false }
+                ]
+            },
+            {
+                q: "If an attacker saves a malicious JavaScript payload in a database, which is later served to and executed by every visitor's browser, what type of attack has occurred?",
+                options: [
+                    { text: "Stored XSS", rationale: "The malicious payload is kept persistently on the server's database and served to unsuspecting users upon page load.", isCorrect: true },
+                    { text: "Reflected XSS", rationale: "Reflected XSS bounces a payload off a URL parameter immediately back to the victim, rather than saving it to the database.", isCorrect: false },
+                    { text: "Server-Side Request Forgery", rationale: "SSRF tricks the server into making unauthorized requests on behalf of the attacker, rather than executing scripts in a victim's browser.", isCorrect: false },
+                    { text: "DOM-based XSS", rationale: "DOM-based XSS manipulates the page entirely within the browser's client-side JavaScript, without necessarily involving the server database.", isCorrect: false }
+                ]
+            },
+            {
+                q: "Which of the following is currently the industry standard recommendation for safely storing user passwords?",
+                options: [
+                    { text: "Salted SHA-256", rationale: "While salting helps, standard SHA-256 is designed to be fast, making it susceptible to rapid brute-force hardware attacks.", isCorrect: false },
+                    { text: "Plaintext", rationale: "Storing passwords exactly as typed means any database breach immediately hands over all user credentials.", isCorrect: false },
+                    { text: "Unsalted MD5", rationale: "MD5 is highly vulnerable to collisions and rainbow table attacks, offering effectively no modern security.", isCorrect: false },
+                    { text: "bcrypt", rationale: "Deliberately slow hashing algorithms with tunable costs thwart attackers attempting to quickly crack passwords in bulk.", isCorrect: true }
+                ]
+            },
+            {
+                q: "Which of the following is NOT one of the three primary guarantees provided by TLS (HTTPS)?",
+                options: [
+                    { text: "Encryption", rationale: "TLS ensures third parties on the network only see ciphertext, protecting the privacy of the data.", isCorrect: false },
+                    { text: "Parameterisation", rationale: "This is a database query technique to prevent SQL injection, completely unrelated to network transport security.", isCorrect: true },
+                    { text: "Integrity", rationale: "TLS guarantees that packets modified in transit by a man-in-the-middle are detected and rejected.", isCorrect: false },
+                    { text: "Authentication", rationale: "Through certificates, TLS proves that the server you are communicating with is actually who it claims to be.", isCorrect: false }
+                ]
+            },
+            {
+                q: "According to the Testing Pyramid, which type of test should make up the largest volume of your test suite?",
+                options: [
+                    { text: "End-to-End (E2E) tests", rationale: "E2E tests are slow, flaky, and expensive to maintain, so they should form the smallest top layer of the pyramid.", isCorrect: false },
+                    { text: "Integration tests", rationale: "While critical for testing dependencies, integration tests are slower than base-level tests and should sit in the middle of the pyramid.", isCorrect: false },
+                    { text: "Manual tests", rationale: "Manual exploration is useful but doesn't provide an automated safety net that executes rapidly on every code change.", isCorrect: false },
+                    { text: "Unit tests", rationale: "These test functions in complete isolation, allowing developers to run thousands of cheap, fast checks in milliseconds.", isCorrect: true }
+                ]
+            },
+            {
+                q: "What is the primary advantage of writing Integration Tests?",
+                options: [
+                    { text: "They evaluate the application strictly from the user's visual perspective in a real browser.", rationale: "Evaluating the UI in a real browser is the job of End-to-End (E2E) tests, not integration tests.", isCorrect: false },
+                    { text: "They catch wiring mistakes and schema drift by checking how units interact with a real dependency.", rationale: "By plugging code into an actual database or framework, they reveal misalignments that isolated units hide.", isCorrect: true },
+                    { text: "They run entirely in memory without ever touching a database or framework.", rationale: "Tests running completely in memory without real dependencies are defined as Unit tests.", isCorrect: false },
+                    { text: "They are significantly faster to execute than standard Unit tests.", rationale: "Because they involve real dependencies like databases, they run in fractions of a second, which is slower than millisecond-speed unit tests.", isCorrect: false }
+                ]
+            },
+            {
+                q: "When writing End-to-End (E2E) tests, what is the most stable and recommended attribute to use for selecting elements?",
+                options: [
+                    { text: "CSS class names", rationale: "CSS classes are tied to the visual design and are prone to breaking your tests every time the UI is restyled.", isCorrect: false },
+                    { text: "data-testid", rationale: "This custom data attribute separates testing logic from visual styling, remaining stable even if the design completely changes.", isCorrect: true },
+                    { text: "HTML tags (e.g., <div> or <button>)", rationale: "Selecting by generic tags is extremely fragile because adding or removing elements to the page structure will break the test.", isCorrect: false },
+                    { text: "Inline styles", rationale: "Inline styles describe appearance, which varies widely and offers no semantic meaning for a testing framework to latch onto.", isCorrect: false }
+                ]
+            },
+            {
+                q: "In the FIRST principles of a trustworthy test, what does the 'I' stand for?",
+                options: [
+                    { text: "Integrated", rationale: "While integration testing is a layer of the pyramid, it is not what makes an individual test inherently trustworthy.", isCorrect: false },
+                    { text: "Isolated", rationale: "A test must run entirely on its own without depending on the execution order, state of other tests, or external networks.", isCorrect: true },
+                    { text: "Intuitive", rationale: "Tests should be readable, but 'Intuitive' is not the specific property defined by the FIRST acronym.", isCorrect: false },
+                    { text: "Iterative", rationale: "Iterative refers to a development process, whereas this principle describes the test's lack of dependencies.", isCorrect: false }
+                ]
+            },
+            {
+                q: "Under the 'professional habit' of Test-Driven Development for security, what must you do immediately after writing a test that proves a feature works?",
+                options: [
+                    { text: "Write the production code for the feature.", rationale: "Before writing the actual application code, you need to ensure you've considered the adversarial perspective.", isCorrect: false },
+                    { text: "Deploy the changes to a staging server.", rationale: "Deployment happens much later in the CI/CD pipeline, long after the code and tests are written.", isCorrect: false },
+                    { text: "Write a test proving the feature fails safely under hostile input.", rationale: "Exercising adversarial imagination ensures you build guardrails before implementing the actual logic.", isCorrect: true },
+                    { text: "Manually verify the feature in a web browser.", rationale: "Manual exploration is helpful later, but TDD requires automated executable specifications first.", isCorrect: false }
+                ]
+            }
+        ];
+
+        // ==========================================
+        // INITIALIZATION & LOGIC
+        // ==========================================
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            renderFlashcards();
+            renderQuiz();
+        });
+
+        // --- Tab Logic ---
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+
+            const btnFlashcards = document.getElementById('btn-flashcards');
+            const btnQuiz = document.getElementById('btn-quiz');
+
+            if (tabId === 'flashcards') {
+                btnFlashcards.classList.replace('text-stone-600', 'text-teal-900');
+                btnFlashcards.classList.replace('hover:bg-stone-100', 'bg-teal-100');
+                btnFlashcards.classList.add('font-bold', 'shadow-sm');
+                btnQuiz.classList.replace('text-teal-900', 'text-stone-600');
+                btnQuiz.classList.replace('bg-teal-100', 'hover:bg-stone-100');
+                btnQuiz.classList.remove('font-bold', 'shadow-sm');
+            } else {
+                btnQuiz.classList.replace('text-stone-600', 'text-teal-900');
+                btnQuiz.classList.replace('hover:bg-stone-100', 'bg-teal-100');
+                btnQuiz.classList.add('font-bold', 'shadow-sm');
+                btnFlashcards.classList.replace('text-teal-900', 'text-stone-600');
+                btnFlashcards.classList.replace('bg-teal-100', 'hover:bg-stone-100');
+                btnFlashcards.classList.remove('font-bold', 'shadow-sm');
+            }
+        }
+
+        // --- Flashcard Logic ---
+        function renderFlashcards() {
+            const container = document.getElementById('flashcards-grid');
+            flashcardsData.forEach((card, index) => {
+                const cardHTML = `
+                    <div class="flashcard perspective-1000 h-64 w-full cursor-pointer group" onclick="this.classList.toggle('flipped')">
+                        <div class="transform-style-3d relative w-full h-full rounded-2xl shadow-sm group-hover:shadow-md border border-stone-200">
+                            <div class="backface-hidden absolute w-full h-full bg-white rounded-2xl p-6 flex flex-col justify-center items-center text-center">
+                                <span class="absolute top-4 left-4 text-xs font-bold text-stone-400">Card ${index + 1}</span>
+                                <p class="text-xl font-bold text-stone-800">${card.front}</p>
+                            </div>
+                            <div class="backface-hidden absolute w-full h-full bg-stone-800 rounded-2xl p-6 flex flex-col justify-center items-center text-center rotate-y-180">
+                                <p class="text-lg text-stone-100 leading-relaxed">${card.back}</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHTML;
+            });
+        }
+
+        function flipAllCards() {
+            const cards = document.querySelectorAll('.flashcard');
+            const allFlipped = Array.from(cards).every(card => card.classList.contains('flipped'));
+            cards.forEach(card => {
+                if (allFlipped) card.classList.remove('flipped');
+                else card.classList.add('flipped');
+            });
+        }
+
+        // --- Quiz Logic ---
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            container.innerHTML = ''; // Clear existing
+            
+            quizData.forEach((item, qIndex) => {
+                let optionsHTML = '';
+                
+                // Shuffle options for display
+                const shuffledOptions = [...item.options].sort(() => Math.random() - 0.5);
+
+                shuffledOptions.forEach((opt, oIndex) => {
+                    // Store original index or correct status in dataset
+                    optionsHTML += `
+                        <label class="option-label block relative bg-white border border-stone-200 rounded-xl p-4 cursor-pointer hover:bg-stone-50 transition-colors mb-3">
+                            <div class="flex items-start">
+                                <div class="flex-shrink-0 mt-0.5">
+                                    <input type="radio" name="q${qIndex}" value="${opt.isCorrect}" class="w-4 h-4 text-teal-600 bg-stone-100 border-stone-300 focus:ring-teal-500">
+                                </div>
+                                <div class="ml-3">
+                                    <span class="block text-stone-800 font-medium">${opt.text}</span>
+                                </div>
+                            </div>
+                            <div class="rationale-block hidden mt-3 p-3 text-sm rounded bg-stone-100 text-stone-700 border-l-4">
+                                ${opt.rationale}
+                            </div>
+                        </label>
+                    `;
+                });
+
+                const questionHTML = `
+                    <div class="quiz-question bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-stone-200" data-qindex="${qIndex}">
+                        <h3 class="text-lg font-bold text-stone-900 mb-5">
+                            <span class="text-teal-600 mr-2">${qIndex + 1}.</span>${item.q}
+                        </h3>
+                        <div class="options-container">
+                            ${optionsHTML}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += questionHTML;
+            });
+        }
+
+        function gradeQuiz() {
+            const questions = document.querySelectorAll('.quiz-question');
+            let score = 0;
+            let allAnswered = true;
+
+            questions.forEach((qBlock, index) => {
+                const selectedInput = qBlock.querySelector(`input[name="q${index}"]:checked`);
+                
+                if (!selectedInput) {
+                    allAnswered = false;
+                    qBlock.classList.add('border-red-300', 'bg-red-50');
+                    setTimeout(() => qBlock.classList.remove('border-red-300', 'bg-red-50'), 1500);
+                    return;
+                }
+
+                // Disable inputs
+                qBlock.querySelectorAll('input').forEach(input => input.disabled = true);
+
+                // Reveal rationales and styling
+                const labels = qBlock.querySelectorAll('.option-label');
+                labels.forEach(label => {
+                    const input = label.querySelector('input');
+                    const rationale = label.querySelector('.rationale-block');
+                    const isCorrect = input.value === "true";
+
+                    rationale.classList.remove('hidden');
+
+                    if (isCorrect) {
+                        label.classList.add('border-teal-500', 'bg-teal-50');
+                        label.classList.remove('hover:bg-stone-50');
+                        rationale.classList.add('border-teal-500', 'bg-teal-100');
+                        rationale.classList.remove('bg-stone-100');
+                    } else if (input.checked && !isCorrect) {
+                        label.classList.add('border-red-400', 'bg-red-50');
+                        label.classList.remove('hover:bg-stone-50');
+                        rationale.classList.add('border-red-400', 'bg-red-100');
+                        rationale.classList.remove('bg-stone-100');
+                    } else {
+                        label.classList.add('opacity-60');
+                    }
+                });
+
+                if (selectedInput.value === "true") score++;
+            });
+
+            if (!allAnswered) {
+                alert("Please answer all questions before submitting.");
+                return;
+            }
+
+            // Show Results
+            document.getElementById('submit-quiz-btn').classList.add('hidden');
+            const resultsDiv = document.getElementById('quiz-results');
+            resultsDiv.classList.remove('hidden');
+            
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.textContent = `${score} / ${quizData.length}`;
+            if (score === quizData.length) scoreDisplay.classList.replace('text-teal-600', 'text-green-600');
+            else if (score < 6) scoreDisplay.classList.replace('text-teal-600', 'text-red-600');
+        }
+
+        function resetQuiz() {
+            document.getElementById('submit-quiz-btn').classList.remove('hidden');
+            document.getElementById('quiz-results').classList.add('hidden');
+            renderQuiz();
+            window.scrollTo({ top: document.getElementById('quiz').offsetTop - 100, behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
+
+
+
